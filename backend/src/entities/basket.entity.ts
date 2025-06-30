@@ -1,20 +1,29 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, OneToMany } from 'typeorm';
 import { Reservation } from './reservation.entity';
 
-@Entity()
+@Entity({ name: 'baskets' })
 export class Basket {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column()
-  name: string;
+  nom: string;
 
-  @Column('decimal', { precision: 5, scale: 2 })
-  price: number;
+  @Column()
+  prix_centimes: number;
 
-  @Column({ type: 'date' })
-  availableDate: string;
+  @Column({ nullable: true })
+  description: string;
 
-  @OneToMany(() => Reservation, (reservation) => reservation.basket)
+  @Column({ nullable: true })
+  image_url: string;
+
+  @Column({ default: true })
+  actif: boolean;
+
+  @CreateDateColumn({ name: 'date_creation' })
+  date_creation: Date;
+
+  @OneToMany(() => Reservation, (r: Reservation) => r.basket)
   reservations: Reservation[];
 }

@@ -1,22 +1,59 @@
-import { Entity, PrimaryGeneratedColumn, ManyToOne, Column } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
 import { User } from './user.entity';
 import { Basket } from './basket.entity';
 import { PickupLocation } from './pickup-location.entity';
 
-@Entity()
+export enum ReservationStatut {
+  ACTIVE = 'active',
+  ARCHIVED = 'archived',
+}
+
+@Entity({ name: 'reservations' })
 export class Reservation {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @ManyToOne(() => User, (user) => user.reservations)
+  @ManyToOne(() => User, (user) => user.reservations, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'user_id' })
   user: User;
 
   @ManyToOne(() => Basket, (basket) => basket.reservations)
+  @JoinColumn({ name: 'basket_id' })
   basket: Basket;
 
-  @ManyToOne(() => PickupLocation, (location) => location.reservations)
-  pickupLocation: PickupLocation;
+  @ManyToOne(() => PickupLocation, (loc) => loc.reservations)
+  @JoinColumn({ name: 'location_id' })
+  location: PickupLocation;
 
-  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
-  createdAt: Date;
+  @Column()
+  prix_centimes: number;
+
+  @Column({ type: 'date' })
+  pickup_date: string;
+
+  @Column({ type: 'smallint', default: 1 })
+  quantity: number;
+
+  @Column({
+    type: 'enum',
+    enum: ReservationStatut,
+    default: ReservationStatut.ACTIVE,
+  })
+  statut: ReservationStatut;
+
+  @Column({ type: 'timestamptz', nullable: true })
+  email_sent_at: Date;
+
+  @Column({ type: 'timestamptz', nullable: true })
+  sms_sent_at: Date;
+
+  @CreateDateColumn({ name: 'date_creation' })
+  date_creation: Date;
 }

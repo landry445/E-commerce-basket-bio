@@ -1,20 +1,29 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, OneToMany } from 'typeorm';
 import { Reservation } from './reservation.entity';
 
-@Entity()
+@Entity({ name: 'users' })
 export class User {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Column()
+  prenom: string;
+
+  @Column()
+  nom: string;
+
   @Column({ unique: true })
   email: string;
 
-  @Column()
-  password: string;
+  @Column({ unique: true })
+  telephone: string;
 
-  @Column({ default: 'client' })
-  role: 'admin' | 'client';
+  @Column({ default: false })
+  is_admin: boolean;
 
-  @OneToMany(() => Reservation, (reservation) => reservation.user)
+  @CreateDateColumn({ name: 'date_creation' })
+  date_creation: Date;
+
+  @OneToMany(() => Reservation, (r: Reservation) => r.user, { cascade: true })
   reservations: Reservation[];
 }
