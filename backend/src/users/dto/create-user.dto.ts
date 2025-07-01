@@ -10,7 +10,7 @@ export class CreateUserDto {
   @IsEmail()
   email: string;
 
-  @IsString()
+  @Matches(/^\+?\d{10,15}$/, { message: 'Numéro de téléphone invalide' })
   telephone: string;
 
   @IsString()
