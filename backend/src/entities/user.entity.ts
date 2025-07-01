@@ -18,6 +18,9 @@ export class User {
   @Column({ unique: true })
   telephone: string;
 
+  @Column({ unique: true })
+  password_hash: string;
+
   @Column({ default: false })
   is_admin: boolean;
 
