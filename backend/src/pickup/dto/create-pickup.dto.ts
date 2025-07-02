@@ -1,6 +1,6 @@
-import { IsInt, IsOptional, IsString, Min, Max } from 'class-validator';
+import { IsString, IsOptional, IsInt, Min, Max } from 'class-validator';
 
-export class CreatePickupLocationDto {
+export class CreatePickupDto {
   @IsString()
   nom: string;
 

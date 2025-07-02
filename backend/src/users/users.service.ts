@@ -1,7 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { User } from '../entities/user.entity';
+import { User } from './entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UserResponseDto } from './dto/user-response.dto';
 import * as bcrypt from 'bcrypt';
@@ -24,9 +24,13 @@ export class UsersService {
 
     const saved = await this.userRepo.save(user);
 
-    return plainToInstance(UserResponseDto, saved, {
-      excludeExtraneousValues: true,
-    });
+    return this.toResponse(saved);
+  }
+
+  async findOne(id: string): Promise<UserResponseDto> {
+    const user = await this.userRepo.findOne({ where: { id } });
+    if (!user) throw new NotFoundException('Utilisateur non trouvé');
+    return this.toResponse(user);
   }
 
   async findByEmail(email: string): Promise<User | null> {
@@ -35,5 +39,11 @@ export class UsersService {
 
   async findById(id: string): Promise<User | null> {
     return this.userRepo.findOne({ where: { id } });
+  }
+
+  private toResponse(user: User): UserResponseDto {
+    return plainToInstance(UserResponseDto, user, {
+      excludeExtraneousValues: true,
+    });
   }
 }

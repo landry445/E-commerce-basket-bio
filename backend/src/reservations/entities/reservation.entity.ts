@@ -6,8 +6,8 @@ import {
   ManyToOne,
   JoinColumn,
 } from 'typeorm';
-import { User } from './user.entity';
-import { Basket } from './basket.entity';
+import { User } from '../../users/entities/user.entity';
+import { Basket } from '../../baskets/entities/basket.entity';
 import { PickupLocation } from './pickup-location.entity';
 
 export enum ReservationStatut {
