@@ -8,7 +8,7 @@ import {
 } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
 import { Basket } from '../../baskets/entities/basket.entity';
-import { PickupLocation } from './pickup-location.entity';
+import { PickupLocation } from '../../pickup/entities/pickup-location.entity';
 
 export enum ReservationStatut {
   ACTIVE = 'active',
@@ -42,18 +42,25 @@ export class Reservation {
   quantity: number;
 
   @Column({
-    type: 'enum',
+    type: process.env.NODE_ENV === 'test' ? 'text' : 'enum',
     enum: ReservationStatut,
     default: ReservationStatut.ACTIVE,
   })
   statut: ReservationStatut;
 
-  @Column({ type: 'timestamptz', nullable: true })
-  email_sent_at: Date;
+  @Column({
+    type: process.env.NODE_ENV === 'test' ? 'datetime' : 'timestamptz',
+    nullable: true,
+  })
+  email_sent_at: Date | null;
 
-  @Column({ type: 'timestamptz', nullable: true })
-  sms_sent_at: Date;
+  @Column({
+    type: process.env.NODE_ENV === 'test' ? 'datetime' : 'timestamptz',
+    nullable: true,
+  })
+  sms_sent_at: Date | null;
 
-  @CreateDateColumn({ name: 'date_creation' })
+  @CreateDateColumn({ name: 'date_creation', type: process.env.NODE_ENV === 'test' ? 'datetime' : 'timestamptz' })
   date_creation: Date;
+
 }
