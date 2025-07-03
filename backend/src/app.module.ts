@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -11,12 +11,28 @@ import { PickupModule } from './pickup/pickup.module';
 @Module({
   imports: [
     ConfigModule.forRoot(),
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      url: process.env.DATABASE_URL,
-      autoLoadEntities: true,
-      synchronize: true, // à mettre à true uniquement pour du dev local !
+
+    TypeOrmModule.forRootAsync({
+      useFactory: async (): Promise<TypeOrmModuleOptions> => {
+        if (process.env.NODE_ENV === 'test') {
+          return {
+            type: 'sqlite',
+            database: ':memory:',
+            dropSchema: true,
+            synchronize: true,
+            autoLoadEntities: true,
+          };
+        }
+
+        return {
+          type: 'postgres',
+          url: process.env.DATABASE_URL,
+          autoLoadEntities: true,
+          synchronize: true, // ⚠️ désactiver en prod
+        };
+      },
     }),
+
     UsersModule,
     BasketsModule,
     ReservationsModule,
