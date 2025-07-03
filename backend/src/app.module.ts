@@ -7,10 +7,6 @@ import { UsersModule } from './users/users.module';
 import { BasketsModule } from './baskets/baskets.module';
 import { ReservationsModule } from './reservations/reservations.module';
 import { PickupModule } from './pickup/pickup.module';
-import { User } from './users/entities/user.entity';
-import { Basket } from './baskets/entities/basket.entity';
-import { Reservation } from './reservations/entities/reservation.entity';
-import { PickupLocation } from './pickup/entities/pickup-location.entity';
 
 @Module({
   imports: [
@@ -24,7 +20,7 @@ import { PickupLocation } from './pickup/entities/pickup-location.entity';
             database: ':memory:',
             dropSchema: true,
             synchronize: true,
-            entities: [User, Basket, Reservation, PickupLocation],
+            autoLoadEntities: true,
           };
         }
 
@@ -32,7 +28,7 @@ import { PickupLocation } from './pickup/entities/pickup-location.entity';
           type: 'postgres',
           url: process.env.DATABASE_URL,
           autoLoadEntities: true,
-          synchronize: true, // ✅ À désactiver pour la production
+          synchronize: true, // ⚠️ désactiver en prod
         };
       },
     }),
