@@ -7,6 +7,7 @@ import { UsersModule } from './users/users.module';
 import { BasketsModule } from './baskets/baskets.module';
 import { ReservationsModule } from './reservations/reservations.module';
 import { PickupModule } from './pickup/pickup.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { PickupModule } from './pickup/pickup.module';
     BasketsModule,
     ReservationsModule,
     PickupModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],
