@@ -6,7 +6,7 @@ export class CreatePickupDto {
 
   @IsOptional()
   @IsString()
-  adress?: string;
+  address?: string;
 
   @IsInt()
   @Min(0)

@@ -10,7 +10,7 @@ export class PickupLocation {
   name_pickup: string;
 
   @Column({ nullable: true })
-  adress: string;
+  address: string;
 
   @Column({ type: 'smallint' })
   day_of_week: number;
