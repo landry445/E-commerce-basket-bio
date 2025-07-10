@@ -33,7 +33,7 @@ export class Reservation {
   location: PickupLocation;
 
   @Column()
-  prix_centimes: number;
+  price_reservation: number;
 
   @Column({ type: 'date' })
   pickup_date: string;

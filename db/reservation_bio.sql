@@ -5,8 +5,8 @@ CREATE TYPE reservation_statut AS ENUM ('active', 'archived');
 -- TABLE pickup_locations --------------------------------------
 CREATE TABLE pickup_locations (
     id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    nom           TEXT      NOT NULL,
-    adresse       TEXT,
+    name_pickup   TEXT      NOT NULL,
+    adress        TEXT,
     day_of_week   SMALLINT  NOT NULL CHECK (day_of_week BETWEEN 0 AND 6), -- 0=dimanche, 6=samedi
     actif         BOOLEAN   NOT NULL DEFAULT TRUE
 );
@@ -14,10 +14,10 @@ CREATE TABLE pickup_locations (
 -- TABLE users --------------------------------------------------
 CREATE TABLE users (
     id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    prenom        TEXT      NOT NULL,
-    nom           TEXT      NOT NULL,
+    firstname     TEXT      NOT NULL,
+    lastname      TEXT      NOT NULL,
     email         TEXT      NOT NULL UNIQUE,
-    telephone     TEXT      NOT NULL UNIQUE,
+    phone         TEXT      NOT NULL UNIQUE,
     password_hash TEXT      NOT NULL,
     is_admin      BOOLEAN   NOT NULL DEFAULT FALSE,
     date_creation TIMESTAMPTZ NOT NULL DEFAULT now()
@@ -26,27 +26,27 @@ CREATE TABLE users (
 -- TABLE baskets -----------------------------------------------
 CREATE TABLE baskets (
     id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    nom           TEXT      NOT NULL,
-    prix_centimes INTEGER   NOT NULL,
+    name_basket   TEXT      NOT NULL,
+    price_basket  INTEGER   NOT NULL,
     description   TEXT,
-    image_url     TEXT,
+    image_basket  TEXT,
     actif         BOOLEAN   NOT NULL DEFAULT TRUE,
     date_creation TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
 -- TABLE reservations ------------------------------------------
 CREATE TABLE reservations (
-    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id         UUID      NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    basket_id       UUID      NOT NULL REFERENCES baskets(id),
-    location_id     UUID      NOT NULL REFERENCES pickup_locations(id),
-    prix_centimes   INTEGER   NOT NULL,
-    pickup_date     DATE      NOT NULL,
-    quantity        SMALLINT  NOT NULL DEFAULT 1 CHECK (quantity >= 1),
-    statut          reservation_statut NOT NULL DEFAULT 'active',
-    email_sent_at   TIMESTAMPTZ,
-    sms_sent_at     TIMESTAMPTZ,
-    date_creation   TIMESTAMPTZ NOT NULL DEFAULT now()
+    id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id             UUID      NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    basket_id           UUID      NOT NULL REFERENCES baskets(id),
+    location_id         UUID      NOT NULL REFERENCES pickup_locations(id),
+    price_reservation   INTEGER   NOT NULL,
+    pickup_date         DATE      NOT NULL,
+    quantity            SMALLINT  NOT NULL DEFAULT 1 CHECK (quantity >= 1),
+    statut              reservation_statut NOT NULL DEFAULT 'active',
+    email_sent_at       TIMESTAMPTZ,
+    sms_sent_at         TIMESTAMPTZ,
+    date_creation       TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
 -- Index pour affichage rapide par date ------------------------
@@ -132,10 +132,10 @@ $$;
 -----------------------------------------------------------------
 CREATE VIEW v_sms_reminders AS
 SELECT r.id,
-       u.prenom,
-       u.telephone,
-       b.nom        AS panier,
-       l.nom        AS lieu,
+       u.firstname,
+       u.phone,
+       b.name_basket AS panier,
+       l.name_pickup AS lieu,
        r.pickup_date
 FROM   reservations r
 JOIN   users u   ON u.id = r.user_id
@@ -160,6 +160,6 @@ $$;
 
 -----------------------------------------------------------------
 --  Données initiales ------------------------------------------
-INSERT INTO pickup_locations (nom, adresse, day_of_week)
+INSERT INTO pickup_locations (name_pickup, adress, day_of_week)
 VALUES ('Gare',   'Adresse de la gare',   2), -- mardi
        ('Marché', 'Adresse du marché',    6); -- samedi

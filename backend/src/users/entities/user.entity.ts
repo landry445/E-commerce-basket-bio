@@ -7,16 +7,16 @@ export class User {
   id: string;
 
   @Column()
-  prenom: string;
+  firstname: string;
 
   @Column()
-  nom: string;
+  lastname: string;
 
   @Column({ unique: true })
   email: string;
 
   @Column({ unique: true })
-  telephone: string;
+  phone: string;
 
   @Column({ unique: true })
   password_hash: string;
