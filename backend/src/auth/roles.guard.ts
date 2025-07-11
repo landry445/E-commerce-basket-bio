@@ -1,15 +1,33 @@
-import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
+// src/auth/roles.guard.ts
+import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
+import { ROLES_KEY } from './roles.decorator';
+import { Role } from './role.enum';
 
 @Injectable()
 export class RolesGuard implements CanActivate {
-  constructor(private reflector: Reflector) {}
+  constructor(private readonly reflector: Reflector) {}
 
   canActivate(context: ExecutionContext): boolean {
-    const roles = this.reflector.get<string[]>('roles', context.getHandler());
-    if (!roles || roles.length === 0) return true;
-    const user = context.switchToHttp().getRequest().user;
-    if (!user) return false;
-    return roles.includes(user.is_admin ? 'admin' : 'client');
+    const requiredRoles = this.reflector.getAllAndOverride<Role[]>(ROLES_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
+
+    // Aucune restriction détectée
+    if (!requiredRoles || requiredRoles.length === 0) {
+      return true;
+    }
+
+    const { user } = context.switchToHttp().getRequest();
+
+    // L’auth guard précédent place déjà user dans la requête
+    if (!user) {
+      return false;
+    }
+
+    const currentRole: Role = user.is_admin ? Role.Admin : Role.Client;
+
+    return requiredRoles.includes(currentRole);
   }
 }
