@@ -33,10 +33,10 @@ describe('UsersService', () => {
 
   it('should hash the password and return filtered user', async () => {
     const dto: CreateUserDto = {
-      prenom: 'Alice',
-      nom: 'Durand',
+      firstname: 'Alice',
+      lastname: 'Durand',
       email: 'alice@example.com',
-      telephone: '+33612345678',
+      phone: '+33612345678',
       password: 'secure123',
     };
 
@@ -44,10 +44,10 @@ describe('UsersService', () => {
 
     const savedUser: User = {
       id: 'user-id',
-      prenom: 'Alice',
-      nom: 'Durand',
+      firstname: 'Alice',
+      lastname: 'Durand',
       email: 'alice@example.com',
-      telephone: '+33612345678',
+      phone: '+33612345678',
       password_hash: mockHashed,
       is_admin: false,
       date_creation: new Date(),
@@ -62,19 +62,21 @@ describe('UsersService', () => {
     const result = await service.create(dto);
 
     expect(bcrypt.hash).toHaveBeenCalledWith('secure123', 10);
-    expect(repo.create).toHaveBeenCalledWith(expect.objectContaining({
-        prenom: dto.prenom,
-        nom: dto.nom,
+    expect(repo.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        firstname: dto.firstname,
+        lastname: dto.lastname,
         email: dto.email,
-        telephone: dto.telephone,
+        phone: dto.phone,
         password_hash: mockHashed,
-      }));
+      }),
+    );
     expect(result).toEqual({
       id: savedUser.id,
-      prenom: 'Alice',
-      nom: 'Durand',
+      firstname: 'Alice',
+      lastname: 'Durand',
       email: 'alice@example.com',
-      telephone: '+33612345678',
+      phone: '+33612345678',
       is_admin: false,
       date_creation: savedUser.date_creation,
     });

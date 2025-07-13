@@ -6,6 +6,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UserResponseDto } from './dto/user-response.dto';
 import * as bcrypt from 'bcrypt';
 import { plainToInstance } from 'class-transformer';
+import { AdminUserResponseDto } from 'src/admin/dto/admin-user-response.dto';
 
 @Injectable()
 export class UsersService {
@@ -44,6 +45,13 @@ export class UsersService {
   async findAllSafe(): Promise<UserResponseDto[]> {
     const users = await this.userRepo.find();
     return users.map((u) => this.toResponse(u));
+  }
+
+  async findAllAdmin(): Promise<AdminUserResponseDto[]> {
+    const users = await this.userRepo.find();
+    return users.map((u) =>
+      plainToInstance(AdminUserResponseDto, u, { excludeExtraneousValues: true }),
+    );
   }
 
   private toResponse(user: User): UserResponseDto {

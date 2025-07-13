@@ -4,6 +4,7 @@ import { RolesGuard } from '../auth/roles.guard';
 import { Role } from '../auth/role.enum';
 import { UsersService } from '../users/users.service';
 import { Roles } from '../auth/roles.decorator';
+import { AdminUserResponseDto } from './dto/admin-user-response.dto';
 
 @Controller('admin')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -12,9 +13,8 @@ export class AdminController {
   constructor(private usersService: UsersService) {}
 
   @Get('users')
-  findAllUsers() {
-    // Attention : expose une liste de users sans password_hash
-    // Utilise une méthode dédiée si besoin pour un vrai listing (cf. plus bas)
-    return this.usersService.findAllSafe();
-  }
+async findAllUsers(): Promise<AdminUserResponseDto[]> {
+  return this.usersService.findAllAdmin();
+}
+
 }

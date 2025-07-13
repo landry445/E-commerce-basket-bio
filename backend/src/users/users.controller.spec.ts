@@ -33,10 +33,10 @@ describe('UsersController', () => {
 
   it('should call usersService.create with correct data', async () => {
     const dto: CreateUserDto = {
-      prenom: 'Alice',
-      nom: 'Durand',
+      firstname: 'Alice',
+      lastname: 'Durand',
       email: 'alice@example.com',
-      telephone: '+33612345678',
+      phone: '+33612345678',
       password: 'secure123',
     };
 
