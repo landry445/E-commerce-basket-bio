@@ -41,6 +41,11 @@ export class UsersService {
     return this.userRepo.findOne({ where: { id } });
   }
 
+  async findAllSafe(): Promise<UserResponseDto[]> {
+    const users = await this.userRepo.find();
+    return users.map((u) => this.toResponse(u));
+  }
+
   private toResponse(user: User): UserResponseDto {
     return plainToInstance(UserResponseDto, user, {
       excludeExtraneousValues: true,

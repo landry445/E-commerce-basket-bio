@@ -2,11 +2,11 @@ import { IsString, IsOptional, IsInt, Min, Max } from 'class-validator';
 
 export class CreatePickupDto {
   @IsString()
-  nom: string;
+  name_pickup: string;
 
   @IsOptional()
   @IsString()
-  adresse?: string;
+  address?: string;
 
   @IsInt()
   @Min(0)

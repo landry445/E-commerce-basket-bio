@@ -6,16 +6,16 @@ export class UserResponseDto {
   id: string;
 
   @Expose()
-  prenom: string;
+  firstname: string;
 
   @Expose()
-  nom: string;
+  lastname: string;
 
   @Expose()
   email: string;
 
   @Expose()
-  telephone: string;
+  phone: string;
 
   @Expose()
   is_admin: boolean;

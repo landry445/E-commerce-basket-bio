@@ -12,7 +12,7 @@ export class CreateReservationDto {
 
   @IsInt()
   @Min(1)
-  prix_centimes: number;
+  price_reservation: number;
 
   @IsDateString()
   pickup_date: string;
