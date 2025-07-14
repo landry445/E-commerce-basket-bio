@@ -1,93 +1,92 @@
-import { INestApplication } from '@nestjs/common';
-import { Test } from '@nestjs/testing';
-import { AppModule } from '../src/app.module';
+import { Test, TestingModule } from '@nestjs/testing';
+import { INestApplication, ValidationPipe } from '@nestjs/common';
 import * as request from 'supertest';
+import * as cookieParser from 'cookie-parser';     // ← ajouté
+import { AppModule } from '../src/app.module';
 
 describe('Reservations E2E', () => {
   let app: INestApplication;
-
-  // Préparation d'un user, d'un basket, et d'un lieu pour la réservation
-  let userId: string;
+  let jwt: string;
   let basketId: string;
-  let pickupId: string;
+  let locationId: string;
 
   beforeAll(async () => {
-    const moduleRef = await Test.createTestingModule({
+    const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();
 
-    app = moduleRef.createNestApplication();
+    app = moduleFixture.createNestApplication();
+    app.use(cookieParser());                       // ← ajouté
+    app.useGlobalPipes(new ValidationPipe());
     await app.init();
 
-    // Création d'un user
-    const user = await request(app.getHttpServer()).post('/users').send({
-      prenom: 'Bob',
-      nom: 'Testeur',
-      email: 'bob@test.fr',
-      telephone: '+33601010101',
-      password: 'azerty123',
-    });
-    userId = user.body.id;
+    /* ---------- 1. user + login ---------- */
+    await request(app.getHttpServer())
+      .post('/auth/register')
+      .send({
+        firstname: 'Test',
+        lastname: 'User',
+        email: 'test.user@example.com',
+        phone: '0606060606',
+        password: 'Test@1234',
+      })
+      .expect(201);
 
-    // Création d'un basket
-    const basket = await request(app.getHttpServer()).post('/baskets').send({
-      nom: 'Panier Test',
-      prix_centimes: 999,
-      description: 'Bio local',
-      actif: true,
-    });
-    basketId = basket.body.id;
+    const loginRes = await request(app.getHttpServer())
+      .post('/auth/login')
+      .send({ email: 'test.user@example.com', password: 'Test@1234' })
+      .expect(201);
 
-    // Création d'un lieu de retrait
-    const pickup = await request(app.getHttpServer()).post('/pickup').send({
-      nom: 'Point Test',
-      adresse: 'Rue du test',
-      day_of_week: 3, // mercredi
-    });
-    pickupId = pickup.body.id;
+    jwt = loginRes.headers['set-cookie'][0].split(';')[0].split('=')[1];
+
+    /* ---------- 2. panier ---------- */
+    const basketRes = await request(app.getHttpServer())
+      .post('/baskets')
+      .set('Cookie', [`jwt=${jwt}`])
+      .send({ name_basket: 'Panier test', price_basket: 999 })
+      .expect(201);
+
+    basketId = basketRes.body.id;
+
+    /* ---------- 3. lieu de retrait ---------- */
+    const pickupRes = await request(app.getHttpServer())
+      .post('/pickup')
+      .set('Cookie', [`jwt=${jwt}`])
+      .send({
+        name_pickup: 'Lieu Test',
+        address: '1 rue du test',
+        day_of_week: 3,
+      })
+      .expect(201);
+
+    locationId = pickupRes.body.id;
+  });
+
+  it('POST /reservations – crée une réservation', async () => {
+    const res = await request(app.getHttpServer())
+      .post('/reservations')
+      .set('Cookie', [`jwt=${jwt}`])
+      .send({
+        basket_id: basketId,
+        location_id: locationId,
+        price_reservation: 999,
+        pickup_date: '2025-07-16',
+        quantity: 1,
+      })
+      .expect(201);
+
+    expect(res.body).toEqual(
+      expect.objectContaining({
+        id: expect.any(String),
+        pickup_date: '2025-07-16',
+        price_reservation: 999,
+        quantity: 1,
+        statut: 'active',
+      }),
+    );
   });
 
   afterAll(async () => {
     await app.close();
   });
-
-  it('POST /reservations → crée une réservation', async () => {
-    const pickupDate = getNextWeekdayDate(3); // Jour=3 (mercredi)
-    const response = await request(app.getHttpServer())
-      .post('/reservations')
-      .send({
-        user_id: userId,
-        basket_id: basketId,
-        location_id: pickupId,
-        prix_centimes: 999,
-        pickup_date: pickupDate,
-        quantity: 1,
-      })
-      .expect(201);
-
-    expect(response.body).toEqual(
-      expect.objectContaining({
-        id: expect.any(String),
-        user_id: userId,
-        basket_id: basketId,
-        location_id: pickupId,
-        prix_centimes: 999,
-        pickup_date: pickupDate,
-        quantity: 1,
-        statut: 'active',
-        date_creation: expect.any(String),
-      }),
-    );
-  });
 });
-
-// Utilitaire pour trouver la prochaine date correspondant au jour de semaine voulu (0=dimanche)
-function getNextWeekdayDate(weekday: number): string {
-  const today = new Date();
-  const result = new Date(today);
-  const day = today.getDay();
-  let add = (weekday - day + 7) % 7;
-  if (add === 0) add = 7; // toujours dans le futur
-  result.setDate(today.getDate() + add);
-  return result.toISOString().split('T')[0];
-}

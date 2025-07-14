@@ -4,6 +4,8 @@ import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { Response, Request } from 'express';
 import { JwtAuthGuard } from './strategies/jwt-auth.guard';
+import { CreateUserDto } from '../users/dto/create-user.dto';
+import { UserResponseDto } from '../users/dto/user-response.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -37,5 +39,10 @@ export class AuthController {
   logout(@Res({ passthrough: true }) res: Response) {
     res.clearCookie('jwt');
     return { message: 'Déconnexion réussie' };
+  }
+
+  @Post('register')
+  async register(@Body() dto: CreateUserDto): Promise<UserResponseDto> {
+    return this.authService.register(dto);
   }
 }

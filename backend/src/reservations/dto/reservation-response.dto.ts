@@ -1,8 +1,8 @@
-// src/reservations/dto/reservation-response.dto.ts
 import { Expose } from 'class-transformer';
 
 export class ReservationResponseDto {
   @Expose() id: string;
+  @Expose() user_id: string;
   @Expose() basket_id: string;
   @Expose() location_id: string;
   @Expose() price_reservation: number;

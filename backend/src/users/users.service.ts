@@ -6,7 +6,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UserResponseDto } from './dto/user-response.dto';
 import * as bcrypt from 'bcrypt';
 import { plainToInstance } from 'class-transformer';
-import { AdminUserResponseDto } from 'src/admin/dto/admin-user-response.dto';
+import { AdminUserResponseDto } from '../admin/dto/admin-user-response.dto';
 
 @Injectable()
 export class UsersService {

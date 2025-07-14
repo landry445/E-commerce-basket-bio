@@ -1,13 +1,24 @@
-import { Controller, Get, Post, Body, Param, Delete, Put, ParseUUIDPipe, UseGuards, Req } from '@nestjs/common';
+// src/reservations/reservations.controller.ts
+import {
+  Controller, Get, Post, Body, Param, Delete, Put,
+  ParseUUIDPipe, UseGuards, Req
+} from '@nestjs/common';
 import { ReservationsService } from './reservations.service';
 import { CreateReservationDto } from './dto/create-reservation.dto';
 import { Reservation } from './entities/reservation.entity';
-import { JwtAuthGuard } from 'src/auth/strategies/jwt-auth.guard';
+import { JwtAuthGuard } from '../auth/strategies/jwt-auth.guard';
 import { ReservationResponseDto } from './dto/reservation-response.dto';
 
 @Controller('reservations')
 export class ReservationsController {
   constructor(private readonly reservationsService: ReservationsService) {}
+
+  /* ─────────── lecture publique ─────────── */
+  @UseGuards(JwtAuthGuard)
+  @Get('me')
+  findMyReservations(@Req() req): Promise<ReservationResponseDto[]> {
+    return this.reservationsService.findByUser(req.user.id);
+  }
 
   @Get()
   findAll(): Promise<Reservation[]> {
@@ -19,25 +30,28 @@ export class ReservationsController {
     return this.reservationsService.findOne(id);
   }
 
+  /* ─────────── opérations protégées ─────────── */
+
+  @UseGuards(JwtAuthGuard)
   @Post()
-  create(@Body() dto: CreateReservationDto): Promise<Reservation> {
-    return this.reservationsService.create(dto);
-  }
-
-  @Put(':id')
-  update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: CreateReservationDto): Promise<Reservation> {
-    return this.reservationsService.update(id, dto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id', ParseUUIDPipe) id: string): Promise<void> {
-    return this.reservationsService.remove(id);
+  create(@Body() dto: CreateReservationDto, @Req() req) {
+    return this.reservationsService.create(dto, req.user.id);
   }
 
   @UseGuards(JwtAuthGuard)
-  @Get('me')
-  async findMyReservations(@Req() req): Promise<ReservationResponseDto[]> {
-    // Affiche toutes les réservations du user connecté
-    return this.reservationsService.findByUser(req.user.id);
+  @Put(':id')
+  update(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: CreateReservationDto,
+    @Req() req
+  ) {
+    return this.reservationsService.update(id, dto, req.user.id);
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete(':id')
+  remove(@Param('id', ParseUUIDPipe) id: string, @Req() req) {
+    return this.reservationsService.remove(id, req.user.id);
+  }
+
 }

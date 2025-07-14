@@ -13,8 +13,7 @@ export class AdminController {
   constructor(private usersService: UsersService) {}
 
   @Get('users')
-async findAllUsers(): Promise<AdminUserResponseDto[]> {
-  return this.usersService.findAllAdmin();
-}
-
+  async findAllUsers(): Promise<AdminUserResponseDto[]> {
+    return this.usersService.findAllAdmin();
+  }
 }

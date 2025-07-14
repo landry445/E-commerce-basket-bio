@@ -26,10 +26,10 @@ describe('AuthController (e2e)', () => {
     // Crée un utilisateur de test
     const password = await bcrypt.hash('testpass', 10);
     await userRepository.save({
-      prenom: 'Test',
-      nom: 'User',
+      firstname: 'Test',
+      lastname: 'User',
       email: 'login-e2e@test.com',
-      telephone: '0600000000',
+      phone: '0600000000',
       password_hash: password,
       is_admin: false,
     });
