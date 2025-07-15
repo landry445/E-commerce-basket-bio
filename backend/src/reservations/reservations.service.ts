@@ -34,11 +34,7 @@ export class ReservationsService {
   }
 
   /** mise à jour seulement si la réservation appartient au user */
-  async update(
-    id: string,
-    dto: CreateReservationDto,
-    userId: string,
-  ): Promise<Reservation> {
+  async update(id: string, dto: CreateReservationDto, userId: string): Promise<Reservation> {
     const res = await this.reservationRepo.findOne({
       where: { id, user: { id: userId } },
     });
@@ -61,7 +57,7 @@ export class ReservationsService {
       relations: ['user', 'basket', 'location'],
     });
 
-    return reservations.map(r =>
+    return reservations.map((r) =>
       plainToInstance(
         ReservationResponseDto,
         {

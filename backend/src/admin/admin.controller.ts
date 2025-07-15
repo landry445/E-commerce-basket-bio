@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards } from '@nestjs/common';
+import { Controller, Delete, Get, Param, ParseUUIDPipe, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/strategies/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
 import { Role } from '../auth/role.enum';
@@ -15,5 +15,11 @@ export class AdminController {
   @Get('users')
   async findAllUsers(): Promise<AdminUserResponseDto[]> {
     return this.usersService.findAllAdmin();
+  }
+
+  @Delete('users/:id')
+  async adminDeleteUser(@Param('id', ParseUUIDPipe) id: string): Promise<{ deleted: boolean }> {
+    await this.usersService.deleteUserById(id);
+    return { deleted: true };
   }
 }

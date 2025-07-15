@@ -54,6 +54,10 @@ export class UsersService {
     );
   }
 
+  async deleteUserById(id: string): Promise<void> {
+    await this.userRepo.delete(id);
+  }
+
   private toResponse(user: User): UserResponseDto {
     return plainToInstance(UserResponseDto, user, {
       excludeExtraneousValues: true,
