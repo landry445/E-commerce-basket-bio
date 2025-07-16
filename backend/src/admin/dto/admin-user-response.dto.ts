@@ -1,4 +1,3 @@
-// src/admin/dto/admin-user-response.dto.ts
 import { Expose } from 'class-transformer';
 
 export class AdminUserResponseDto {

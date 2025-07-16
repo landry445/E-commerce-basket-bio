@@ -34,14 +34,31 @@ export class UsersService {
     return this.toResponse(user);
   }
 
-  async findByEmail(email: string): Promise<User | null> {
-    return this.userRepo.findOne({ where: { email } });
+  async findOneWithReservations(userId: string) {
+    const user = await this.userRepo.findOne({
+      where: { id: userId },
+      relations: ['reservations', 'reservations.basket'],
+      select: {
+        id: true,
+        firstname: true,
+        lastname: true,
+        email: true,
+        phone: true,
+        is_admin: true,
+        reservations: {
+          id: true,
+          pickup_date: true,
+          statut: true,
+          basket: {
+            id: true,
+            name_basket: true,
+          },
+        },
+      },
+    });
+    if (!user) throw new NotFoundException('Utilisateur non trouvé');
+    return user;
   }
-
-  async findById(id: string): Promise<User | null> {
-    return this.userRepo.findOne({ where: { id } });
-  }
-
   async findAllSafe(): Promise<UserResponseDto[]> {
     const users = await this.userRepo.find();
     return users.map((u) => this.toResponse(u));
