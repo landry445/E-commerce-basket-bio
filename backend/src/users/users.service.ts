@@ -12,7 +12,7 @@ import { AdminUserResponseDto } from '../admin/dto/admin-user-response.dto';
 export class UsersService {
   constructor(
     @InjectRepository(User)
-    private userRepo: Repository<User>,
+    private userRepo: Repository<User>
   ) {}
 
   async create(dto: CreateUserDto): Promise<UserResponseDto> {
@@ -32,6 +32,10 @@ export class UsersService {
     const user = await this.userRepo.findOne({ where: { id } });
     if (!user) throw new NotFoundException('Utilisateur non trouvé');
     return this.toResponse(user);
+  }
+
+  async findByEmail(email: string): Promise<User | null> {
+    return this.userRepo.findOne({ where: { email } });
   }
 
   async findOneWithReservations(userId: string) {
@@ -59,15 +63,11 @@ export class UsersService {
     if (!user) throw new NotFoundException('Utilisateur non trouvé');
     return user;
   }
-  async findAllSafe(): Promise<UserResponseDto[]> {
-    const users = await this.userRepo.find();
-    return users.map((u) => this.toResponse(u));
-  }
 
   async findAllAdmin(): Promise<AdminUserResponseDto[]> {
     const users = await this.userRepo.find();
     return users.map((u) =>
-      plainToInstance(AdminUserResponseDto, u, { excludeExtraneousValues: true }),
+      plainToInstance(AdminUserResponseDto, u, { excludeExtraneousValues: true })
     );
   }
 

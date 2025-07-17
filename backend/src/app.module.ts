@@ -23,6 +23,7 @@ import { AdminModule } from './admin/admin.module';
             dropSchema: true,
             synchronize: true,
             autoLoadEntities: true,
+            logging: false,
           };
         }
 
@@ -31,6 +32,7 @@ import { AdminModule } from './admin/admin.module';
           url: process.env.DATABASE_URL,
           autoLoadEntities: true,
           synchronize: false,
+          logging: process.env.NODE_ENV === 'production' ? ['error'] : true,
         };
       },
     }),
