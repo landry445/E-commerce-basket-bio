@@ -23,8 +23,8 @@ describe('Pickup E2E', () => {
     const response = await request(app.getHttpServer())
       .post('/pickup')
       .send({
-        nom: 'Point Relais Bio',
-        adresse: 'Rue des légumes',
+        name_pickup: 'Point Relais Bio',
+        address: 'Rue des légumes',
         day_of_week: 2,
       })
       .expect(201);
@@ -32,8 +32,8 @@ describe('Pickup E2E', () => {
     expect(response.body).toEqual(
       expect.objectContaining({
         id: expect.any(String),
-        nom: 'Point Relais Bio',
-        adresse: 'Rue des légumes',
+        name_pickup: 'Point Relais Bio',
+        address: 'Rue des légumes',
         day_of_week: 2,
         actif: true,
       }),
@@ -46,7 +46,7 @@ describe('Pickup E2E', () => {
     expect(Array.isArray(response.body)).toBe(true);
     expect(response.body.length).toBeGreaterThanOrEqual(1);
     expect(response.body[0]).toHaveProperty('id');
-    expect(response.body[0]).toHaveProperty('nom');
+    expect(response.body[0]).toHaveProperty('name_pickup');
     expect(response.body[0]).toHaveProperty('day_of_week');
   });
 });
