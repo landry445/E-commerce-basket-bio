@@ -1,20 +1,20 @@
-# Utilise Node.js 20 comme base
-FROM node:20
+# Utilise l'image officielle Node LTS
+FROM node:20.12.2-alpine3.19
 
-# Définit le dossier de travail dans le conteneur
 WORKDIR /app
 
-# Copie les fichiers de dépendances
-COPY package*.json ./
-
 # Installe les dépendances
+COPY package.json package-lock.json* ./
 RUN npm install
 
-# Copie tout le code du backend
+# Copie tout le code
 COPY . .
 
-# Expose le port 3000 (par défaut pour NestJS, adapte si besoin)
-EXPOSE 3000
+# Build le projet
+RUN npm run build
 
-# Commande de démarrage
-CMD ["npm", "run", "start:dev"]
+EXPOSE 3001
+
+# Par défaut, démarre en prod
+CMD ["npm", "run", "start:prod"]
+#Pour la prod : tu peux remplacer par npm run build && npm run start
