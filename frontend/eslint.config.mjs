@@ -3,14 +3,22 @@ import { fileURLToPath } from "url";
 import { FlatCompat } from "@eslint/eslintrc";
 
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+const __dirname  = dirname(__filename);
 
-const compat = new FlatCompat({
-  baseDirectory: __dirname,
-});
+const compat = new FlatCompat({ baseDirectory: __dirname });
 
+/** @type {import("eslint").Linter.FlatConfig[]} */
 const eslintConfig = [
   ...compat.extends("next/core-web-vitals", "next/typescript"),
+
+  // 👉 Override pour les fichiers de config Node (CommonJS)
+  {
+    files: ["tailwind.config.js", "postcss.config.js"],
+    languageOptions: { sourceType: "script" },        // traite comme CommonJS
+    rules: {
+      "@typescript-eslint/no-require-imports": "off",
+    },
+  },
 ];
 
 export default eslintConfig;

@@ -23,7 +23,18 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en, fr">
+      <head>
+        {/* Tes imports Google Fonts personnalisés */}
+        <link
+          href="https://fonts.googleapis.com/css?family=Dancing+Script:700&display=swap"
+          rel="stylesheet"
+        />
+        <link
+          href="https://fonts.googleapis.com/css?family=Merriweather:400,700&display=swap"
+          rel="stylesheet"
+        />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >

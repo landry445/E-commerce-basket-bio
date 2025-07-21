@@ -1,24 +1,26 @@
 @import "tailwindcss";
 
+/* tes variables déjà présentes */
 :root {
   --background: #ffffff;
   --foreground: #171717;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+/* ↓↓↓ ajoute/complète ceci ↓↓↓ */
+@theme {
+  /* Couleurs personnalisées */
+  --color-primary:  #5B8C51; /* vert principal */
+  --color-dark:     #404A3D; /* vert foncé */
+  --color-accent:   #0D920D; /* vert vif */
+  --color-yellow:   #EDD05E; /* jaune clair */
+  --color-light:    #F8F7F0; /* beige clair */
+
+  /* Polices déjà définies plus haut si besoin */
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+/* éventuels styles globaux */
 body {
   background: var(--background);
   color: var(--foreground);
