@@ -12,5 +12,35 @@ services:
       - db-data:/var/lib/postgresql/data
     restart: always
 
+  backend:
+    build:
+      context: ./backend
+    container_name: panier-api
+    ports:
+      - "3001:3001"
+    depends_on:
+      - db
+    env_file:
+      - ./backend/.env
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    restart: always
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: panier-frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    environment:
+      - NODE_ENV=development
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    restart: always
+
 volumes:
   db-data:
