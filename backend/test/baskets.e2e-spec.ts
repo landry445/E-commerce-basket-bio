@@ -23,8 +23,8 @@ describe('Baskets E2E', () => {
     const response = await request(app.getHttpServer())
       .post('/baskets')
       .send({
-        nom: 'Panier test',
-        prix_centimes: 1200,
+        name_basket: 'Panier test',
+        price_basket: 1200,
         description: 'Panier bio e2e',
         image_url: 'https://exemple.com/image.jpg',
         actif: true,
@@ -34,8 +34,8 @@ describe('Baskets E2E', () => {
     expect(response.body).toEqual(
       expect.objectContaining({
         id: expect.any(String),
-        nom: 'Panier test',
-        prix_centimes: 1200,
+        name_basket: 'Panier test',
+        price_basket: 1200,
         description: 'Panier bio e2e',
         image_url: 'https://exemple.com/image.jpg',
         actif: true,
@@ -53,7 +53,7 @@ describe('Baskets E2E', () => {
     // On attend au moins un panier (celui créé juste avant)
     expect(response.body.length).toBeGreaterThanOrEqual(1);
     expect(response.body[0]).toHaveProperty('id');
-    expect(response.body[0]).toHaveProperty('nom');
-    expect(response.body[0]).toHaveProperty('prix_centimes');
+    expect(response.body[0]).toHaveProperty('name_basket');
+    expect(response.body[0]).toHaveProperty('price_basket');
   });
 });

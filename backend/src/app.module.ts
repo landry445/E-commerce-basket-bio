@@ -8,6 +8,7 @@ import { BasketsModule } from './baskets/baskets.module';
 import { ReservationsModule } from './reservations/reservations.module';
 import { PickupModule } from './pickup/pickup.module';
 import { AuthModule } from './auth/auth.module';
+import { AdminModule } from './admin/admin.module';
 
 @Module({
   imports: [
@@ -29,7 +30,7 @@ import { AuthModule } from './auth/auth.module';
           type: 'postgres',
           url: process.env.DATABASE_URL,
           autoLoadEntities: true,
-          synchronize: true, // ⚠️ désactiver en prod
+          synchronize: false,
         };
       },
     }),
@@ -39,6 +40,7 @@ import { AuthModule } from './auth/auth.module';
     ReservationsModule,
     PickupModule,
     AuthModule,
+    AdminModule,
   ],
   controllers: [AppController],
   providers: [AppService],

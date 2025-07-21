@@ -33,7 +33,7 @@ export class Reservation {
   location: PickupLocation;
 
   @Column()
-  prix_centimes: number;
+  price_reservation: number;
 
   @Column({ type: 'date' })
   pickup_date: string;
@@ -60,7 +60,9 @@ export class Reservation {
   })
   sms_sent_at: Date | null;
 
-  @CreateDateColumn({ name: 'date_creation', type: process.env.NODE_ENV === 'test' ? 'datetime' : 'timestamptz' })
+  @CreateDateColumn({
+    name: 'date_creation',
+    type: process.env.NODE_ENV === 'test' ? 'datetime' : 'timestamptz',
+  })
   date_creation: Date;
-
 }

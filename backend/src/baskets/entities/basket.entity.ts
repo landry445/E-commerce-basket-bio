@@ -7,16 +7,16 @@ export class Basket {
   id: string;
 
   @Column()
-  nom: string;
+  name_basket: string;
 
   @Column()
-  prix_centimes: number;
+  price_basket: number;
 
   @Column({ nullable: true })
   description: string;
 
   @Column({ nullable: true })
-  image_url: string;
+  image_basket: string;
 
   @Column({ default: true })
   actif: boolean;

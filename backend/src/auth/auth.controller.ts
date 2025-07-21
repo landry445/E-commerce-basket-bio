@@ -1,16 +1,16 @@
-// src/auth/auth.controller.ts
-import {UnauthorizedException, Controller, Post, Body, Res, Get, UseGuards, Req} from '@nestjs/common';
+import { UnauthorizedException, Controller, Post, Body, Res } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
-import { Response, Request } from 'express';
-import { JwtAuthGuard } from './strategies/jwt-auth.guard';
+import { Response } from 'express';
+import { CreateUserDto } from '../users/dto/create-user.dto';
+import { UserResponseDto } from '../users/dto/user-response.dto';
 
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
 
   @Post('login')
-  async login(@Body() loginDto: LoginDto,@Res({ passthrough: true }) res: Response) {
+  async login(@Body() loginDto: LoginDto, @Res({ passthrough: true }) res: Response) {
     const user = await this.authService.validateUser(loginDto.email, loginDto.password);
     if (!user) throw new UnauthorizedException('Identifiants invalides');
     const token = await this.authService.login(user);
@@ -23,19 +23,14 @@ export class AuthController {
     return { message: 'Connexion réussie' };
   }
 
-  @UseGuards(JwtAuthGuard)
-  @Get('me')
-  me(@Req() req: Request) {
-    // user injecté par le guard
-    // on filtre ce qu’on retourne (pas de password)
-    const user = { ...req['user'] };
-    delete user.password_hash;
-    return user;
-  }
-
   @Post('logout')
   logout(@Res({ passthrough: true }) res: Response) {
     res.clearCookie('jwt');
     return { message: 'Déconnexion réussie' };
+  }
+
+  @Post('register')
+  async register(@Body() dto: CreateUserDto): Promise<UserResponseDto> {
+    return this.authService.register(dto);
   }
 }

@@ -1,14 +1,12 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
-import { CreateUserDto } from './dto/create-user.dto';
 
 describe('UsersController', () => {
   let controller: UsersController;
   let usersService: jest.Mocked<UsersService>;
 
   const mockUsersService: Partial<jest.Mocked<UsersService>> = {
-    create: jest.fn(),
     findOne: jest.fn(),
   };
 
@@ -31,27 +29,25 @@ describe('UsersController', () => {
     expect(controller).toBeDefined();
   });
 
-  it('should call usersService.create with correct data', async () => {
-    const dto: CreateUserDto = {
-      prenom: 'Alice',
-      nom: 'Durand',
+  it('should return user profile for connected user', async () => {
+    const userId = 'uuid-123';
+    const userProfile = {
+      id: userId,
+      firstname: 'Alice',
+      lastname: 'Durand',
       email: 'alice@example.com',
-      telephone: '+33612345678',
-      password: 'secure123',
-    };
-
-    const userResponse = {
-      id: 'uuid-123',
-      ...dto,
-      is_admin: false,
+      phone: '+33612345678',
       date_creation: new Date(),
     };
 
-    usersService.create.mockResolvedValue(userResponse);
+    usersService.findOne.mockResolvedValue(userProfile);
 
-    const result = await controller.create(dto);
+    // Simule un objet req avec req.user.id
+    const req = { user: { id: userId } };
 
-    expect(usersService.create).toHaveBeenCalledWith(dto);
-    expect(result).toEqual(userResponse);
+    const result = await controller.getProfile(req as any);
+
+    expect(usersService.findOne).toHaveBeenCalledWith(userId);
+    expect(result).toEqual(userProfile);
   });
 });

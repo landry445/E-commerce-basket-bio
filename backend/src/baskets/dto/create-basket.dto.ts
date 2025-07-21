@@ -2,11 +2,11 @@ import { IsString, IsInt, IsOptional, IsBoolean, Min } from 'class-validator';
 
 export class CreateBasketDto {
   @IsString()
-  nom: string;
+  name_basket: string;
 
   @IsInt()
   @Min(0)
-  prix_centimes: number;
+  price_basket: number;
 
   @IsOptional()
   @IsString()
@@ -14,7 +14,7 @@ export class CreateBasketDto {
 
   @IsOptional()
   @IsString()
-  image_url?: string;
+  image_basket?: string;
 
   @IsOptional()
   @IsBoolean()

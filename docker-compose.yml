@@ -6,8 +6,8 @@ services:
     container_name: panier-db
     ports:
       - "5433:5432"
-    environment:
-      - .env
+    env_file:
+      - ./backend/.env
     volumes:
       - db-data:/var/lib/postgresql/data
     restart: always
