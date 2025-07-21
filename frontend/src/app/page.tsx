@@ -1,5 +1,5 @@
-import ColorsPreview from "./components/ColorsPreview";
+import Navbar from "./components/layout/Navbar";
 
 export default function Home() {
-  return <ColorsPreview />;
+  return <Navbar />;
 }
