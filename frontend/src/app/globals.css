@@ -2,7 +2,7 @@
 
 /* tes variables déjà présentes */
 :root {
-  --background: #ffffff;
+  --background: #F8F7F0;
   --foreground: #171717;
 }
 
@@ -18,6 +18,8 @@
   /* Polices déjà définies plus haut si besoin */
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-sans: "Nunito", Arial, sans-serif;       /* Navbar et texte */
+  --font-pacifico: "Pacifico", cursive;           /* Titres */
 }
 
 /* éventuels styles globaux */

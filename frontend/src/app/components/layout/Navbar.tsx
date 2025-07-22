@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
+import NavbarLinks from "./NavbarLinks";
+import NavbarUserButton from "./NavbarUserButton";
 
 type NavbarProps = {
   user?: { firstname: string; isAdmin: boolean };
@@ -16,128 +17,88 @@ export default function Navbar({ user, onLogout }: NavbarProps) {
     <nav className="flex items-center justify-between px-8 py-2 bg-light border-b relative">
       {/* Logo */}
       <div className="flex items-center gap-2">
-        <Image src="/logo-frog.png" alt="Logo frog" width={90} height={90} />
+        <Image src="/logo-frog.png" alt="Logo frog" width={40} height={40} />
       </div>
-      {/* Liens */}
-      <ul className="flex gap-8 font-sans text-[1rem] font-semibold text-dark">
-        <li>
-          <Link href="/" className="hover:underline">
-            Accueil
-          </Link>
-        </li>
-        <li>
-          <Link href="/paniers" className="hover:underline">
-            Nos paniers
-          </Link>
-        </li>
-        <li>
-          <Link href="/maraicher" className="hover:underline">
-            Votre maraîcher
-          </Link>
-        </li>
-        <li>
-          <Link href="/contact" className="hover:underline">
-            Contact
-          </Link>
-        </li>
-      </ul>
-      {/* Bouton utilisateur desktop */}
+
+      {/* Liens desktop */}
+      <div className="hidden md:flex flex-1 items-center justify-center">
+        <NavbarLinks />
+      </div>
+
+      {/* Utilisateur desktop */}
       <div className="hidden md:flex items-center">
-        {user ? (
-          <button
-            onClick={onLogout}
-            className="ml-4 px-3 py-1 rounded bg-primary hover:brightness-95 text-white text-sm"
-          >
-            Déconnexion
-          </button>
-        ) : (
-          <a
-            href="/login"
-            className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-white border border-dark text-dark hover:bg-primary hover:text-white transition"
-            aria-label="Connexion"
-          >
-            <svg viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
-              <path
-                fillRule="evenodd"
-                d="M10 10a4 4 0 100-8 4 4 0 000 8zm-6 8a8 8 0 1116 0H4z"
-                clipRule="evenodd"
-              />
-            </svg>
-          </a>
-        )}
+        <NavbarUserButton user={user} onLogout={onLogout} />
       </div>
-      {/* Bouton burger (mobile uniquement) */}
+
+      {/* Burger mobile */}
       <button
-        onClick={() => setOpen(!open)}
+        onClick={() => setOpen(true)}
         className="flex md:hidden p-2 rounded hover:bg-primary/10 transition"
         aria-label="Ouvrir le menu"
       >
-        <svg
-          viewBox="0 0 20 20"
-          fill="currentColor"
-          className="w-7 h-7 text-dark"
-        >
-          <path d="M3 6h14M3 10h14M3 14h14" />
+        {/* Logo burger SVG */}
+        <svg viewBox="0 0 20 20" fill="none" className="w-8 h-8">
+          <rect y="4" width="20" height="2" rx="1" fill="#5B8C51" />
+          <rect y="9" width="20" height="2" rx="1" fill="#5B8C51" />
+          <rect y="14" width="20" height="2" rx="1" fill="#5B8C51" />
         </svg>
       </button>
-      {/* Menu mobile déroulant */}
-      {open && (
-        <div className="absolute left-0 top-full w-full bg-light shadow-md border-b md:hidden z-40">
-          <ul className="flex flex-col items-center gap-3 py-4 font-sans font-semibold text-dark">
-            <li>
-              <Link href="/" onClick={() => setOpen(false)}>
-                Accueil
-              </Link>
-            </li>
-            <li>
-              <Link href="/paniers" onClick={() => setOpen(false)}>
-                Nos paniers
-              </Link>
-            </li>
-            <li>
-              <Link href="/maraicher" onClick={() => setOpen(false)}>
-                Votre maraîcher
-              </Link>
-            </li>
-            <li>
-              <Link href="/contact" onClick={() => setOpen(false)}>
-                Contact
-              </Link>
-            </li>
-            <li className="mt-2">
-              {user ? (
-                <button
-                  onClick={() => {
-                    setOpen(false);
-                    onLogout?.();
-                  }}
-                  className="px-3 py-1 rounded bg-primary hover:brightness-95 text-white text-sm"
-                >
-                  Déconnexion
-                </button>
-              ) : (
-                <Link
-                  href="/login"
-                  onClick={() => setOpen(false)}
-                  className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-white border border-dark text-dark hover:bg-primary hover:text-white transition"
-                  aria-label="Connexion"
-                >
-                  <svg
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                    className="w-5 h-5"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M10 10a4 4 0 100-8 4 4 0 000 8zm-6 8a8 8 0 1116 0H4z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                </Link>
-              )}
-            </li>
-          </ul>
+
+      {/* Drawer menu mobile */}
+      <div
+        className={`fixed top-0 right-0 h-full w-64 bg-light border-l z-50 transform transition-transform duration-300 ease-in-out ${
+          open ? "translate-x-0" : "translate-x-full"
+        } md:hidden`}
+      >
+        <div className="flex flex-col h-full p-6">
+          <div className="flex items-center justify-between mb-8">
+            <div className="mt-4">
+              <NavbarUserButton
+                user={user}
+                onLogout={onLogout}
+                isMobile
+                onAfterClick={() => setOpen(false)}
+              />
+            </div>
+            <button
+              className="p-2 rounded hover:bg-primary/10"
+              aria-label="Fermer le menu"
+              onClick={() => setOpen(false)}
+            >
+              <svg viewBox="0 0 20 20" fill="none" className="w-6 h-6">
+                <line
+                  x1="4"
+                  y1="4"
+                  x2="16"
+                  y2="16"
+                  stroke="#5B8C51"
+                  strokeWidth="2"
+                />
+                <line
+                  x1="16"
+                  y1="4"
+                  x2="4"
+                  y2="16"
+                  stroke="#5B8C51"
+                  strokeWidth="2"
+                />
+              </svg>
+            </button>
+          </div>
+          <NavbarLinks
+            onNavigate={() => setOpen(false)}
+            className="flex flex-col gap-6"
+          />
         </div>
+      </div>
+
+      {/* Overlay mobile */}
+      {open && (
+        <div
+          className="fixed inset-0 bg-black/30 z-40 md:hidden"
+          onClick={() => setOpen(false)}
+          aria-hidden
+        />
       )}
     </nav>
   );
