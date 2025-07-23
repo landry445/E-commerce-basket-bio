@@ -1,7 +1,9 @@
 "use client";
 // import Navbar from "./components/layout/navbar/Navbar";
 // import SidebarAdmin from "./components/sidebarAdmin/SidebarAdmin";
-import FormPanier from "./components/form/FormPanier";
+// import FormPanier from "./components/form/FormPanier";
+import AdminPage from "./admin/paniers/page";
+
 
 export default function Home() {
   return (
@@ -14,12 +16,13 @@ export default function Home() {
       // Navigation ou setState ici, ex :
       // router.push(`/admin/${}`)
       /> */}
-      <FormPanier
+      {/* <FormPanier
         onSubmit={(values) => {
           // handle form submission here
           console.log("Form submitted:", values);
         }}
-      />
+      /> */}
+      <AdminPage />
     </>
   );
 }
