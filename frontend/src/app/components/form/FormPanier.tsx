@@ -29,7 +29,7 @@ export default function FormPanier({ initialValues = {}, mode = "create", onSubm
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex w-full max-w-4xl gap-8 mt-2">
+    <form onSubmit={handleSubmit} className="flex w-full gap-8 mt-2">
       {/* Colonne gauche */}
       <div className="flex-1 flex flex-col gap-4">
         <input

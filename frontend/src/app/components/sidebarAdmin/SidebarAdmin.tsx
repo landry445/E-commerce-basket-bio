@@ -14,7 +14,7 @@ export default function SidebarAdmin({
   onNavigate,
 }: SidebarAdminProps) {
   return (
-    <aside className="flex flex-col items-center bg-yellow rounded-2xl py-12 px-6 shadow-sm min-h-[90vh] mt-6 mb-6 ml-4 w-56">
+    <aside className=" relative flex flex-col items-center bg-yellow rounded-2xl py-12 px-6 shadow-sm min-h-[90vh] mt-6 mb-6 ml-4 w-56">
       {/* Titre */}
       <span className="font-sans text-lg font-bold text-dark mb-4 text-center">
         Palette
