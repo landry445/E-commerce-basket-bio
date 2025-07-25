@@ -21,7 +21,7 @@ export default function FormPanier({ initialValues = {}, mode = "create", onSubm
   const [description, setDescription] = useState(
     initialValues.description ?? ""
   );
-  const [image, setImage] = useState(initialValues.image ?? "");
+  const [image] = useState(initialValues.image ?? "");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

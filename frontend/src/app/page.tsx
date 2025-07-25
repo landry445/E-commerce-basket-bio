@@ -2,8 +2,6 @@
 // import Navbar from "./components/layout/navbar/Navbar";
 // import SidebarAdmin from "./components/sidebarAdmin/SidebarAdmin";
 // import FormPanier from "./components/form/FormPanier";
-import AdminPage from "./admin/paniers/page";
-
 
 export default function Home() {
   return (
@@ -22,7 +20,6 @@ export default function Home() {
           console.log("Form submitted:", values);
         }}
       /> */}
-      <AdminPage />
     </>
   );
 }

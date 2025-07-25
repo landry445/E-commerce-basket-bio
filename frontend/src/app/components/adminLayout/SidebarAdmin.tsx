@@ -1,20 +1,20 @@
 "use client";
 import Image from "next/image";
 import SidebarNavButton from "./SidebarNavButton";
+import { usePathname, useRouter } from "next/navigation";
 
 type SidebarAdminProps = {
-  userName?: string; // Prénom ou pseudo de l’admin
-  activePage?: "commande" | "panier" | "utilisateur";
-  onNavigate?: (section: string) => void;
+  userName?: string;
 };
 
-export default function SidebarAdmin({
-  userName = "Adri",
-  activePage,
-  onNavigate,
-}: SidebarAdminProps) {
+export default function SidebarAdmin({ userName = "Adri" }: SidebarAdminProps) {
+  const pathname = usePathname();
+  const router = useRouter();
+
+  const isActive = (segment: string) => pathname.includes(`/admin/${segment}`);
+
   return (
-    <aside className=" relative flex flex-col items-center bg-yellow rounded-2xl py-12 px-6 shadow-sm min-h-[90vh] mt-6 mb-6 ml-4 w-56">
+    <aside className="relative flex flex-col items-center bg-yellow rounded-2xl py-12 px-6 shadow-sm min-h-[90vh] mt-6 mb-6 ml-4 w-56">
       {/* Titre */}
       <span className="font-sans text-lg font-bold text-dark mb-4 text-center">
         Palette
@@ -36,22 +36,23 @@ export default function SidebarAdmin({
           {userName}
         </span>
       </div>
+
       {/* Navigation */}
       <nav className="flex flex-col gap-8 w-full mt-16">
         <SidebarNavButton
           label="Commande"
-          active={activePage === "commande"}
-          onClick={() => onNavigate?.("commande")}
+          active={isActive("commandes")}
+          onClick={() => router.push("/admin/commandes")}
         />
         <SidebarNavButton
           label="Panier"
-          active={activePage === "panier"}
-          onClick={() => onNavigate?.("panier")}
+          active={isActive("paniers")}
+          onClick={() => router.push("/admin/paniers")}
         />
         <SidebarNavButton
           label="Utilisateur"
-          active={activePage === "utilisateur"}
-          onClick={() => onNavigate?.("utilisateur")}
+          active={isActive("users")}
+          onClick={() => router.push("/admin/users")}
         />
       </nav>
     </aside>
