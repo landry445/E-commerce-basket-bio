@@ -1,4 +1,4 @@
-import { UnauthorizedException, Controller, Post, Body, Res } from '@nestjs/common';
+import { UnauthorizedException, Controller, Post, Body, Res, HttpCode } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { Response } from 'express';
@@ -10,6 +10,7 @@ export class AuthController {
   constructor(private authService: AuthService) {}
 
   @Post('login')
+  @HttpCode(200)
   async login(@Body() loginDto: LoginDto, @Res({ passthrough: true }) res: Response) {
     const user = await this.authService.validateUser(loginDto.email, loginDto.password);
     if (!user) throw new UnauthorizedException('Identifiants invalides');

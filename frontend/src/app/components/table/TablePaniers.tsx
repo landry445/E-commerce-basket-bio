@@ -23,7 +23,7 @@ export default function TablePaniers({ paniers, onEdit, onDelete }: Props) {
         <thead className="bg-yellow text-dark">
           <tr>
             <th className="text-left py-2 px-4">Nom</th>
-            <th className="text-left py-2 px-4">Prix</th>
+            <th className="text-left py-2 px-4">Prix (€)</th>
             <th className="text-left py-2 px-4">Description</th>
             <th className="text-left py-2 px-4">Image</th>
             <th className="text-center py-2 px-4">Activation</th>
@@ -44,13 +44,17 @@ export default function TablePaniers({ paniers, onEdit, onDelete }: Props) {
                 <td className="py-2 px-4">{p.prix}</td>
                 <td className="py-2 px-4">{p.description}</td>
                 <td className="py-2 px-4">
-                  <Image
-                    src={p.image}
-                    alt={p.nom}
-                    width={36}
-                    height={36}
-                    className="rounded shadow inline-block"
-                  />
+                  {p.image ? (
+                    <Image
+                      src={p.image}
+                      alt={p.nom}
+                      width={36}
+                      height={36}
+                      className="rounded shadow inline-block"
+                    />
+                  ) : (
+                    <span className="italic text-gray-400">—</span>
+                  )}
                 </td>
                 <td className="py-2 px-4 text-center">
                   <input
