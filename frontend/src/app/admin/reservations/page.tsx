@@ -1,11 +1,11 @@
 "use client";
 
-import TableCommandes from "@/app/components/table/TableCommandes";
+import Tablereservation from "@/app/components/table/TableReservation";
 import AdminHeader from "@/app/components/adminLayout/AdminHeader";
 import ConfirmModal from "@/app/components/modal/ConfirmModal";
 import { useState } from "react";
 
-const MOCK_COMMANDES = [
+const MOCK_reservation = [
   {
     id: "1",
     client: "Marie Curie",
@@ -24,14 +24,14 @@ const MOCK_COMMANDES = [
   },
 ];
 
-export default function AdminCommandesPage() {
-  const [commandes, setCommandes] = useState(MOCK_COMMANDES);
+export default function AdminreservationPage() {
+  const [reservation, setReservation] = useState(MOCK_reservation);
   const [commandeASupprimer, setCommandeASupprimer] = useState<string | null>(
     null
   );
 
   const handleArchive = (id: string) => {
-    setCommandes((prev) =>
+    setReservation((prev) =>
       prev.map((c) => (c.id === id ? { ...c, statut: "archived" as const } : c))
     );
   };
@@ -42,16 +42,16 @@ export default function AdminCommandesPage() {
 
   const handleDeleteConfirm = () => {
     if (commandeASupprimer) {
-      setCommandes((prev) => prev.filter((c) => c.id !== commandeASupprimer));
+      setReservation((prev) => prev.filter((c) => c.id !== commandeASupprimer));
       setCommandeASupprimer(null);
     }
   };
 
   return (
     <>
-      <AdminHeader title="Commandes" />
-      <TableCommandes
-        commandes={commandes}
+      <AdminHeader title="reservation" />
+      <Tablereservation
+        reservations={reservation}
         onArchive={handleArchive}
         onDelete={confirmSuppression}
       />

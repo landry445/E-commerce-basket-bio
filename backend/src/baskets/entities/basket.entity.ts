@@ -18,6 +18,12 @@ export class Basket {
   @Column({ nullable: true })
   image_basket: string;
 
+  @Column({ type: 'bytea', nullable: true }) // <= nouvelle colonne
+  image_data: Buffer;
+
+  @Column({ nullable: true }) // <= type MIME de l'image
+  image_mime: string;
+
   @Column({ default: true })
   actif: boolean;
 

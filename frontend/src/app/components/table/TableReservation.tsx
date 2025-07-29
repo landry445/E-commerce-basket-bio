@@ -13,13 +13,13 @@ type Commande = {
 };
 
 type Props = {
-  commandes: Commande[];
+  reservations: Commande[];
   onArchive: (id: string) => void;
   onDelete: (id: string) => void;
 };
 
-export default function TableCommandes({
-  commandes,
+export default function TableReservations({
+  reservations,
   onArchive,
   onDelete,
 }: Props) {
@@ -33,7 +33,7 @@ export default function TableCommandes({
   const [filterLieu, setFilterLieu] = useState("");
   const [filterDate, setFilterDate] = useState("");
 
-  const commandesFiltered = commandes.filter((c) => {
+  const reservationsFiltered = reservations.filter((c) => {
     const statutOK = filterStatut === "all" || c.statut === filterStatut;
     const clientOK = c.client
       .toLowerCase()
@@ -123,14 +123,14 @@ export default function TableCommandes({
             </tr>
           </thead>
           <tbody>
-            {commandesFiltered.length === 0 ? (
+            {reservationsFiltered.length === 0 ? (
               <tr>
                 <td colSpan={6} className="py-4 px-4 italic text-gray-500">
                   Aucune commande.
                 </td>
               </tr>
             ) : (
-              commandesFiltered.map((cmd) => (
+              reservationsFiltered.map((cmd) => (
                 <tr key={cmd.id} className="border-b">
                   <td className="py-2 px-4">{cmd.client}</td>
                   <td className="py-2 px-4">{cmd.panier}</td>

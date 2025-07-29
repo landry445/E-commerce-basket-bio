@@ -1,22 +1,21 @@
 "use client";
 import Image from "next/image";
 
-type Panier = {
+type Basket = {
   id: string;
-  nom: string;
-  prix: string;
+  name: string;
+  price: string;
   description: string;
-  image: string;
   actif: boolean;
 };
 
 type Props = {
-  paniers: Panier[];
-  onEdit: (panier: Panier) => void;
-  onDelete: (panier: Panier) => void;
+  baskets: Basket[];
+  onEdit: (basket: Basket) => void;
+  onDelete: (basket: Basket) => void;
 };
 
-export default function TablePaniers({ paniers, onEdit, onDelete }: Props) {
+export default function TableBaskets({ baskets, onEdit, onDelete }: Props) {
   return (
     <div className="overflow-x-auto rounded-xl shadow bg-white">
       <table className="w-full table-auto text-sm">
@@ -31,30 +30,28 @@ export default function TablePaniers({ paniers, onEdit, onDelete }: Props) {
           </tr>
         </thead>
         <tbody>
-          {paniers.length === 0 ? (
+          {baskets.length === 0 ? (
             <tr>
               <td colSpan={6} className="py-4 px-4 italic text-gray-500">
-                Aucun panier.
+                Aucun basket.
               </td>
             </tr>
           ) : (
-            paniers.map((p) => (
+            baskets.map((p) => (
               <tr key={p.id} className="border-b">
-                <td className="py-2 px-4">{p.nom}</td>
-                <td className="py-2 px-4">{p.prix}</td>
+                <td className="py-2 px-4">{p.name}</td>
+                <td className="py-2 px-4">{p.price}</td>
                 <td className="py-2 px-4">{p.description}</td>
                 <td className="py-2 px-4">
-                  {p.image ? (
-                    <Image
-                      src={p.image}
-                      alt={p.nom}
-                      width={36}
-                      height={36}
-                      className="rounded shadow inline-block"
-                    />
-                  ) : (
-                    <span className="italic text-gray-400">—</span>
-                  )}
+                  <Image
+                    src={`/baskets/${p.id}/image`}
+                    alt={p.name}
+                    width={80}
+                    height={80}
+                    className="rounded shadow inline-block"
+                    unoptimized
+                    style={{ width: "100%", height: "auto" }}
+                  />
                 </td>
                 <td className="py-2 px-4 text-center">
                   <input

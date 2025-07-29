@@ -2,13 +2,12 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Basket } from './entities/basket.entity';
-import { CreateBasketDto } from './dto/create-basket.dto';
 
 @Injectable()
 export class BasketsService {
   constructor(
     @InjectRepository(Basket)
-    private readonly basketRepo: Repository<Basket>,
+    private readonly basketRepo: Repository<Basket>
   ) {}
 
   findAll(): Promise<Basket[]> {
@@ -21,13 +20,15 @@ export class BasketsService {
     return basket;
   }
 
-  create(dto: CreateBasketDto): Promise<Basket> {
-    return this.basketRepo.save(dto);
+  create(data: Partial<Basket>): Promise<Basket> {
+    const entity = this.basketRepo.create(data);
+    return this.basketRepo.save(entity);
   }
 
-  async update(id: string, dto: CreateBasketDto): Promise<Basket> {
-    const basket = await this.findOne(id);
-    return this.basketRepo.save({ ...basket, ...dto });
+  async update(id: string, data: Partial<Basket>): Promise<Basket> {
+    await this.findOne(id); // Vérif existence
+    await this.basketRepo.update(id, data);
+    return this.findOne(id);
   }
 
   async remove(id: string): Promise<void> {

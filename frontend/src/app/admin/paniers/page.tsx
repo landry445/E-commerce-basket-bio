@@ -1,22 +1,20 @@
 "use client";
 import { useEffect, useState } from "react";
 import AdminHeader from "@/app/components/adminLayout/AdminHeader";
-import TablePaniers from "@/app/components/table/TablePaniers";
-import FormPanier from "@/app/components/form/FormPanier";
+import Tablebaskets from "@/app/components/table/TableBaskets";
+import Formbasket from "@/app/components/form/FormBasket";
 import ConfirmModal from "@/app/components/modal/ConfirmModal";
 
-type Panier = {
+type Basket = {
   id: string;
-  nom: string;
-  prix: string;
+  name: string;
+  price: string;
   description: string;
-  image: string;
+  image?: string;
   actif: boolean;
 };
 
-type PanierSansId = Omit<Panier, "id">;
-
-type BackendPanier = {
+type Backendbasket = {
   id: string;
   name_basket: string;
   price_basket: number;
@@ -25,30 +23,30 @@ type BackendPanier = {
   actif: boolean;
 };
 
-export default function AdminPaniersPage() {
+export default function AdminbasketsPage() {
   const [step, setStep] = useState<"list" | "create" | "edit">("list");
-  const [selected, setSelected] = useState<Panier | null>(null);
+  const [selected, setSelected] = useState<Basket | null>(null);
   const [showConfirm, setShowConfirm] = useState(false);
-  const [paniers, setPaniers] = useState<Panier[]>([]);
+  const [baskets, setBaskets] = useState<Basket[]>([]);
 
-  const fetchPaniers = async () => {
+  const fetchbaskets = async () => {
     const res = await fetch("http://localhost:3001/baskets", {
       credentials: "include",
     });
-    const data: BackendPanier[] = await res.json();
-    const mapped: Panier[] = data.map((b) => ({
+    const data: Backendbasket[] = await res.json();
+    const mapped: Basket[] = data.map((b) => ({
       id: b.id,
-      nom: b.name_basket,
-      prix: (b.price_basket / 100).toFixed(2),
+      name: b.name_basket,
+      price: (b.price_basket / 100).toFixed(2),
       description: b.description,
       image: b.image_basket,
       actif: b.actif,
     }));
-    setPaniers(mapped);
+    setBaskets(mapped);
   };
 
   useEffect(() => {
-    fetchPaniers();
+    fetchbaskets();
   }, []);
 
   const handleDelete = async () => {
@@ -58,7 +56,7 @@ export default function AdminPaniersPage() {
         method: "DELETE",
         credentials: "include",
       });
-      setPaniers((prev) => prev.filter((p) => p.id !== selected.id));
+      setBaskets((prev) => prev.filter((p) => p.id !== selected.id));
     } catch (err) {
       console.error("Erreur suppression :", err);
     }
@@ -66,24 +64,16 @@ export default function AdminPaniersPage() {
     setSelected(null);
   };
 
-  // Doit recevoir un PanierSansId
-  const handleCreate = (data: PanierSansId) => {
+  // Création
+  const handleCreate = (formData: FormData) => {
     void (async () => {
       try {
-        const toSend = {
-          name_basket: data.nom,
-          price_basket: Math.round(parseFloat(data.prix) * 100),
-          description: data.description,
-          image_basket: data.image,
-          actif: data.actif,
-        };
         await fetch("http://localhost:3001/baskets", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
           credentials: "include",
-          body: JSON.stringify(toSend),
+          body: formData, // pas d’en-tête Content-Type ici !
         });
-        await fetchPaniers();
+        await fetchbaskets();
         setStep("list");
       } catch (err) {
         console.error("Erreur création :", err);
@@ -91,24 +81,17 @@ export default function AdminPaniersPage() {
     })();
   };
 
-  // Doit recevoir un Panier (avec id)
-  const handleUpdate = (data: Panier) => {
+  // Edition
+  const handleUpdate = (formData: FormData) => {
     void (async () => {
       try {
-        const toSend = {
-          name_basket: data.nom,
-          price_basket: Math.round(parseFloat(data.prix) * 100),
-          description: data.description,
-          image_basket: data.image,
-          actif: data.actif,
-        };
-        await fetch(`http://localhost:3001/baskets/${data.id}`, {
+        const id = formData.get("id") as string;
+        await fetch(`http://localhost:3001/baskets/${id}`, {
           method: "PUT",
-          headers: { "Content-Type": "application/json" },
           credentials: "include",
-          body: JSON.stringify(toSend),
+          body: formData,
         });
-        await fetchPaniers();
+        await fetchbaskets();
         setStep("list");
         setSelected(null);
       } catch (err) {
@@ -139,14 +122,14 @@ export default function AdminPaniersPage() {
           >
             + Créer panier
           </button>
-          <TablePaniers
-            paniers={paniers}
-            onEdit={(panier) => {
-              setSelected(panier);
+          <Tablebaskets
+            baskets={baskets}
+            onEdit={(basket) => {
+              setSelected(basket);
               setStep("edit");
             }}
-            onDelete={(panier) => {
-              setSelected(panier);
+            onDelete={(basket) => {
+              setSelected(basket);
               setShowConfirm(true);
             }}
           />
@@ -154,12 +137,12 @@ export default function AdminPaniersPage() {
       )}
 
       {step === "create" && (
-        <FormPanier
+        <Formbasket
           mode="create"
           onSubmit={handleCreate}
           initialValues={{
-            nom: "",
-            prix: "",
+            name: "",
+            price: "",
             description: "",
             image: "",
             actif: true,
@@ -168,7 +151,7 @@ export default function AdminPaniersPage() {
       )}
 
       {step === "edit" && selected && (
-        <FormPanier
+        <Formbasket
           mode="edit"
           onSubmit={handleUpdate}
           initialValues={selected}

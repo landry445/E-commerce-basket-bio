@@ -1,28 +1,28 @@
 "use client";
 
 type Props = {
-  initialValues?: { nom?: string; adresse?: string; jour?: string };
-  onSubmit: (values: { nom: string; adresse: string; jour: string }) => void;
+  initialValues?: { name?: string; address?: string; day?: string };
+  onSubmit: (values: { name: string; address: string; day: string }) => void;
   mode?: "create" | "edit";
 };
 
 import { useRef } from "react";
 
-export default function FormPointRetrait({
+export default function FormPickup({
   initialValues = {},
   onSubmit,
   mode = "create",
 }: Props) {
-  const nomRef = useRef<HTMLInputElement>(null);
-  const adresseRef = useRef<HTMLInputElement>(null);
-  const jourRef = useRef<HTMLInputElement>(null);
+  const nameRef = useRef<HTMLInputElement>(null);
+  const addressRef = useRef<HTMLInputElement>(null);
+  const dayRef = useRef<HTMLInputElement>(null);
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     onSubmit({
-      nom: nomRef.current?.value || "",
-      adresse: adresseRef.current?.value || "",
-      jour: jourRef.current?.value || "",
+      name: nameRef.current?.value || "",
+      address: addressRef.current?.value || "",
+      day: dayRef.current?.value || "",
     });
   }
 
@@ -32,25 +32,25 @@ export default function FormPointRetrait({
       onSubmit={handleSubmit}
     >
       <input
-        ref={nomRef}
+        ref={nameRef}
         className="rounded border px-4 py-2 bg-white"
         type="text"
-        placeholder="Nom du point de retrait"
-        defaultValue={initialValues.nom}
+        placeholder="name du point de retrait"
+        defaultValue={initialValues.name}
       />
       <input
-        ref={adresseRef}
+        ref={addressRef}
         className="rounded border px-4 py-2 bg-white"
         type="text"
-        placeholder="Adresse"
-        defaultValue={initialValues.adresse}
+        placeholder="address"
+        defaultValue={initialValues.address}
       />
       <input
-        ref={jourRef}
+        ref={dayRef}
         className="rounded border px-4 py-2 bg-white"
         type="text"
-        placeholder="Jour (ex : Mardi)"
-        defaultValue={initialValues.jour}
+        placeholder="day (ex : Mardi)"
+        defaultValue={initialValues.day}
       />
       <button
         type="submit"
