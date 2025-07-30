@@ -44,12 +44,13 @@ export default function TableBaskets({ baskets, onEdit, onDelete }: Props) {
                 <td className="py-2 px-4">{p.description}</td>
                 <td className="py-2 px-4">
                   <Image
-                    src={`/baskets/${p.id}/image`}
+                    src={`http://localhost:3001/baskets/${p.id}/image`}
                     alt={p.name}
                     width={80}
                     height={80}
                     className="rounded shadow inline-block"
                     unoptimized
+                    crossOrigin="anonymous"
                     style={{ width: "100%", height: "auto" }}
                   />
                 </td>

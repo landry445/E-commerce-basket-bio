@@ -10,7 +10,6 @@ type Basket = {
   name: string;
   price: string;
   description: string;
-  image?: string;
   actif: boolean;
 };
 
@@ -19,7 +18,6 @@ type Backendbasket = {
   name_basket: string;
   price_basket: number;
   description: string;
-  image_basket: string;
   actif: boolean;
 };
 
@@ -39,7 +37,6 @@ export default function AdminbasketsPage() {
       name: b.name_basket,
       price: (b.price_basket / 100).toFixed(2),
       description: b.description,
-      image: b.image_basket,
       actif: b.actif,
     }));
     setBaskets(mapped);
@@ -144,7 +141,6 @@ export default function AdminbasketsPage() {
             name: "",
             price: "",
             description: "",
-            image: "",
             actif: true,
           }}
         />

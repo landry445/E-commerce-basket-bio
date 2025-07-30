@@ -11,11 +11,13 @@ import {
   UploadedFile,
   Req,
   Res,
+  Options,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
 import { Express } from 'express';
 import { Response } from 'express';
+import { Request } from 'express';
 
 import { BasketsService } from './baskets.service';
 import { Basket } from './entities/basket.entity';
@@ -48,6 +50,18 @@ export class BasketsController {
     return this.basketsService.findOne(id);
   }
 
+  @Options(':id/image')
+  optionsImage(@Req() req: Request, @Res() res: Response) {
+    res.setHeader(
+      'Access-Control-Allow-Origin',
+      process.env.FRONTEND_URL || 'http://localhost:3000'
+    );
+    res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Origin, Content-Type, Accept');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.status(204).send(); // No Content
+  }
+
   @Get(':id/image')
   async getImage(@Param('id', ParseUUIDPipe) id: string, @Res() res: Response) {
     const basket = await this.basketsService.findOne(id);
@@ -55,6 +69,17 @@ export class BasketsController {
       return res.status(404).send('No image found');
     }
     res.setHeader('Content-Type', basket.image_mime);
+
+    // --- Headers CORS minimum pour images cross-origin ---
+    res.setHeader(
+      'Access-Control-Allow-Origin',
+      process.env.FRONTEND_URL || 'http://localhost:3000'
+    );
+    res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Origin, Content-Type, Accept');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    // ------------------------------------------------------
+
     res.send(basket.image_data);
   }
 

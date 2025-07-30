@@ -7,7 +7,6 @@ type Basket = {
   name: string;
   price: string;
   description: string;
-  image?: string;
   actif: boolean;
 };
 type BasketSansId = Omit<Basket, "id">;
@@ -98,14 +97,29 @@ export default function FormBasket(props: FormBasketProps) {
             className="block mt-1"
             onChange={handleFileChange}
           />
+          {/* Preview locale si nouveau fichier */}
           {preview && (
             <Image
-              src={preview.startsWith("/uploads") ? preview : preview}
+              src={preview}
               alt="Aperçu"
               width={120}
               height={80}
               className="rounded shadow mt-2"
-              unoptimized={preview.startsWith("blob:")}
+              unoptimized
+            />
+          )}
+          {/* Image déjà existante en BDD (en mode edit, pas de preview locale) */}
+          {!preview && mode === "edit" && (initial as Basket).id && (
+            <Image
+              src={`http://localhost:3001/baskets/${
+                (initial as Basket).id
+              }/image`}
+              alt="Image du panier"
+              width={120}
+              height={80}
+              className="rounded shadow mt-2"
+              unoptimized
+              crossOrigin="anonymous"
             />
           )}
         </div>
