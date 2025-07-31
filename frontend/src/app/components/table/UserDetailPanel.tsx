@@ -53,7 +53,7 @@ export default function UserDetailPanel({
           </div>
         </div>
         <button
-          className="rounded-full border border-red-600 px-4 py-1 text-red-600 font-semibold hover:bg-red-50"
+          className="rounded-full cursor-pointer border border-red-600 px-4 py-1 text-red-600 font-semibold hover:bg-red-50"
           onClick={() => onDelete(user.id)}
         >
           Supprimer
@@ -93,7 +93,7 @@ export default function UserDetailPanel({
                 </span>
                 {res.statut === "active" && (
                   <button
-                    className={`rounded-full border text-xs px-2 py-1 font-semibold transition
+                    className={`rounded-full cursor-pointer border text-xs px-2 py-1 font-semibold transition
                       ${
                         res.non_venu
                           ? "border-gray-500 text-gray-500 bg-gray-100 cursor-not-allowed"

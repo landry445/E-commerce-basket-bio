@@ -54,7 +54,7 @@ export default function FormPickup({
       />
       <button
         type="submit"
-        className="self-end px-4 py-2 rounded bg-primary text-white hover:brightness-90"
+        className="self-end px-4 py-2 rounded cursor-pointer bg-primary text-white hover:brightness-90"
       >
         {mode === "edit" ? "Modifier" : "Créer"}
       </button>

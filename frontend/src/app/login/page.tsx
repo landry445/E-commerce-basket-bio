@@ -92,7 +92,7 @@ export default function LoginPage() {
           </div>
           <button
             type="submit"
-            className="bg-accent hover:brightness-105 text-white font-bold rounded-full py-2 mt-3 transition"
+            className="bg-accent cursor-pointer hover:brightness-105 text-white font-bold rounded-full py-2 mt-3 transition"
             disabled={loading}
           >
             {loading ? "Connexion..." : "Se connecter"}

@@ -52,6 +52,10 @@ export default function TableBaskets({ baskets, onEdit, onDelete }: Props) {
                     unoptimized
                     crossOrigin="anonymous"
                     style={{ width: "100%", height: "auto" }}
+                    onError={(e) => {
+                      (e.currentTarget as HTMLImageElement).src =
+                        "/panier-default.png";
+                    }}
                   />
                 </td>
                 <td className="py-2 px-4 text-center">
@@ -65,13 +69,13 @@ export default function TableBaskets({ baskets, onEdit, onDelete }: Props) {
                 <td className="py-2 px-4 flex gap-2">
                   <button
                     onClick={() => onEdit(p)}
-                    className="text-xs px-3 py-1 rounded-full border border-dark hover:bg-yellow/80"
+                    className="text-xs px-3 cursor-pointer py-1 rounded-full border border-dark hover:bg-yellow/80"
                   >
                     Modifier
                   </button>
                   <button
                     onClick={() => onDelete(p)}
-                    className="text-xs px-3 py-1 rounded-full border border-red-600 text-red-600 hover:bg-red-50"
+                    className="text-xs px-3 py-1 cursor-pointer rounded-full border border-red-600 text-red-600 hover:bg-red-50"
                   >
                     Supprimer
                   </button>

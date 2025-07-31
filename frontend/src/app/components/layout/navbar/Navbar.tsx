@@ -33,7 +33,7 @@ export default function Navbar({ user, onLogout }: NavbarProps) {
       {/* Burger mobile */}
       <button
         onClick={() => setOpen(true)}
-        className="flex md:hidden p-2 rounded hover:bg-primary/10 transition"
+        className="flex md:hidden cursor-pointer p-2 rounded hover:bg-primary/10 transition"
         aria-label="Ouvrir le menu"
       >
         {/* Logo burger SVG */}
@@ -61,7 +61,7 @@ export default function Navbar({ user, onLogout }: NavbarProps) {
               />
             </div>
             <button
-              className="p-2 rounded hover:bg-primary/10"
+              className="p-2 cursor-pointer rounded hover:bg-primary/10"
               aria-label="Fermer le menu"
               onClick={() => setOpen(false)}
             >

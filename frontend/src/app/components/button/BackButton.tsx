@@ -9,7 +9,7 @@ export default function BackButton({
     <div className="flex justify-end items-center gap-3 p-5">
       {showBack && (
         <button
-          className="w-10 h-10 flex items-center justify-center rounded-full border border-dark bg-white text-2xl shadow-sm hover:bg-gray-100 transition"
+          className="w-10 h-10 cursor-pointer flex items-center justify-center rounded-full border border-dark bg-white text-2xl shadow-sm hover:bg-gray-100 transition"
           onClick={onBack}
           aria-label="Retour"
           type="button"

@@ -22,7 +22,7 @@ export default function NavbarUserButton({
         }}
         className={`${
           isMobile ? "w-full px-3 py-2" : "ml-4 px-3 py-1"
-        } rounded color-accent hover:brightness-95 text-white text-sm`}
+        } rounded cursor-pointer color-accent hover:brightness-95 text-white text-sm`}
       >
         Déconnexion
       </button>
@@ -32,7 +32,7 @@ export default function NavbarUserButton({
     <Link
       href="/login"
       onClick={onAfterClick}
-      className={`inline-flex items-center justify-center rounded-full border border-dark text-dark hover:bg-primary hover:text-white transition
+      className={`inline-flex cursor-pointer items-center justify-center rounded-full border border-dark text-dark hover:bg-primary hover:text-white transition
       ${isMobile ? "w-10 h-10 color-light" : "w-8 h-8 color-light"}`}
       aria-label="Connexion"
     >

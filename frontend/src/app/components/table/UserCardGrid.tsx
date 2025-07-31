@@ -26,7 +26,7 @@ export default function UserCardGrid({
         <button
           key={user.id}
           onClick={() => onSelect(user.id)}
-          className={`flex flex-col items-center bg-gray-100 rounded-xl p-4 shadow transition border-2
+          className={`flex flex-col cursor-pointer items-center bg-gray-100 rounded-xl p-4 shadow transition border-2
             ${
               selectedUserId === user.id
                 ? "border-accent ring-2 ring-accent"

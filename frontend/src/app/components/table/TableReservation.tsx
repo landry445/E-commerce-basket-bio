@@ -150,7 +150,7 @@ export default function TableReservations({
                     )}
                     <button
                       onClick={() => onDelete(cmd.id)}
-                      className="text-xs px-3 py-1 rounded-full border border-red-600 text-red-600 hover:bg-red-50"
+                      className="text-xs cursor-pointer px-3 py-1 rounded-full border border-red-600 text-red-600 hover:bg-red-50"
                     >
                       Supprimer
                     </button>

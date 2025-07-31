@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Image from "next/image";
 
 type Basket = {
@@ -35,13 +35,23 @@ export default function FormBasket(props: FormBasketProps) {
   );
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string>("");
+  const [fileName, setFileName] = useState<string>("");
+
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selected = e.target.files?.[0] ?? null;
     setFile(selected);
+    setFileName(selected ? selected.name : "");
     if (selected) {
       setPreview(URL.createObjectURL(selected));
+    } else {
+      setPreview("");
     }
+  };
+
+  const handleButtonClick = () => {
+    fileInputRef.current?.click();
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -85,18 +95,32 @@ export default function FormBasket(props: FormBasketProps) {
           onChange={(e) => setDescription(e.target.value)}
         />
 
-        {/* Upload d'image */}
+        {/* Upload d'image custom */}
         <div>
-          <label htmlFor="image" className="font-medium">
-            Image du panier
-          </label>
-          <input
-            id="image"
-            type="file"
-            accept="image/*"
-            className="block mt-1"
-            onChange={handleFileChange}
-          />
+          <label className="font-medium block mb-2"></label>
+          <div className="flex items-center gap-4">
+            {/* Input natif caché */}
+            <input
+              ref={fileInputRef}
+              id="image"
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleFileChange}
+            />
+            {/* Bouton stylé */}
+            <button
+              type="button"
+              onClick={handleButtonClick}
+              className="bg-white border border-green-600 text-green-700 px-4 py-2 rounded-md shadow-sm hover:bg-green-50 cursor-pointer transition-colors focus:outline-none focus:ring-2 focus:ring-green-400 mb-4.5"
+            >
+              Choisir une image
+            </button>
+            {/* Nom du fichier */}
+            <span className="text-gray-500 text-sm">
+              {fileName || "Aucun fichier choisi"}
+            </span>
+          </div>
           {/* Preview locale si nouveau fichier */}
           {preview && (
             <Image
@@ -108,7 +132,7 @@ export default function FormBasket(props: FormBasketProps) {
               unoptimized
             />
           )}
-          {/* Image déjà existante en BDD (en mode edit, pas de preview locale) */}
+          {/* Image déjà existante en BDD (mode edit) */}
           {!preview && mode === "edit" && (initial as Basket).id && (
             <Image
               src={`http://localhost:3001/baskets/${
@@ -139,7 +163,7 @@ export default function FormBasket(props: FormBasketProps) {
       <div className="flex flex-col items-end mt-3">
         <button
           type="submit"
-          className="mt-6 w-full px-4 py-2 rounded-full bg-accent text-white font-sans font-bold hover:brightness-110"
+          className="mt-6 w-full px-4 py-2 rounded-full bg-accent text-white font-sans font-bold hover:brightness-110 cursor-pointer"
         >
           {mode === "edit" ? "Modifier" : "Créer"}
         </button>
