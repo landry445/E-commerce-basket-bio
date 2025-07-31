@@ -3,7 +3,7 @@
 import { useState } from "react";
 import clsx from "clsx";
 
-type Commande = {
+type Reservation = {
   id: string;
   client: string;
   panier: string;
@@ -13,14 +13,14 @@ type Commande = {
 };
 
 type Props = {
-  reservations: Commande[];
+  reservations: Reservation[];
   onArchive: (id: string) => void;
   onDelete: (id: string) => void;
 };
 
 export default function TableReservations({
   reservations,
-  onArchive,
+  // onArchive,
   onDelete,
 }: Props) {
   const [filterStatut, setFilterStatut] = useState<
@@ -126,7 +126,7 @@ export default function TableReservations({
             {reservationsFiltered.length === 0 ? (
               <tr>
                 <td colSpan={6} className="py-4 px-4 italic text-gray-500">
-                  Aucune commande.
+                  Aucune reservation.
                 </td>
               </tr>
             ) : (
@@ -140,14 +140,14 @@ export default function TableReservations({
                     {cmd.statut === "active" ? "🟢 Active" : "📦 Archivée"}
                   </td>
                   <td className="py-2 px-4 flex gap-2">
-                    {cmd.statut === "active" && (
+                    {/* {cmd.statut === "active" && (
                       <button
                         onClick={() => onArchive(cmd.id)}
                         className="text-xs px-3 py-1 rounded-full border border-dark hover:bg-yellow/80"
                       >
                         Archiver
                       </button>
-                    )}
+                    )} */}
                     <button
                       onClick={() => onDelete(cmd.id)}
                       className="text-xs cursor-pointer px-3 py-1 rounded-full border border-red-600 text-red-600 hover:bg-red-50"

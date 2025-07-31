@@ -15,8 +15,12 @@ export class ReservationsService {
   ) {}
 
   findAll(): Promise<Reservation[]> {
-    return this.reservationRepo.find();
+    return this.reservationRepo.find({
+      relations: ['user', 'basket', 'location'],
+      order: { pickup_date: 'ASC' }, // optionnel, mais utile pour affichage
+    });
   }
+
 
   async findOne(id: string): Promise<Reservation> {
     const res = await this.reservationRepo.findOne({ where: { id } });

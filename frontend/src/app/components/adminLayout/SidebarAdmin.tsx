@@ -40,9 +40,9 @@ export default function SidebarAdmin({ userName = "Adri" }: SidebarAdminProps) {
       {/* Navigation */}
       <nav className="flex flex-col gap-8 w-full mt-16">
         <SidebarNavButton
-          label="Commande"
-          active={isActive("commandes")}
-          onClick={() => router.push("/admin/commandes")}
+          label="Rerservations"
+          active={isActive("reservations")}
+          onClick={() => router.push("/admin/reservations")}
         />
         <SidebarNavButton
           label="Panier"
