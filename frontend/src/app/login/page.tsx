@@ -33,7 +33,7 @@ export default function LoginPage() {
         setError(data.message || "Erreur inconnue");
       } else {
         // Connexion réussie, redirige l'admin (ou client) vers la bonne page
-        router.push("/admin/paniers");
+        router.push("/admin/reservations");
       }
     } catch {
       setError("Erreur réseau, veuillez réessayer.");

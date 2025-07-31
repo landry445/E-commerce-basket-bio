@@ -23,9 +23,10 @@ export default function TableReservations({
   // onArchive,
   onDelete,
 }: Props) {
-  const [filterStatut, setFilterStatut] = useState<
-    "all" | "active" | "archived"
-  >("all");
+  // Par défaut : filtre sur "active"
+  const [filterStatut, setFilterStatut] = useState<"active" | "archived">(
+    "active"
+  );
 
   // Filtres par colonne
   const [filterClient, setFilterClient] = useState("");
@@ -34,7 +35,7 @@ export default function TableReservations({
   const [filterDate, setFilterDate] = useState("");
 
   const reservationsFiltered = reservations.filter((c) => {
-    const statutOK = filterStatut === "all" || c.statut === filterStatut;
+    const statutOK = c.statut === filterStatut;
     const clientOK = c.client
       .toLowerCase()
       .includes(filterClient.toLowerCase());
@@ -50,7 +51,7 @@ export default function TableReservations({
     <div className="flex flex-col gap-6">
       {/* Filtres par statut */}
       <div className="flex gap-4 mb-2">
-        {(["all", "active", "archived"] as const).map((key) => (
+        {(["active", "archived"] as const).map((key) => (
           <button
             key={key}
             onClick={() => setFilterStatut(key)}
@@ -61,11 +62,7 @@ export default function TableReservations({
                 : "bg-white border-dark hover:bg-gray-100"
             )}
           >
-            {key === "all"
-              ? "Toutes"
-              : key === "active"
-              ? "Actives"
-              : "Archivées"}
+            {key === "active" ? "Actives" : "Archivées"}
           </button>
         ))}
       </div>

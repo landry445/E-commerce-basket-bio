@@ -51,7 +51,7 @@ export default function TableBaskets({ baskets, onEdit, onDelete }: Props) {
                     className="rounded shadow inline-block"
                     unoptimized
                     crossOrigin="anonymous"
-                    style={{ width: "100%", height: "auto" }}
+                    style={{ width: "40px", height: "40px" }}
                     onError={(e) => {
                       (e.currentTarget as HTMLImageElement).src =
                         "/panier-default.png";
