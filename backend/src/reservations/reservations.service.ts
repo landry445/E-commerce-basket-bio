@@ -11,7 +11,7 @@ import { plainToInstance } from 'class-transformer';
 export class ReservationsService {
   constructor(
     @InjectRepository(Reservation)
-    private readonly reservationRepo: Repository<Reservation>,
+    private readonly reservationRepo: Repository<Reservation>
   ) {}
 
   findAll(): Promise<Reservation[]> {
@@ -20,7 +20,6 @@ export class ReservationsService {
       order: { pickup_date: 'ASC' }, // optionnel, mais utile pour affichage
     });
   }
-
 
   async findOne(id: string): Promise<Reservation> {
     const res = await this.reservationRepo.findOne({ where: { id } });
@@ -44,6 +43,12 @@ export class ReservationsService {
     });
     if (!res) throw new NotFoundException('Réservation introuvable');
     return this.reservationRepo.save({ ...res, ...dto });
+  }
+  async setNonVenu(id: string, nonVenu: boolean): Promise<void> {
+    const reservation = await this.reservationRepo.findOne({ where: { id } });
+    if (!reservation) throw new NotFoundException('Réservation non trouvée');
+    reservation.non_venu = nonVenu;
+    await this.reservationRepo.save(reservation);
   }
 
   async remove(id: string, userId: string): Promise<void> {
@@ -70,8 +75,8 @@ export class ReservationsService {
           basket_id: r.basket?.id,
           location_id: r.location?.id,
         },
-        { excludeExtraneousValues: true },
-      ),
+        { excludeExtraneousValues: true }
+      )
     );
   }
 }

@@ -1,97 +1,107 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import UserCardGrid from "@/app/components/table/UserCardGrid";
 import UserDetailPanel from "@/app/components/table/UserDetailPanel";
 import ConfirmModal from "@/app/components/modal/ConfirmModal";
 
-const MOCK_BASKETS = [
-  { id: "b1", name_basket: "Panier légumes" },
-  { id: "b2", name_basket: "Panier fruits" },
-];
-const MOCK_LOCATIONS = [
-  { id: "l1", name_pickup: "Marché" },
-  { id: "l2", name_pickup: "Gare" },
-];
-const MOCK_USERS = [
-  {
-    id: "u1",
-    firstname: "Alice",
-    lastname: "Durand",
-    email: "alice@example.com",
-    phone: "0601020304",
-    date_creation: "2025-07-20",
-  },
-  {
-    id: "u2",
-    firstname: "Jean",
-    lastname: "Martin",
-    email: "jean@example.com",
-    phone: "0607080910",
-    date_creation: "2025-07-01",
-  },
-];
-const MOCK_RESERVATIONS = [
-  {
-    id: "1",
-    user_id: "u1",
-    basket_id: "b1",
-    location_id: "l1",
-    price_reservation: 1299,
-    pickup_date: "2025-07-25",
-    statut: "active" as const,
-    quantity: 1,
-    non_venu: false,
-  },
-  {
-    id: "2",
-    user_id: "u1",
-    basket_id: "b2",
-    location_id: "l2",
-    price_reservation: 999,
-    pickup_date: "2025-07-10",
-    statut: "archived" as const,
-    quantity: 2,
-    non_venu: true,
-  },
-  {
-    id: "3",
-    user_id: "u2",
-    basket_id: "b1",
-    location_id: "l2",
-    price_reservation: 1499,
-    pickup_date: "2025-06-30",
-    statut: "archived" as const,
-    quantity: 1,
-    non_venu: false,
-  },
-];
+type User = {
+  id: string;
+  firstname: string;
+  lastname: string;
+  email: string;
+  phone: string;
+  date_creation: string;
+};
+
+type Reservation = {
+  id: string;
+  user_id: string;
+  basket_id: string;
+  location_id: string; // Jamais null
+  price_reservation: number;
+  pickup_date: string;
+  statut: "active" | "archived";
+  quantity: number;
+  non_venu: boolean;
+};
+
+type ReservationApiResponse = {
+  id: string;
+  user: { id: string };
+  basket: { id: string };
+  location: { id: string } | null;
+  price_reservation: number;
+  pickup_date: string;
+  statut: "active" | "archived";
+  quantity: number;
+  non_venu: boolean;
+};
 
 export default function AdminUsersPage() {
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
-  const [users, setUsers] = useState(MOCK_USERS);
-  const [reservations, setReservations] = useState(MOCK_RESERVATIONS);
+  const [users, setUsers] = useState<User[]>([]);
+  const [reservations, setReservations] = useState<Reservation[]>([]);
   const [userToDelete, setUserToDelete] = useState<string | null>(null);
 
-  const handleMarkNonVenu = (reservationId: string) => {
-    setReservations((prev) =>
-      prev.map((res) =>
-        res.id === reservationId ? { ...res, non_venu: true } : res
-      )
-    );
-  };
+  useEffect(() => {
+    fetch("http://localhost:3001/admin/users", { credentials: "include" })
+      .then((res) => res.json())
+      .then((data: User[]) => setUsers(data));
+  }, []);
 
-  const handleDeleteUser = (userId: string) => {
-    setUserToDelete(userId);
-  };
+  useEffect(() => {
+    fetch("http://localhost:3001/reservations", { credentials: "include" })
+      .then((res) => res.json())
+      .then((data: ReservationApiResponse[]) => {
+        setReservations(
+          data.map(
+            (r): Reservation => ({
+              id: r.id,
+              user_id: r.user?.id ?? "",
+              basket_id: r.basket?.id ?? "",
+              location_id: r.location?.id ?? "",
+              price_reservation: r.price_reservation,
+              pickup_date: r.pickup_date,
+              statut: r.statut,
+              quantity: r.quantity,
+              non_venu: r.non_venu,
+            })
+          )
+        );
+      });
+  }, []);
 
-  const confirmDelete = () => {
+  const handleDeleteUser = (userId: string) => setUserToDelete(userId);
+
+  const confirmDelete = async () => {
     if (userToDelete) {
+      await fetch(`http://localhost:3001/admin/users/${userToDelete}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
       setUsers((prev) => prev.filter((u) => u.id !== userToDelete));
       setReservations((prev) => prev.filter((r) => r.user_id !== userToDelete));
       setUserToDelete(null);
       setSelectedUserId(null);
     }
+  };
+
+  const handleMarkNonVenu = async (reservationId: string) => {
+    await fetch(
+      `http://localhost:3001/reservations/${reservationId}/non-venu`,
+      {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ non_venu: true }),
+      }
+    );
+    setReservations((prev) =>
+      prev.map((res) =>
+        res.id === reservationId ? { ...res, non_venu: true } : res
+      )
+    );
   };
 
   const selectedUser = users.find((u) => u.id === selectedUserId);
@@ -101,7 +111,6 @@ export default function AdminUsersPage() {
 
   return (
     <div className="flex gap-8">
-      {/* Cartes utilisateurs à gauche */}
       <div className="w-1/2">
         <UserCardGrid
           users={users}
@@ -109,14 +118,13 @@ export default function AdminUsersPage() {
           onSelect={setSelectedUserId}
         />
       </div>
-      {/* Fiche détaillée à droite */}
       <div className="w-1/2 flex justify-center items-start">
         {selectedUser ? (
           <UserDetailPanel
             user={selectedUser}
             reservations={userReservations}
-            baskets={MOCK_BASKETS}
-            locations={MOCK_LOCATIONS}
+            baskets={[]} // À compléter
+            locations={[]} // À compléter
             onMarkNonVenu={handleMarkNonVenu}
             onDelete={handleDeleteUser}
           />
