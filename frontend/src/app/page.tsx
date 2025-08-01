@@ -1,5 +1,5 @@
 "use client";
-import Navbar from "./components/layout/navbar/Navbar";
+import Navbar from "./components/navbar/Navbar";
 
 export default function Home() {
   return (

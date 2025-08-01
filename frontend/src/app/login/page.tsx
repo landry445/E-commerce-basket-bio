@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Navbar from "@/app/components/layout/navbar/Navbar";
+import Navbar from "@/app/components/navbar/Navbar";
 
 export default function LoginPage() {
   const router = useRouter();
