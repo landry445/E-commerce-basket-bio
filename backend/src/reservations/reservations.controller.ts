@@ -10,6 +10,7 @@ import {
   ParseUUIDPipe,
   UseGuards,
   Req,
+  Patch,
 } from '@nestjs/common';
 import { ReservationsService } from './reservations.service';
 import { CreateReservationDto } from './dto/create-reservation.dto';
@@ -58,6 +59,17 @@ export class ReservationsController {
   @Put(':id')
   update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: CreateReservationDto, @Req() req) {
     return this.reservationsService.update(id, dto, req.user.id);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Admin)
+  @Patch(':id/non-venu')
+  async markNonVenu(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body('non_venu') nonVenu: boolean
+  ): Promise<{ updated: boolean }> {
+    await this.reservationsService.setNonVenu(id, nonVenu);
+    return { updated: true };
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)

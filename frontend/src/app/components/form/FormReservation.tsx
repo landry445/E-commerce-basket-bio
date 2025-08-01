@@ -130,7 +130,7 @@ export default function FormReservation({
       {/* Bouton submit */}
       <button
         type="submit"
-        className="self-start px-5 py-2 rounded-full bg-accent text-white hover:brightness-110 font-sans font-bold"
+        className="self-start cursor-pointer px-5 py-2 rounded-full bg-accent text-white hover:brightness-110 font-sans font-bold"
       >
         Envoyer
       </button>

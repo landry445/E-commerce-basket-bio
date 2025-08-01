@@ -60,6 +60,9 @@ export class Reservation {
   })
   sms_sent_at: Date | null;
 
+  @Column({ type: 'boolean', default: false })
+  non_venu: boolean;
+
   @CreateDateColumn({
     name: 'date_creation',
     type: process.env.NODE_ENV === 'test' ? 'datetime' : 'timestamptz',

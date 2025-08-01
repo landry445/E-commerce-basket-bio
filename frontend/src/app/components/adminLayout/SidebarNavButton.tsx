@@ -13,7 +13,7 @@ export default function SidebarNavButton({
   return (
     <button
       onClick={onClick}
-      className={`w-full py-2 rounded-full border-2 transition-colors
+      className={`w-full py-2 cursor-pointer rounded-full border-2 transition-colors
         font-sans font-semibold text-dark
         ${
           active

@@ -46,7 +46,7 @@ export default function RegisterForm({ onSubmit, error }: Props) {
       {error && <span className="text-red-600 text-sm">{error}</span>}
       <button
         type="submit"
-        className="self-end px-4 py-2 rounded bg-primary text-white hover:brightness-90"
+        className="self-end px-4 py-2 cursor-pointer rounded bg-primary text-white hover:brightness-90"
       >
         S’inscrire
       </button>
