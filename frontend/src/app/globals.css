@@ -1,12 +1,16 @@
+@import url('https://fonts.googleapis.com/css?family=Nunito:400,700&display=swap');
+@import url('https://fonts.googleapis.com/css?family=Pacifico&display=swap');
 @import "tailwindcss";
 
-/* tes variables déjà présentes */
+/* === VARIABLES CSS === */
 :root {
   --background: #F8F7F0;
   --foreground: #171717;
-}
+ 
 
-/* ↓↓↓ ajoute/complète ceci ↓↓↓ */
+  --font-sans: "Nunito", Arial, sans-serif;
+  --font-pacifico: "Pacifico", cursive;
+}
 @theme {
   /* Couleurs personnalisées */
   --color-primary:  #5B8C51; /* vert principal */
@@ -16,15 +20,10 @@
   --color-light:    #F8F7F0; /* beige clair */
 
   /* Polices déjà définies plus haut si besoin */
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono); */
   --font-sans: "Nunito", Arial, sans-serif;       /* Navbar et texte */
   --font-pacifico: "Pacifico", cursive;           /* Titres */
 }
 
-/* éventuels styles globaux */
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
-}
+

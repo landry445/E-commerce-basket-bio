@@ -4,6 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import NavbarLinks from "./NavbarLinks";
 import NavbarUserButton from "./NavbarUserButton";
+import Link from "next/link";
 
 type NavbarProps = {
   user?: { firstname: string; isAdmin: boolean };
@@ -14,10 +15,12 @@ export default function Navbar({ user, onLogout }: NavbarProps) {
   const [open, setOpen] = useState(false);
 
   return (
-    <nav className="flex items-center justify-between px-8 py-2 bg-light border-b relative">
+    <nav className="flex items-center justify-between px-8 py-2 bg-light  relative">
       {/* Logo */}
       <div className="flex items-center gap-2">
-        <Image src="/logo-frog.png" alt="Logo frog" width={40} height={40} />
+        <Link href="/">
+          <Image src="/logo-frog.png" alt="Logo frog" width={40} height={40} />
+        </Link>
       </div>
 
       {/* Liens desktop */}
