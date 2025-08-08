@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import ButtonGeneric from "../ButtonGeneric";
 
 export default function HeroBanner() {
   return (
@@ -22,7 +23,7 @@ export default function HeroBanner() {
       {/* Contenu slogan */}
       <div className="relative z-10 text-center px-4 font-sans">
         <h1
-          className="text-3xl md:text-5xl font-bold drop-shadow-lg"
+          className="text-3xl md:text-5xl drop-shadow-lg"
           style={{
             color: "var(--color-light)",
             fontFamily: "var(--font-pacifico)",
@@ -30,6 +31,9 @@ export default function HeroBanner() {
         >
           Paniers Bio frais à Chaussée de Plessis
         </h1>
+        <div className="pt-2 md:pt-15">
+          <ButtonGeneric href="/paniers">RESERVER VOTRE PANIER</ButtonGeneric>
+        </div>
       </div>
     </section>
   );

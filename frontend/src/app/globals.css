@@ -23,7 +23,61 @@
   /* --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono); */
   --font-sans: "Nunito", Arial, sans-serif;       /* Navbar et texte */
-  --font-pacifico: "Pacifico", cursive;           /* Titres */
+  --font-pacifico: "Pacifico", cursive;           /* Titres */             /* Banniere */
+}
+/* Marquee */
+.marquee {
+  --marquee-duration: 24s;     /* slow: 36s, normal: 24s, fast: 16s */
+  --marquee-gap: 2.5rem;
+  --marquee-direction: normal; /* normal | reverse */
+  overflow: hidden;
+  mask-image: linear-gradient(to right, transparent, #000 8%, #000 92%, transparent);
+}
+.marquee__track {
+  display: flex;
+  gap: var(--marquee-gap);
+  width: max-content;          /* s’ajuste au contenu */
+  will-change: transform;
+  animation: marquee var(--marquee-duration) linear infinite;
+  animation-direction: var(--marquee-direction);
+}
+.marquee--pause:hover .marquee__track {
+  animation-play-state: paused;
+}
+
+/* Texte contour + remplissage façon maquette */
+/* Style net : fond = couleur de page, contour vert, sans halo */
+.marquee-text {
+  font-family: var(--font-pacifico), var(--font-sans);
+  color: var(--background);                     /* remplissage = fond */
+  -webkit-text-stroke: 2px var(--color-primary);/* contour net */
+  paint-order: stroke fill;                     /* dessine d'abord le trait */
+  text-shadow: none;
+  text-rendering: geometricPrecision;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Légère adaptation sur écrans très denses pour garder la finesse */
+@media (min-resolution: 2dppx) {
+  .marquee-text { -webkit-text-stroke-width: 1.6px; }
+}
+
+/* Fallback Firefox (pas de text-stroke) : contour simulé discret */
+@supports not (-webkit-text-stroke: 1px black) {
+  .marquee-text {
+    color: var(--background);
+    text-shadow:
+      1px 0   0 var(--color-primary),
+     -1px 0   0 var(--color-primary),
+      0   1px 0 var(--color-primary),
+      0  -1px 0 var(--color-primary);
+  }
+}
+
+
+@keyframes marquee {
+  to { transform: translateX(-50%); } /* -50% car contenu dupliqué */
 }
 
 
