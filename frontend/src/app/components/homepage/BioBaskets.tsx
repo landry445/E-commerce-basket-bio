@@ -12,7 +12,7 @@ export default function BioBaskets({
   imageAlt = "Panier de légumes bio",
 }: BioBasketsProps) {
   return (
-    <section className="w-full flex justify-center p-5 sm:p-6 md:p-10 my-10 bg-[var(--color-yellow)]">
+    <section className="w-full flex justify-center p-5 sm:p-6 md:p-10 mt-10 bg-[var(--color-yellow)]">
       <div
         className="
           w-full max-w-5xl
@@ -65,7 +65,7 @@ export default function BioBaskets({
             </div>
           </article>
 
-          <div className="pt-2">
+          <div className="pt-2 flex justify-center">
             <ButtonGeneric href="/paniers">
               NOS PANIERS DE LÉGUMES EN DÉTAIL
             </ButtonGeneric>

@@ -17,7 +17,7 @@ export default function NavbarLinks({
         <Link
           href="/"
           onClick={onNavigate}
-          className="transition-colors hover:text-accent cursor-pointer"
+          className="transition-colors  hover:text-primary cursor-pointer"
         >
           Accueil
         </Link>
@@ -26,7 +26,7 @@ export default function NavbarLinks({
         <Link
           href="/paniers"
           onClick={onNavigate}
-          className="transition-colors hover:text-accent cursor-pointer"
+          className="transition-colors  hover:text-primary cursor-pointer"
         >
           Nos paniers
         </Link>
@@ -35,7 +35,7 @@ export default function NavbarLinks({
         <Link
           href="/maraicher"
           onClick={onNavigate}
-          className="transition-colors cursor-pointer hover:text-accent"
+          className="transition-colors cursor-pointer  hover:text-primary"
         >
           Votre maraîcher
         </Link>
@@ -44,7 +44,7 @@ export default function NavbarLinks({
         <Link
           href="/contact"
           onClick={onNavigate}
-          className="transition-colors cursor-pointer hover:text-accent"
+          className="transition-colors cursor-pointer  hover:text-primary"
         >
           Contact
         </Link>
