@@ -1,7 +1,7 @@
 import Navbar from "./components/navbar/Navbar";
 import HeroBanner from "./components/homepage/HeroBanner";
 import BioBaskets from "./components/homepage/BioBaskets";
-// import SellingPoints from "@/components/homepage/SellingPoints";
+import SellingPoints from "./components/homepage/SellingPoints";
 // import FAQ from "./components/homepage/FAQ";
 import Footer from "./components/Footer";
 import ScrollingBanner from "./components/homepage/ScrollingBanner";
@@ -34,8 +34,8 @@ export default function Home() {
         </div>
         <BioBaskets />
         <ScrollingBanner direction="rtl" /> {/* droite → gauche */}
-        {/* <SellingPoints />
-        <FAQ /> */}
+        <SellingPoints />
+        {/*<FAQ /> */}
       </main>
       <Footer />
     </>
