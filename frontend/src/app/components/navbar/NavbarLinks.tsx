@@ -24,7 +24,7 @@ export default function NavbarLinks({
       </li>
       <li>
         <Link
-          href="/paniers"
+          href="/baskets"
           onClick={onNavigate}
           className="transition-colors  hover:text-primary cursor-pointer"
         >

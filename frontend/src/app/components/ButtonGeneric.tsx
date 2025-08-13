@@ -16,7 +16,7 @@ const toneClasses: Record<Tone, string> = {
     "bg-[var(--color-primary)] hover:bg-[var(--color-dark)] text-[var(--color-light)]",
   accent:
     "bg-[var(--color-accent)] hover:bg-[var(--color-primary)] text-[var(--color-light)]",
-  cta: "bg-[var(--color-yellow)] hover:bg-[var(--color-light)] text-[var(--foreground)]",
+  cta: "bg-[var(--color-light)] hover:bg-[var(--color-yellow)] text-[var(--foreground)]",
 };
 
 export default function ButtonGeneric({
@@ -32,7 +32,7 @@ export default function ButtonGeneric({
         "inline-block rounded-md px-5 py-3 font-medium",
         "transition-colors duration-200",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
-        "focus-visible:ring-[var(--color-yellow)] focus-visible:ring-offset-[var(--color-light)]",
+        "focus-visible:ring-[var(--color-light)] focus-visible:ring-offset-[var(--color-yellow)]",
         toneClasses[tone],
         className,
       ].join(" ")}
