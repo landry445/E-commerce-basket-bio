@@ -2,9 +2,26 @@ import Navbar from "./components/navbar/Navbar";
 import HeroBanner from "./components/homepage/HeroBanner";
 import BioBaskets from "./components/homepage/BioBaskets";
 import SellingPoints from "./components/homepage/SellingPoints";
-// import FAQ from "./components/homepage/FAQ";
+import type { FAQItem } from "./components/homepage/FAQ";
+import FAQ from "./components/homepage/FAQ";
 import Footer from "./components/Footer";
 import ScrollingBanner from "./components/homepage/ScrollingBanner";
+
+const faqItems: FAQItem[] = [
+  { id: "q1", question: "Commande", answer: "Procédure simple sur le site." },
+  { id: "q2", question: "Retrait", answer: "Plusieurs points de retrait." },
+  { id: "q3", question: "Paiement", answer: "Paiement sécurisé en ligne." },
+  {
+    id: "q4",
+    question: "Produits",
+    answer: "Fruits et légumes bio de saison.",
+  },
+  {
+    id: "q5",
+    question: "Contact",
+    answer: "Nous contacter par email ou téléphone.",
+  },
+];
 
 export default function Home() {
   return (
@@ -35,7 +52,7 @@ export default function Home() {
         <BioBaskets />
         <ScrollingBanner direction="rtl" /> {/* droite → gauche */}
         <SellingPoints />
-        {/*<FAQ /> */}
+        <FAQ items={faqItems} defaultOpenId="q1" />
       </main>
       <Footer />
     </>
