@@ -1,17 +1,17 @@
 "use client";
 
 import Image from "next/image";
-import ButtonGeneric from "../ButtonGeneric";
+import ButtonGeneric from "../button/ButtonGeneric";
 
 export default function HeroBanner() {
   return (
-    <section className="relative w-full h-[320px] md:h-[400px] flex items-center justify-center overflow-hidden">
+    <section className="relative  w-full h-[320px] md:h-[400px] flex items-center justify-center overflow-hidden">
       {/* Image de fond */}
       <Image
-        src="/champ-bio (1).webp"
+        src="/image-home.png"
         alt="Champs maraîcher bio"
         fill
-        className="object-cover"
+        className="object-cover brightness-75"
         priority
         sizes="100vw"
         quality={90}

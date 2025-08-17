@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
-import ButtonGeneric from "../ButtonGeneric";
+import ButtonGeneric from "../button/ButtonGeneric";
 
 type Slide = {
   src: string;
@@ -32,7 +32,7 @@ export default function BasketsHero() {
 
   return (
     <section
-      className="rounded-xl overflow-hidden"
+      className="rounded-xl overflow-hidden "
       style={{ background: "var(--color-light)" }}
       aria-label="Présentation des paniers"
     >
@@ -42,7 +42,7 @@ export default function BasketsHero() {
           className="flex items-center px-6 py-12 md:px-10 md:py-16"
           style={{ background: "var(--color-primary)" }}
         >
-          <div className="max-w-xl">
+          <div className="max-w-xl text-center">
             <h1
               className="mb-6 text-[clamp(32px,6vw,52px)] leading-tight"
               style={{ fontFamily: "var(--font-pacifico)", color: "#fff" }}

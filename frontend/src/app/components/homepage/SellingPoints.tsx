@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import ButtonGeneric from "../ButtonGeneric";
+import ButtonGeneric from "../button/ButtonGeneric";
 
 type Point = {
   title: string;

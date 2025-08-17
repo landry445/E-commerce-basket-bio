@@ -1,6 +1,6 @@
 import Image from "next/image";
 import BasketIcon from "../SVG/BasketIcon";
-import ButtonGeneric from "../ButtonGeneric";
+import ButtonGeneric from "../button/ButtonGeneric";
 
 type BioBasketsProps = {
   imageSrc?: string;
@@ -13,7 +13,7 @@ export default function BioBaskets({
 }: BioBasketsProps) {
   return (
     <section
-      className="relative w-full flex justify-center p-5 sm:p-6 md:p-10 mt-10 bg-[url('/background-yellow.png')] bg-cover bg-center]"
+      className="relative w-full flex justify-center p-5 sm:p-6 md:p-7  bg-[url('/background-yellow.png')] bg-cover bg-center]"
       style={{ backgroundColor: "var(--color-yellow)" }}
     >
       <div
@@ -69,20 +69,20 @@ export default function BioBaskets({
           </article>
 
           <div className="pt-2 flex justify-center">
-            <ButtonGeneric href="/paniers">
+            <ButtonGeneric href="/baskets">
               NOS PANIERS DE LÉGUMES EN DÉTAIL
             </ButtonGeneric>
           </div>
         </div>
 
         {/* Colonne image */}
-        <div className="md:justify-self-end">
+        <div className="md:justify-self-end ">
           <div className="relative w-full aspect-[4/3] md:w-[360px] md:h-[270px] rounded-xl overflow-hidden">
             <Image
               src={imageSrc}
               alt={imageAlt}
               fill
-              className="object-cover"
+              className="object-cover "
               sizes="(min-width: 768px) 360px, 100vw"
               priority
             />

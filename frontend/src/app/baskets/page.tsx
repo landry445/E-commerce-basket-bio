@@ -1,24 +1,21 @@
 import BasketsHero from "@/app/components/baskets/BasketsHero";
 import Navbar from "../components/navbar/Navbar";
 import Footer from "../components/Footer";
+import BasketsContent from "../components/baskets/BasketsContent";
+import OrderAside from "../components/baskets/OrderAside";
 
 export default function BasketsPage() {
   return (
     <>
       <Navbar />
-      <main className="container mx-auto px-4 py-8 md:py-12">
+      <main className="max-w-[1440px] mx-auto">
+        {/* Bandeau en haut si tu le gardes */}
         <BasketsHero />
-        <section className="mt-10 grid gap-6">
-          <h2
-            className="text-2xl md:text-3xl"
-            style={{ fontFamily: "var(--font-pacifico)" }}
-          >
-            Nos paniers
-          </h2>
-          <p className="max-w-2xl text-[var(--color-dark)]">
-            Sélection locale et de saison, disponible en trois tailles. Retrait
-            sur place uniquement, pas de livraison.
-          </p>
+
+        {/* Contenu + aside */}
+        <section className="mt-10 grid gap-6 md:grid-cols-[minmax(0,1fr)_320px]">
+          <BasketsContent />
+          <OrderAside />
         </section>
       </main>
       <Footer />
