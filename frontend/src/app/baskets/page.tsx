@@ -8,14 +8,18 @@ export default function BasketsPage() {
   return (
     <>
       <Navbar />
-      <main className="max-w-[1440px] mx-auto">
-        {/* Bandeau en haut si tu le gardes */}
+      <main className="">
         <BasketsHero />
 
-        {/* Contenu + aside */}
-        <section className="mt-10 grid gap-6 md:grid-cols-[minmax(0,1fr)_320px]">
-          <BasketsContent />
-          <OrderAside />
+        {/* <768px : OrderAside au-dessus avec marge. ≥768px : 2/3 contenu, 1/3 aside */}
+        <section className="mt-10 grid gap-6 md:grid-cols-3 max-w-[1440px] mx-auto">
+          <div className="order-1 md:order-2 md:col-span-1 m-6 md:m-0">
+            <OrderAside />
+          </div>
+
+          <div className="order-2 md:order-1 md:col-span-2">
+            <BasketsContent />
+          </div>
         </section>
       </main>
       <Footer />

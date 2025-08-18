@@ -5,7 +5,7 @@ import SellingPoints from "./components/homepage/SellingPoints";
 import type { FAQItem } from "./components/homepage/FAQ";
 import FAQ from "./components/homepage/FAQ";
 import Footer from "./components/Footer";
-import ScrollingBanner from "./components/homepage/ScrollingBanner";
+import ScrollingBanner from "./components/ScrollingBanner";
 
 const faqItems: FAQItem[] = [
   { id: "q1", question: "Commande", answer: "Procédure simple sur le site." },

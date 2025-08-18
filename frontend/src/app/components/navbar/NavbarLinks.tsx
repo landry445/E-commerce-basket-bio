@@ -33,7 +33,7 @@ export default function NavbarLinks({
       </li>
       <li>
         <Link
-          href="/maraicher"
+          href="/market-gardener"
           onClick={onNavigate}
           className="transition-colors cursor-pointer  hover:text-primary"
         >
