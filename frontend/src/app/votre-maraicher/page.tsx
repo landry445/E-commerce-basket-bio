@@ -19,8 +19,8 @@ export default function Home() {
         <ScrollingBanner />
         <SalesPoints />
         <MapEmbed />
-        <Footer />
       </main>
+      <Footer />
     </>
   );
 }

@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 
 export default function Footer() {
   const year = new Date().getFullYear();
@@ -58,9 +59,9 @@ export default function Footer() {
             <a href="#" className="hover:underline">
               Contact
             </a>
-            <a href="#" className="hover:underline">
+            <Link href="/mentions-legales" className="hover:underline">
               Mentions légales
-            </a>
+            </Link>
             <a href="#" className="hover:underline">
               Politique de confidentialité
             </a>

@@ -69,7 +69,7 @@ export default function BioBaskets({
           </article>
 
           <div className="pt-2 flex justify-center">
-            <ButtonGeneric href="/baskets">
+            <ButtonGeneric href="/paniers">
               NOS PANIERS DE LÉGUMES EN DÉTAIL
             </ButtonGeneric>
           </div>

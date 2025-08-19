@@ -45,7 +45,10 @@ function SalesPointCard({
 export default function SalesPoints() {
   return (
     <>
-      <section className="bg-[var(--color-yellow)] py-10 px-4">
+      <section
+        className="bg-[url('/background-yellow.png')] bg-cover bg-center] py-10 px-4"
+        style={{ backgroundColor: "var(--color-yellow)" }}
+      >
         <div className="max-w-5xl mx-auto">
           <h2
             className="text-3xl text-center mb-8"

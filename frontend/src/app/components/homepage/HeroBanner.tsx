@@ -32,7 +32,7 @@ export default function HeroBanner() {
           Paniers Bio frais à Chaussée de Plessis
         </h1>
         <div className="pt-10 md:pt-15">
-          <ButtonGeneric href="/paniers">RESERVER VOTRE PANIER</ButtonGeneric>
+          <ButtonGeneric href="/contact">RESERVER VOTRE PANIER</ButtonGeneric>
         </div>
       </div>
     </section>

@@ -84,7 +84,7 @@ export default function SellingPoints({
         </div>
 
         <div className="flex justify-center mt-8 md:mt-10">
-          <ButtonGeneric href="/points-retrait" tone="cta">
+          <ButtonGeneric href="/votre-maraicher" tone="cta">
             Lieux et Horaires
           </ButtonGeneric>
         </div>
