@@ -62,9 +62,12 @@ export default function Footer() {
             <Link href="/mentions-legales" className="hover:underline">
               Mentions légales
             </Link>
-            <a href="#" className="hover:underline">
+            <Link href="/politique-confidentialite" className="hover:underline">
               Politique de confidentialité
-            </a>
+            </Link>
+            <Link href="/cgu" className="hover:underline">
+              CGU
+            </Link>
           </nav>
 
           {/* Logo AB */}

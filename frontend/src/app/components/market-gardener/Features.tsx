@@ -14,9 +14,9 @@ function FeatureCard({ title, imgSrc, imgAlt, text }: FeatureCardProps) {
       <Image
         src={imgSrc}
         alt={imgAlt}
-        width={300}
-        height={200}
-        className="w-full md:w-1/3 h-auto rounded"
+        width={500}
+        height={333}
+        className="w-full md:w-1/3 h-auto rounded-xl"
       />
 
       {/* Texte à droite */}
