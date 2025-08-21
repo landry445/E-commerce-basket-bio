@@ -13,7 +13,7 @@ export default function BasketsContent() {
       {/* Nos paniers */}
       <section>
         <h2
-          className="text-xl mb-2"
+          className="text-3xl md:text-3xl mb-2"
           style={{ fontFamily: "var(--font-pacifico)" }}
         >
           Nos Paniers
@@ -57,7 +57,7 @@ export default function BasketsContent() {
       {/* Composition par saison */}
       <section>
         <h3
-          className="text-lg mb-2"
+          className="text-3xl md:text-3xl mb-2"
           style={{ fontFamily: "var(--font-pacifico)" }}
         >
           Composition des paniers par saison
@@ -117,7 +117,10 @@ export default function BasketsContent() {
 
       {/* Conditions et tarifs */}
       <section className="space-y-4">
-        <h3 className="text-lg" style={{ fontFamily: "var(--font-pacifico)" }}>
+        <h3
+          className="text-3xl md:text-3xl"
+          style={{ fontFamily: "var(--font-pacifico)" }}
+        >
           Nos conditions et tarifs
         </h3>
 
@@ -140,12 +143,12 @@ export default function BasketsContent() {
 
         <div className="space-y-4">
           <div>
-            <h4
-              className="text-base mb-2"
+            <h3
+              className="text-3xl md:text-3xl mb-2"
               style={{ fontFamily: "var(--font-pacifico)" }}
             >
               Tarifs des paniers de légumes
-            </h4>
+            </h3>
             <ul className="text-base space-y-1.5">
               <li className="flex items-center gap-2">
                 <span>
@@ -172,12 +175,12 @@ export default function BasketsContent() {
           </div>
 
           <div>
-            <h4
-              className="text-base mb-2"
+            <h3
+              className="text-3xl md:text-3xl mb-2"
               style={{ fontFamily: "var(--font-pacifico)" }}
             >
               Tarifs des œufs frais
-            </h4>
+            </h3>
             <ul className="text-base space-y-1.5">
               <li className="flex items-center gap-2">
                 <span>🥚</span> La boîte de 6 œufs : <strong>2,20 €</strong>
