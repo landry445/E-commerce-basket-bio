@@ -5,6 +5,8 @@ import AdminHeader from "@/app/components/adminLayout/AdminHeader";
 import ConfirmModal from "@/app/components/modal/ConfirmModal";
 import { useEffect, useState } from "react";
 
+export const dynamic = "force-dynamic";
+
 type ReservationAPI = {
   id: string;
   user: { firstname: string; lastname: string };
@@ -30,7 +32,7 @@ export default function AdminreservationPage() {
   );
 
   useEffect(() => {
-    fetch("http://localhost:3001/reservations", { credentials: "include" })
+    fetch("/api/reservations", { credentials: "include" })
       .then((res) => res.json())
       .then((data: ReservationAPI[]) => {
         const mapped = data.map((r) => ({
@@ -46,34 +48,28 @@ export default function AdminreservationPage() {
       .catch(() => setReservations([]));
   }, []);
 
-  // Archivage (à adapter selon ton endpoint existant)
   const handleArchive = async (id: string) => {
-    await fetch(`http://localhost:3001/reservations/${id}`, {
+    await fetch(`/api/reservations/${id}`, {
       method: "PUT",
       credentials: "include",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ statut: "archived" }), // Adapter selon DTO
+      body: JSON.stringify({ statut: "archived" }),
     });
     setReservations((prev) =>
       prev.map((c) => (c.id === id ? { ...c, statut: "archived" } : c))
     );
   };
 
-  const confirmSuppression = (id: string) => {
-    setCommandeASupprimer(id);
-  };
+  const confirmSuppression = (id: string) => setCommandeASupprimer(id);
 
   const handleDeleteConfirm = async () => {
-    if (commandeASupprimer) {
-      await fetch(`http://localhost:3001/reservations/${commandeASupprimer}`, {
-        method: "DELETE",
-        credentials: "include",
-      });
-      setReservations((prev) =>
-        prev.filter((c) => c.id !== commandeASupprimer)
-      );
-      setCommandeASupprimer(null);
-    }
+    if (!commandeASupprimer) return;
+    await fetch(`/api/reservations/${commandeASupprimer}`, {
+      method: "DELETE",
+      credentials: "include",
+    });
+    setReservations((prev) => prev.filter((c) => c.id !== commandeASupprimer));
+    setCommandeASupprimer(null);
   };
 
   return (

@@ -5,6 +5,8 @@ import Tablebaskets from "@/app/components/table/TableBaskets";
 import Formbasket from "@/app/components/form/FormBasket";
 import ConfirmModal from "@/app/components/modal/ConfirmModal";
 
+export const dynamic = "force-dynamic";
+
 type Basket = {
   id: string;
   name: string;
@@ -28,9 +30,7 @@ export default function AdminbasketsPage() {
   const [baskets, setBaskets] = useState<Basket[]>([]);
 
   const fetchbaskets = async () => {
-    const res = await fetch("http://localhost:3001/baskets", {
-      credentials: "include",
-    });
+    const res = await fetch("/api/baskets", { credentials: "include" });
     const data: Backendbasket[] = await res.json();
     const mapped: Basket[] = data.map((b) => ({
       id: b.id,
@@ -43,13 +43,13 @@ export default function AdminbasketsPage() {
   };
 
   useEffect(() => {
-    fetchbaskets();
+    void fetchbaskets();
   }, []);
 
   const handleDelete = async () => {
     if (!selected) return;
     try {
-      await fetch(`http://localhost:3001/baskets/${selected.id}`, {
+      await fetch(`/api/baskets/${selected.id}`, {
         method: "DELETE",
         credentials: "include",
       });
@@ -61,14 +61,13 @@ export default function AdminbasketsPage() {
     setSelected(null);
   };
 
-  // Création
   const handleCreate = (formData: FormData) => {
     void (async () => {
       try {
-        await fetch("http://localhost:3001/baskets", {
+        await fetch("/api/baskets", {
           method: "POST",
           credentials: "include",
-          body: formData, // pas d’en-tête Content-Type ici !
+          body: formData,
         });
         await fetchbaskets();
         setStep("list");
@@ -78,12 +77,11 @@ export default function AdminbasketsPage() {
     })();
   };
 
-  // Edition
   const handleUpdate = (formData: FormData) => {
     void (async () => {
       try {
         const id = formData.get("id") as string;
-        await fetch(`http://localhost:3001/baskets/${id}`, {
+        await fetch(`/api/baskets/${id}`, {
           method: "PUT",
           credentials: "include",
           body: formData,

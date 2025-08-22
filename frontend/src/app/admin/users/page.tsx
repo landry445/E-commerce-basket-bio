@@ -5,6 +5,8 @@ import UserCardGrid from "@/app/components/table/UserCardGrid";
 import UserDetailPanel from "@/app/components/table/UserDetailPanel";
 import ConfirmModal from "@/app/components/modal/ConfirmModal";
 
+export const dynamic = "force-dynamic";
+
 type User = {
   id: string;
   firstname: string;
@@ -18,7 +20,7 @@ type Reservation = {
   id: string;
   user_id: string;
   basket_id: string;
-  location_id: string; // Jamais null
+  location_id: string;
   price_reservation: number;
   pickup_date: string;
   statut: "active" | "archived";
@@ -28,8 +30,8 @@ type Reservation = {
 
 type ReservationApiResponse = {
   id: string;
-  user: { id: string };
-  basket: { id: string };
+  user: { id: string } | null;
+  basket: { id: string } | null;
   location: { id: string } | null;
   price_reservation: number;
   pickup_date: string;
@@ -45,58 +47,53 @@ export default function AdminUsersPage() {
   const [userToDelete, setUserToDelete] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch("http://localhost:3001/admin/users", { credentials: "include" })
+    fetch("/api/admin/users", { credentials: "include" })
       .then((res) => res.json())
-      .then((data: User[]) => setUsers(data));
+      .then((data: User[]) => setUsers(data))
+      .catch(() => setUsers([]));
   }, []);
 
   useEffect(() => {
-    fetch("http://localhost:3001/reservations", { credentials: "include" })
+    fetch("/api/reservations", { credentials: "include" })
       .then((res) => res.json())
       .then((data: ReservationApiResponse[]) => {
-        setReservations(
-          data.map(
-            (r): Reservation => ({
-              id: r.id,
-              user_id: r.user?.id ?? "",
-              basket_id: r.basket?.id ?? "",
-              location_id: r.location?.id ?? "",
-              price_reservation: r.price_reservation,
-              pickup_date: r.pickup_date,
-              statut: r.statut,
-              quantity: r.quantity,
-              non_venu: r.non_venu,
-            })
-          )
-        );
-      });
+        const mapped = data.map<Reservation>((r) => ({
+          id: r.id,
+          user_id: r.user?.id ?? "",
+          basket_id: r.basket?.id ?? "",
+          location_id: r.location?.id ?? "",
+          price_reservation: r.price_reservation,
+          pickup_date: r.pickup_date,
+          statut: r.statut,
+          quantity: r.quantity,
+          non_venu: r.non_venu,
+        }));
+        setReservations(mapped);
+      })
+      .catch(() => setReservations([]));
   }, []);
 
   const handleDeleteUser = (userId: string) => setUserToDelete(userId);
 
   const confirmDelete = async () => {
-    if (userToDelete) {
-      await fetch(`http://localhost:3001/admin/users/${userToDelete}`, {
-        method: "DELETE",
-        credentials: "include",
-      });
-      setUsers((prev) => prev.filter((u) => u.id !== userToDelete));
-      setReservations((prev) => prev.filter((r) => r.user_id !== userToDelete));
-      setUserToDelete(null);
-      setSelectedUserId(null);
-    }
+    if (!userToDelete) return;
+    await fetch(`/api/admin/users/${userToDelete}`, {
+      method: "DELETE",
+      credentials: "include",
+    });
+    setUsers((prev) => prev.filter((u) => u.id !== userToDelete));
+    setReservations((prev) => prev.filter((r) => r.user_id !== userToDelete));
+    setUserToDelete(null);
+    setSelectedUserId(null);
   };
 
   const handleMarkNonVenu = async (reservationId: string) => {
-    await fetch(
-      `http://localhost:3001/reservations/${reservationId}/non-venu`,
-      {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ non_venu: true }),
-      }
-    );
+    await fetch(`/api/reservations/${reservationId}/non-venu`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ non_venu: true }),
+    });
     setReservations((prev) =>
       prev.map((res) =>
         res.id === reservationId ? { ...res, non_venu: true } : res
@@ -123,8 +120,8 @@ export default function AdminUsersPage() {
           <UserDetailPanel
             user={selectedUser}
             reservations={userReservations}
-            baskets={[]} // À compléter
-            locations={[]} // À compléter
+            baskets={[]}
+            locations={[]}
             onMarkNonVenu={handleMarkNonVenu}
             onDelete={handleDeleteUser}
           />
