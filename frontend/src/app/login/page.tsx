@@ -54,7 +54,7 @@ export default function LoginPage() {
               href="/register"
               className="flex-1 rounded-t-xl bg-[var(--color-light)] border border-black/10 border-b-0 px-6 py-3 text-center font-semibold text-[var(--color-dark)] hover:bg-white/70 transition"
             >
-              S’enregistrer
+              S’inscrire
             </Link>
           </div>
 

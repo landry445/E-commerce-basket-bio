@@ -80,7 +80,7 @@ export default function RegisterPage() {
               Se connecter
             </Link>
             <div className="flex-1 rounded-t-xl bg-white/80 border border-black/10 border-b-0 px-6 py-3 text-center font-semibold text-[var(--color-dark)] shadow-sm">
-              S’enregistrer
+              S’inscrire
             </div>
           </div>
 
