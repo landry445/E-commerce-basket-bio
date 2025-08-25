@@ -107,3 +107,19 @@ body {
 @keyframes marquee {
   to { transform: translateX(-50%); } /* -50% si contenu dupliqué */
 }
+
+@layer base {
+  input[type="number"] {
+    appearance: textfield;     /* standard */
+    -moz-appearance: textfield; /* Firefox */
+  }
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+}
+/* Un petit ajustement pour les boutons de navigation du calendrier */
+.rdp-button {
+  border-radius: 9999px; /* arrondis */
+}
