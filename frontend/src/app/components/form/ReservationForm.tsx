@@ -4,17 +4,15 @@ import { useEffect, useMemo, useState } from "react";
 import ReservationHero from "../reservation/ReservationHero";
 import ReservationIntro from "../reservation/ReservationIntro";
 import ActionChoice from "../reservation/ActionChoice";
-import BasketCards from "../reservation/BasketCards";
 import PickupCard from "../reservation/PickupCard";
 import Toast from "../reservation/ReservationToast";
+import BasketCard from "../reservation/BasketCards";
 
-/* ---- Types ---- */
 type Basket = {
   id: string;
   name_basket: string;
   price_basket: number;
   actif: boolean;
-  // facultatifs si déjà fournis par /baskets
   description_basket?: string | null;
   composition?: string[] | null;
 };
@@ -22,7 +20,7 @@ type Basket = {
 type PickupLocation = {
   id: string;
   name_pickup: string;
-  day_of_week: number; // 0..6
+  day_of_week: number;
   actif: boolean;
 };
 
@@ -40,17 +38,14 @@ type ReservationPayload = {
 };
 
 export default function ReservationForm() {
-  /* ---- Données listes ---- */
   const [baskets, setBaskets] = useState<Basket[]>([]);
   const [locations, setLocations] = useState<PickupLocation[]>([]);
   const [loading, setLoading] = useState(true);
 
-  /* ---- Détails panier (cache local) ---- */
   const [basketDetailsMap, setBasketDetailsMap] = useState<
     Record<string, BasketDetails>
   >({});
 
-  /* ---- Action / champs ---- */
   const [action, setAction] = useState<"order" | "contact">("order");
   const [basketId, setBasketId] = useState("");
   const [locationId, setLocationId] = useState("");
@@ -58,13 +53,11 @@ export default function ReservationForm() {
   const [quantity, setQuantity] = useState(1);
   const [message, setMessage] = useState("");
 
-  /* ---- Toast ---- */
   const [toast, setToast] = useState<{
     type: "ok" | "err";
     text: string;
   } | null>(null);
 
-  /* ---- Chargement des listes ---- */
   useEffect(() => {
     (async () => {
       setLoading(true);
@@ -84,7 +77,6 @@ export default function ReservationForm() {
     })();
   }, []);
 
-  /* ---- Bornes de date ---- */
   const minDate = useMemo(() => new Date().toISOString().slice(0, 10), []);
   const maxDate = useMemo(() => {
     const d = new Date();
@@ -92,9 +84,7 @@ export default function ReservationForm() {
     return d.toISOString().slice(0, 10);
   }, []);
 
-  /* ---- Chargeur de détails d’un panier ---- */
   async function loadBasketDetails(id: string) {
-    // si la liste contient déjà des infos exploitables
     const fromList = baskets.find((b) => b.id === id);
     if (fromList && (fromList.description_basket || fromList.composition)) {
       setBasketDetailsMap((prev) => ({
@@ -106,15 +96,14 @@ export default function ReservationForm() {
       }));
       return;
     }
-
-    // si déjà en cache
     if (basketDetailsMap[id]) return;
 
-    // requête dédiée
     try {
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/baskets/${id}`,
-        { credentials: "include" }
+        {
+          credentials: "include",
+        }
       );
       if (res.ok) {
         const data = await res.json();
@@ -125,11 +114,10 @@ export default function ReservationForm() {
         setBasketDetailsMap((prev) => ({ ...prev, [id]: details }));
       }
     } catch {
-      // silencieux : absence de détails = pas de rendu additionnel
+      // silencieux
     }
   }
 
-  /* ---- Submit ---- */
   async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
@@ -176,63 +164,58 @@ export default function ReservationForm() {
 
   if (loading) return <p className="text-center py-10">Chargement…</p>;
 
+  const activeDetails = basketId ? basketDetailsMap[basketId] : undefined;
+
   return (
     <main className="bg-[var(--background)] text-[var(--foreground)] font-sans">
       <ReservationHero />
       <ReservationIntro />
 
-      <section className="container mx-auto px-4 py-6">
-        <ActionChoice value={action} onChange={setAction} />
-
+      <section className="container mx-auto px-4 py-8">
         <form
           onSubmit={submit}
-          className={
-            action === "order"
-              ? "mx-auto mt-6 grid gap-6 max-w-5xl md:grid-cols-2"
-              : "mx-auto mt-6 max-w-3xl"
-          }
+          className="max-w-3xl mx-auto bg-white rounded-2xl shadow p-6 space-y-6"
         >
-          {/* ----- Mode COMMANDER : cartes panier + carte retrait ----- */}
-          {action === "order" && (
-            <>
-              <BasketCards
-                baskets={baskets}
-                selectedId={basketId}
-                onSelect={(id) => {
-                  setBasketId(id);
-                  loadBasketDetails(id);
-                }}
-                disabled={false}
-                required={true}
-                quantity={quantity}
-                onQuantity={setQuantity}
-                activeDetails={
-                  basketId ? basketDetailsMap[basketId] : undefined
-                }
-              />
+          <ActionChoice value={action} onChange={setAction} />
 
-              <PickupCard
-                locations={locations}
-                locationId={locationId}
-                onLocation={setLocationId}
-                pickupDate={pickupDate}
-                onDate={setPickupDate}
-                minDate={minDate}
-                maxDate={maxDate}
-                disabled={false}
-                required={true}
-              />
-            </>
+          {action === "order" && (
+            <BasketCard
+              baskets={baskets}
+              selectedId={basketId}
+              onSelect={(id) => {
+                setBasketId(id);
+                loadBasketDetails(id);
+              }}
+              activeDetails={activeDetails}
+              quantity={quantity}
+              onQuantity={setQuantity}
+              disabled={false}
+              required={true}
+            />
           )}
 
-          {/* ----- Zone message : seule section visible en mode NOUS ÉCRIRE ----- */}
-          <div className={action === "order" ? "md:col-span-2" : ""}>
-            <label className="block text-sm mb-1">Votre message</label>
+          {action === "order" && (
+            <PickupCard
+              locations={locations}
+              locationId={locationId}
+              onLocation={setLocationId}
+              pickupDate={pickupDate}
+              onDate={setPickupDate}
+              minDate={minDate}
+              maxDate={maxDate}
+              disabled={false}
+              required={true}
+            />
+          )}
+
+          <div>
+            <label className="block text-sm text-gray-600 mb-1">
+              Votre message
+            </label>
             <textarea
               className="w-full rounded border px-3 py-2 min-h-28"
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              // champ requis uniquement en mode "nous écrire"
               required={action === "contact"}
               placeholder={
                 action === "contact" ? "Écrire le message ici…" : undefined
@@ -240,13 +223,12 @@ export default function ReservationForm() {
             />
           </div>
 
-          {/* ----- Bouton ----- */}
-          <div className={action === "order" ? "md:col-span-2" : "mt-4"}>
+          <div className="pt-4 border-t text-center">
             <button
               type="submit"
               className="cursor-pointer rounded-full px-6 py-2 text-white bg-[var(--color-primary)]
-                   shadow-sm hover:brightness-95 active:brightness-90 transition
-                   focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/40"
+                         shadow hover:brightness-95 active:brightness-90 transition
+                         focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/40"
             >
               {action === "order"
                 ? "Je confirme ma réservation"
@@ -255,7 +237,6 @@ export default function ReservationForm() {
           </div>
         </form>
 
-        {/* Bloc adresse en bas, inchangé */}
         <div className="mx-auto max-w-xl mt-10 text-center">
           <h2
             className="text-xl mb-2"

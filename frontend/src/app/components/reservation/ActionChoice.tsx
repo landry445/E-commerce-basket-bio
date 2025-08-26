@@ -1,3 +1,5 @@
+"use client";
+
 type Props = {
   value: "order" | "contact";
   onChange: (v: "order" | "contact") => void;
@@ -5,9 +7,11 @@ type Props = {
 
 export default function ActionChoice({ value, onChange }: Props) {
   return (
-    <div className="mx-auto mt-6 grid max-w-5xl">
-      <p className="text-xl mb-2">Que souhaites-tu faire&nbsp;*</p>
-      <div className="mt-2 space-y-2">
+    <div>
+      <p className="text-lg font-semibold mb-2">
+        Que souhaitez-vous faire&nbsp;*
+      </p>
+      <div className="space-y-2">
         <label className="flex items-center gap-2 cursor-pointer">
           <input
             type="radio"

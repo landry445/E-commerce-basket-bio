@@ -1,10 +1,10 @@
+"use client";
+
 type Basket = {
   id: string;
   name_basket: string;
   price_basket: number;
   actif: boolean;
-  description_basket?: string | null;
-  composition?: string[] | null;
 };
 
 type BasketDetails = {
@@ -16,27 +16,29 @@ type Props = {
   baskets: Basket[];
   selectedId: string;
   onSelect: (id: string) => void;
-  disabled?: boolean;
-  required?: boolean;
+  activeDetails?: BasketDetails;
   quantity: number;
   onQuantity: (q: number) => void;
-  activeDetails?: BasketDetails;
+  disabled?: boolean;
+  required?: boolean;
 };
 
-export default function BasketCards({
+export default function BasketCard({
   baskets,
   selectedId,
   onSelect,
-  disabled,
-  required,
+  activeDetails,
   quantity,
   onQuantity,
-  activeDetails,
+  disabled,
+  required,
 }: Props) {
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <div role="radiogroup" aria-label="Taille du panier">
-        <p className="text-xl mb-2">Sélection de la taille du panier&nbsp;*</p>
+        <p className="text-lg font-semibold mb-2">
+          Sélection de la taille du panier&nbsp;*
+        </p>
 
         <div className="mt-3 space-y-2">
           {baskets
@@ -50,7 +52,6 @@ export default function BasketCards({
                   key={b.id}
                   className="rounded-2xl bg-white shadow-sm border border-gray-200"
                 >
-                  {/* Carte principale */}
                   <label
                     className={[
                       "flex items-center justify-between rounded-2xl p-4 transition cursor-pointer",
@@ -81,7 +82,6 @@ export default function BasketCards({
                     <span className="text-sm">{b.price_basket} €</span>
                   </label>
 
-                  {/* Détail de composition sous la carte active */}
                   <div
                     className={[
                       "overflow-hidden transition-[max-height,opacity] duration-300 ease-out",
@@ -90,12 +90,10 @@ export default function BasketCards({
                     aria-hidden={!active}
                   >
                     <div className="px-4 pb-4 pt-0 text-sm text-gray-700">
-                      {/* Description */}
                       {activeDetails?.description ? (
                         <p className="mb-2">{activeDetails.description}</p>
                       ) : null}
 
-                      {/* Composition sous forme de puces */}
                       {activeDetails?.composition?.length ? (
                         <ul className="flex flex-wrap gap-2">
                           {activeDetails.composition.map((item, i) => (
@@ -107,14 +105,11 @@ export default function BasketCards({
                             </li>
                           ))}
                         </ul>
-                      ) : (
-                        // fallback si rien côté back
-                        !activeDetails?.description && (
-                          <p className="text-gray-500">
-                            Composition disponible selon le stock du moment.
-                          </p>
-                        )
-                      )}
+                      ) : !activeDetails?.description ? (
+                        <p className="text-gray-500">
+                          Composition disponible selon le stock du moment.
+                        </p>
+                      ) : null}
                     </div>
                   </div>
                 </div>
@@ -124,7 +119,7 @@ export default function BasketCards({
       </div>
 
       <div>
-        <label className="mb-1 text-xl block">Quantité</label>
+        <label className="block text-sm text-gray-600 mb-1">Quantité</label>
         <div className="flex items-stretch gap-2">
           <button
             type="button"
@@ -137,8 +132,10 @@ export default function BasketCards({
 
           <input
             type="number"
-            className="w-full rounded border px-3 py-2 text-center appearance-textfield
-                       [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+            className="w-full rounded border px-3 py-2 text-center
+                       appearance-textfield
+                       [&::-webkit-inner-spin-button]:appearance-none
+                       [&::-webkit-outer-spin-button]:appearance-none"
             value={quantity}
             onChange={(e) => onQuantity(Number(e.target.value))}
             min={1}

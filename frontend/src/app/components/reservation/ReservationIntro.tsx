@@ -1,3 +1,5 @@
+"use client";
+
 export default function ReservationIntro() {
   return (
     <section className="max-w-4xl mx-auto mt-5 p-6 rounded-xl shadow bg-white/60 border border-[#E9E6D8]">

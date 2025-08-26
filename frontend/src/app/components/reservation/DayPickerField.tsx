@@ -1,9 +1,8 @@
 "use client";
 
-import { fr } from "date-fns/locale";
 import { DayPicker } from "react-day-picker";
+import { fr } from "date-fns/locale";
 import "react-day-picker/dist/style.css";
-import { useMemo } from "react";
 
 type Props = {
   value: string; // "YYYY-MM-DD" ou ""
@@ -11,12 +10,10 @@ type Props = {
   minDate: string; // "YYYY-MM-DD"
   maxDate: string; // "YYYY-MM-DD"
   disabled?: boolean;
-  required?: boolean;
 };
 
 function strToDate(s: string | null): Date | undefined {
   if (!s) return undefined;
-  // ancre locale sûre (évite les décalages fuseau)
   return new Date(`${s}T00:00:00`);
 }
 function dateToStr(d?: Date): string {
@@ -38,19 +35,14 @@ export default function DayPickerField({
   const from = strToDate(minDate)!;
   const to = strToDate(maxDate)!;
 
-  // désactivation : tout ce qui n’est pas mardi/vendredi ou hors bornes
-  const disabledDays = useMemo(
-    () => [
-      { before: from, after: to },
-      (date: Date) => {
-        const day = date.getDay(); // 0..6
-        return !(day === 2 || day === 5);
-      },
-    ],
-    [from, to]
-  );
+  const disabledDays = [
+    { before: from, after: to },
+    (date: Date) => {
+      const day = date.getDay(); // 0..6
+      return !(day === 2 || day === 5); // mardi (2) et vendredi (5)
+    },
+  ];
 
-  // petites classes pour coller à la charte
   const classNames = {
     months: "flex flex-col",
     month: "w-full",
