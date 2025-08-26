@@ -7,7 +7,7 @@ import ButtonGeneric from "../button/ButtonGeneric";
 
 export default function OrderAside() {
   return (
-    <aside className="space-y-4">
+    <aside className="space-y-4 md:mr-5">
       {/* Carte info commande */}
       <div
         className="rounded-xl p-4 shadow-sm"
@@ -73,7 +73,7 @@ export default function OrderAside() {
                 Le lundi et le jeudi de 16h30 à 18h30
               </p>
             </div>
-            <ButtonGeneric href="/points-retrait" tone="cta">
+            <ButtonGeneric href="/votre-maraicher" tone="cta">
               Contactez nous
             </ButtonGeneric>
           </div>

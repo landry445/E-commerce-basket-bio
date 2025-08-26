@@ -12,32 +12,22 @@ export default function Footer() {
       <div
         className="
           w-[90%]
-          max-w-none            /* largeur libre, gérée par le padding */
           bg-[var(--color-yellow)]
           mx-auto
-          px-4 sm:px-8 md:px-12 lg:px-24   /* marge responsive */
+          px-4 sm:px-8 md:px-12 lg:px-24
           py-6
+          rounded-md
         "
       >
+        {/* Layout harmonisé : colonne en mobile, grille en desktop */}
         <div
           className="
-            grid grid-cols-2 gap-y-4
-            md:flex md:items-start md:justify-between
+            flex flex-col items-center text-center gap-4
+            md:grid md:grid-cols-4 md:items-start md:text-left md:gap-6
           "
         >
-          {/* Logo frog */}
-          <div className="col-start-1 row-start-2 md:order-1">
-            <Image
-              src="/logo-frog.png"
-              alt="Logo ferme"
-              width={110}
-              height={110}
-              priority
-            />
-          </div>
-
           {/* Adresse */}
-          <address className="col-start-1 row-start-1 not-italic text-[0.95rem] md:order-2">
+          <address className="not-italic text-[0.95rem] md:col-span-2">
             <p>
               <strong>Joan &amp; Magalie VINCE</strong>
             </p>
@@ -48,17 +38,14 @@ export default function Footer() {
             <p>Tél.&nbsp;: 06&nbsp;74&nbsp;76&nbsp;79&nbsp;90</p>
           </address>
 
-          {/* Liens */}
+          {/* Liens légaux — centrés en mobile, espacés ; colonne dédiée en desktop */}
           <nav
             className="
-              col-start-2 row-start-1 justify-self-end
-              flex flex-col gap-1 text-sm text-[var(--foreground)]
-              md:order-3
+              flex flex-col items-center gap-1 text-sm text-[var(--foreground)]
+              md:items-start md:col-span-1
             "
+            aria-label="Liens légaux"
           >
-            <a href="#" className="hover:underline">
-              Contact
-            </a>
             <Link href="/mentions-legales" className="hover:underline">
               Mentions légales
             </Link>
@@ -70,13 +57,33 @@ export default function Footer() {
             </Link>
           </nav>
 
-          {/* Logo AB */}
-          <div className="col-start-2 row-start-2 justify-self-end md:order-4">
-            <Image src="/logo-ab.svg" alt="Label AB" width={60} height={60} />
+          {/* Logos — groupés et alignés proprement */}
+          <div
+            className="
+              flex items-center gap-4
+              md:justify-end md:col-span-1
+            "
+          >
+            <Image
+              src="/logo-frog.png"
+              alt="Logo ferme"
+              width={110}
+              height={110}
+              priority
+              className="h-[60px] w-auto md:h-[70px]"
+            />
+            <Image
+              src="/logo-ab.svg"
+              alt="Label AB"
+              width={60}
+              height={60}
+              className="h-[48px] w-auto md:h-[56px]"
+            />
           </div>
         </div>
 
-        <div className="w-full text-center pt-3 text-[0.93rem] text-[var(--foreground)] opacity-90">
+        {/* Ligne séparatrice + baseline */}
+        <div className="mt-5 border-t border-black/10 pt-3 text-center text-[0.93rem] text-[var(--foreground)]/90">
           © {year} SARL Les Paniers de Plessé. Tous droits réservés.
         </div>
       </div>

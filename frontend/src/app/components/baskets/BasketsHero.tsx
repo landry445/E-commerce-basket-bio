@@ -51,7 +51,7 @@ export default function BasketsHero() {
             </h1>
 
             <div className="flex justify-center mt-8 md:mt-10">
-              <ButtonGeneric href="/points-retrait" tone="cta">
+              <ButtonGeneric href="/reserver" tone="cta">
                 RESERVER VOTRE PANIER
               </ButtonGeneric>
             </div>

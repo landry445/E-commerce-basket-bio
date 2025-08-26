@@ -109,7 +109,7 @@ export default function BasketsContent() {
         </p>
 
         <div>
-          <ButtonGeneric href="/points-retrait" tone="primary">
+          <ButtonGeneric href="/reserver" tone="primary">
             RESERVER
           </ButtonGeneric>
         </div>

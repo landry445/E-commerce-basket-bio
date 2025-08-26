@@ -36,7 +36,7 @@ function FeatureCard({ title, imgSrc, imgAlt, text }: FeatureCardProps) {
 export default function Features() {
   return (
     <section
-      className="bg-[url('/background-green.png')] bg-cover bg-center] text-white py-10 px-8"
+      className="bg-[url('/background-green.png')] bg-cover bg-center] text-white py-6 px-2"
       style={{ backgroundColor: "var(--color-primary)" }}
     >
       <div className="max-w-5xl mx-auto space-y-8">

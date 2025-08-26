@@ -46,7 +46,7 @@ export default function SalesPoints() {
   return (
     <>
       <section
-        className="bg-[url('/background-yellow.png')] bg-cover bg-center] py-10 px-4"
+        className="bg-[url('/background-yellow.png')] bg-cover bg-center] py-6 px-2"
         style={{ backgroundColor: "var(--color-yellow)" }}
       >
         <div className="max-w-5xl mx-auto">
