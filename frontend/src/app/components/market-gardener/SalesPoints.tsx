@@ -32,7 +32,10 @@ function SalesPointCard({
       <div className="md:w-2/3">
         <h3
           className="text-2xl mb-3"
-          style={{ fontFamily: "var(--font-pacifico)" }}
+          style={{
+            color: "var(--color-dark)",
+            fontFamily: "var(--font-pacifico)",
+          }}
         >
           {title}
         </h3>
@@ -52,7 +55,10 @@ export default function SalesPoints() {
         <div className="max-w-5xl mx-auto">
           <h2
             className="text-3xl text-center mb-8"
-            style={{ fontFamily: "var(--font-pacifico)" }}
+            style={{
+              color: "var(--color-dark)",
+              fontFamily: "var(--font-pacifico)",
+            }}
           >
             Nos Différents Points de ventes
           </h2>

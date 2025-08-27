@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, FormEvent } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import Image from "next/image";
 import Navbar from "@/app/components/navbar/Navbar";
 
 type RegisterPayload = {
@@ -16,6 +17,9 @@ type ApiMsg = { message?: string };
 
 export default function RegisterPage() {
   const router = useRouter();
+  const params = useSearchParams();
+  // permet de revenir directement là où l’utilisateur allait (ex: /reserver)
+  const next = params.get("next") ?? "/reserver";
 
   const [firstname, setFirstname] = useState("");
   const [lastname, setLastname] = useState("");
@@ -26,12 +30,24 @@ export default function RegisterPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const inputClass =
+    "w-full mt-1 rounded-full border border-gray-300 bg-white px-4 py-2 " +
+    "text-[var(--color-dark)] placeholder-gray-500 " +
+    "focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/30 " +
+    "focus:border-[var(--color-primary)]";
+
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
 
     if (password !== confirm) {
       setError("Les mots de passe ne correspondent pas.");
+      return;
+    }
+
+    // simple garde-fou pour le numéro FR (optionnel, serveur fait foi)
+    if (!/^0[1-9]\d{8}$/.test(phone)) {
+      setError("Format de téléphone invalide (ex. 06XXXXXXXX).");
       return;
     }
 
@@ -45,174 +61,182 @@ export default function RegisterPage() {
         password,
       };
 
-      const res = await fetch("http://localhost:3001/auth/register", {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/register`,
+        {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        }
+      );
 
       const data = (await res.json().catch(() => ({}))) as ApiMsg;
 
       if (!res.ok) {
         setError(data.message || "Inscription impossible.");
       } else {
-        // redirection simple (n’affecte pas la mécanique du login)
-        router.push("/login");
+        // cohérence UX : retour sur login avec le next conservé
+        router.push(`/login?next=${encodeURIComponent(next)}`);
       }
     } catch {
       setError("Erreur réseau, réessayer.");
     }
     setLoading(false);
-  };
+  }
 
   return (
     <>
       <Navbar />
-      <main className="min-h-screen bg-[var(--color-light)] flex items-center justify-center px-4 py-10">
-        <section className="w-full max-w-md">
-          {/* Onglets visuels (register actif) */}
-          <div className="flex">
-            <Link
-              href="/login"
-              className="flex-1 rounded-t-xl bg-[var(--color-light)] border border-black/10 border-b-0 px-6 py-3 text-center font-semibold text-[var(--color-dark)] hover:bg-white/70 transition"
-            >
-              Se connecter
-            </Link>
-            <div className="flex-1 rounded-t-xl bg-white/80 border border-black/10 border-b-0 px-6 py-3 text-center font-semibold text-[var(--color-dark)] shadow-sm">
-              S’inscrire
-            </div>
-          </div>
 
+      <main className="py-30 bg-[var(--color-light)] flex items-center justify-center px-4">
+        <section className="w-full max-w-xl">
+          {/* Bandeau UX commun à la page login */}
+          <div className="text-center mb-6">
+            <h1
+              className="text-3xl font-bold"
+              style={{ fontFamily: "var(--font-pacifico)" }}
+            >
+              Créer un compte
+            </h1>
+            <p className="mt-2 text-gray-700">
+              Un compte permet de réserver vos paniers et de suivre vos
+              retraits.
+            </p>
+          </div>
           {/* Carte + formulaire */}
-          <form
-            onSubmit={handleSubmit}
-            className="bg-white rounded-b-xl border border-black/10 shadow-xl px-8 py-8 flex flex-col gap-5"
-          >
+          <div className="bg-white rounded-b-xl border border-black/10 shadow-xl px-8 py-8">
+            <div className="flex justify-center mb-4">
+              <Image src="/logo-frog.png" alt="Logo" width={60} height={60} />
+            </div>
+
             {error && (
-              <div className="bg-red-100 text-red-700 rounded px-3 py-2 text-sm">
+              <div className="bg-red-100 text-red-700 rounded px-3 py-2 text-sm mb-4">
                 {error}
               </div>
             )}
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="flex flex-col gap-2">
-                <label
-                  htmlFor="firstname"
-                  className="text-sm font-semibold text-[var(--color-dark)]"
-                >
-                  Prénom
-                </label>
-                <input
-                  id="firstname"
-                  type="text"
-                  className="border border-black/20 rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
-                  value={firstname}
-                  onChange={(e) => setFirstname(e.target.value)}
-                  required
-                />
+            <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="firstname" className="text-sm font-semibold">
+                    Prénom
+                  </label>
+                  <input
+                    id="firstname"
+                    type="text"
+                    className={inputClass}
+                    value={firstname}
+                    onChange={(e) => setFirstname(e.target.value)}
+                    autoComplete="given-name"
+                    required
+                  />
+                </div>
+                <div>
+                  <label htmlFor="lastname" className="text-sm font-semibold">
+                    Nom
+                  </label>
+                  <input
+                    id="lastname"
+                    type="text"
+                    className={inputClass}
+                    value={lastname}
+                    onChange={(e) => setLastname(e.target.value)}
+                    autoComplete="family-name"
+                    required
+                  />
+                </div>
               </div>
-              <div className="flex flex-col gap-2">
-                <label
-                  htmlFor="lastname"
-                  className="text-sm font-semibold text-[var(--color-dark)]"
-                >
-                  Nom
-                </label>
-                <input
-                  id="lastname"
-                  type="text"
-                  className="border border-black/20 rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
-                  value={lastname}
-                  onChange={(e) => setLastname(e.target.value)}
-                  required
-                />
-              </div>
-            </div>
 
-            <div className="flex flex-col gap-2">
-              <label
-                htmlFor="email"
-                className="text-sm font-semibold text-[var(--color-dark)]"
+              <div>
+                <label htmlFor="email" className="text-sm font-semibold">
+                  Email
+                </label>
+                <input
+                  id="email"
+                  type="email"
+                  className={inputClass}
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="votre@email.com"
+                  autoComplete="email"
+                  required
+                />
+              </div>
+
+              <div>
+                <label htmlFor="phone" className="text-sm font-semibold">
+                  Téléphone
+                </label>
+                <input
+                  id="phone"
+                  type="tel"
+                  className={inputClass}
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="06XXXXXXXX"
+                  autoComplete="tel"
+                  inputMode="numeric"
+                  required
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Utilisé pour les rappels de retrait (jamais partagé).
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="password" className="text-sm font-semibold">
+                    Mot de passe
+                  </label>
+                  <input
+                    id="password"
+                    type="password"
+                    className={inputClass}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    autoComplete="new-password"
+                    required
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    8 caractères min. Conseillé : chiffres + lettres.
+                  </p>
+                </div>
+                <div>
+                  <label htmlFor="confirm" className="text-sm font-semibold">
+                    Confirmer
+                  </label>
+                  <input
+                    id="confirm"
+                    type="password"
+                    className={inputClass}
+                    value={confirm}
+                    onChange={(e) => setConfirm(e.target.value)}
+                    autoComplete="new-password"
+                    required
+                  />
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                className="bg-[var(--color-primary)] hover:opacity-90 text-white font-semibold rounded-full py-2 mt-2 transition disabled:opacity-60"
+                disabled={loading}
               >
-                Email
-              </label>
-              <input
-                id="email"
-                type="email"
-                className="border border-black/20 rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="votre@email.com"
-                autoComplete="email"
-                required
-              />
-            </div>
+                {loading ? "Création en cours..." : "S’enregistrer"}
+              </button>
 
-            <div className="flex flex-col gap-2">
-              <label
-                htmlFor="phone"
-                className="text-sm font-semibold text-[var(--color-dark)]"
-              >
-                Téléphone
-              </label>
-              <input
-                id="phone"
-                type="tel"
-                className="border border-black/20 rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder="06XXXXXXXX"
-                autoComplete="tel"
-                required
-              />
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="flex flex-col gap-2">
-                <label
-                  htmlFor="password"
-                  className="text-sm font-semibold text-[var(--color-dark)]"
+              <p className="text-center text-sm text-gray-700">
+                Déjà inscrit ?{" "}
+                <Link
+                  href={`/login?next=${encodeURIComponent(next)}`}
+                  className="text-[var(--color-accent)] font-medium hover:underline"
                 >
-                  Mot de passe
-                </label>
-                <input
-                  id="password"
-                  type="password"
-                  className="border border-black/20 rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  autoComplete="new-password"
-                  required
-                />
-              </div>
-              <div className="flex flex-col gap-2">
-                <label
-                  htmlFor="confirm"
-                  className="text-sm font-semibold text-[var(--color-dark)]"
-                >
-                  Confirmer
-                </label>
-                <input
-                  id="confirm"
-                  type="password"
-                  className="border border-black/20 rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
-                  value={confirm}
-                  onChange={(e) => setConfirm(e.target.value)}
-                  autoComplete="new-password"
-                  required
-                />
-              </div>
-            </div>
-
-            <button
-              type="submit"
-              className="bg-[var(--color-accent)] cursor-pointer hover:brightness-105 text-white font-bold rounded-full py-2 mt-2 transition"
-              disabled={loading}
-            >
-              {loading ? "Création en cours..." : "S’enregistrer"}
-            </button>
-          </form>
+                  Se connecter
+                </Link>
+              </p>
+            </form>
+          </div>
         </section>
       </main>
     </>

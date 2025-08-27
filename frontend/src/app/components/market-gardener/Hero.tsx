@@ -15,8 +15,11 @@ export default function Hero() {
       />
       <div className="absolute inset-0 flex items-center justify-center">
         <h1
-          className="marquee-text text-5xl md:text-6xl text-center px-4"
-          style={{ fontFamily: "var(--font-pacifico)" }}
+          className="text-5xl md:text-6xl text-center px-4"
+          style={{
+            fontFamily: "var(--font-pacifico)",
+            color: "var(--color-light)",
+          }}
         >
           Votre maraîcher : une exploitation agricole bio
         </h1>

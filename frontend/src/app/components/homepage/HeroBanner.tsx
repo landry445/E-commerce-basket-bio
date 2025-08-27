@@ -23,7 +23,7 @@ export default function HeroBanner() {
       {/* Contenu slogan */}
       <div className="relative z-10 text-center px-4 font-sans">
         <h1
-          className="text-3xl md:text-5xl "
+          className=" text-5xl md:text-6xl text-center px-4 "
           style={{
             color: "var(--color-light)",
             fontFamily: "var(--font-pacifico)",

@@ -68,9 +68,7 @@ export default function NavbarLinks({
               aria-current={isActive ? "page" : undefined}
               className={[
                 "transition-colors hover:text-primary cursor-pointer",
-                isActive
-                  ? "underline underline-offset-4 decoration-primary"
-                  : "",
+                isActive ? "text-primary" : "",
               ].join(" ")}
             >
               {item.label}

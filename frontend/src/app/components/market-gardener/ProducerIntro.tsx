@@ -4,7 +4,10 @@ export default function ProducerIntro() {
       <div className="max-w-4xl mx-auto p-6 rounded shadow">
         <h2
           className="text-3xl  text-center mb-4"
-          style={{ fontFamily: "var(--font-pacifico)" }}
+          style={{
+            color: "var(--color-dark)",
+            fontFamily: "var(--font-pacifico)",
+          }}
         >
           Un producteur de fruits et légumes bio
         </h2>

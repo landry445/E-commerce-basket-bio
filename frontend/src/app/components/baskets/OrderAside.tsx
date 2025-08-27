@@ -23,7 +23,10 @@ export default function OrderAside() {
         >
           <h3
             className="text-center text-3xl md:text-3xl mb-4"
-            style={{ fontFamily: "var(--font-pacifico)" }}
+            style={{
+              color: "var(--color-dark)",
+              fontFamily: "var(--font-pacifico)",
+            }}
           >
             Pour commander
           </h3>

@@ -14,7 +14,10 @@ export default function BasketsContent() {
       <section>
         <h2
           className="text-3xl md:text-3xl mb-2"
-          style={{ fontFamily: "var(--font-pacifico)" }}
+          style={{
+            color: "var(--color-dark)",
+            fontFamily: "var(--font-pacifico)",
+          }}
         >
           Nos Paniers
         </h2>
@@ -58,7 +61,10 @@ export default function BasketsContent() {
       <section>
         <h3
           className="text-3xl md:text-3xl mb-2"
-          style={{ fontFamily: "var(--font-pacifico)" }}
+          style={{
+            color: "var(--color-dark)",
+            fontFamily: "var(--font-pacifico)",
+          }}
         >
           Composition des paniers par saison
         </h3>
@@ -119,7 +125,10 @@ export default function BasketsContent() {
       <section className="space-y-4">
         <h3
           className="text-3xl md:text-3xl"
-          style={{ fontFamily: "var(--font-pacifico)" }}
+          style={{
+            color: "var(--color-dark)",
+            fontFamily: "var(--font-pacifico)",
+          }}
         >
           Nos conditions et tarifs
         </h3>
@@ -145,7 +154,10 @@ export default function BasketsContent() {
           <div>
             <h3
               className="text-3xl md:text-3xl mb-2"
-              style={{ fontFamily: "var(--font-pacifico)" }}
+              style={{
+                color: "var(--color-dark)",
+                fontFamily: "var(--font-pacifico)",
+              }}
             >
               Tarifs des paniers de légumes
             </h3>
@@ -177,7 +189,10 @@ export default function BasketsContent() {
           <div>
             <h3
               className="text-3xl md:text-3xl mb-2"
-              style={{ fontFamily: "var(--font-pacifico)" }}
+              style={{
+                color: "var(--color-dark)",
+                fontFamily: "var(--font-pacifico)",
+              }}
             >
               Tarifs des œufs frais
             </h3>

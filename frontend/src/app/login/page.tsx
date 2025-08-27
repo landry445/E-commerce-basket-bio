@@ -1,122 +1,129 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import Navbar from "@/app/components/navbar/Navbar";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useState, FormEvent } from "react";
+import Image from "next/image";
+import Footer from "../components/Footer";
+import Navbar from "../components/navbar/Navbar";
 
 export default function LoginPage() {
   const router = useRouter();
+  const params = useSearchParams();
+  const next = params.get("next") ?? "/reserver";
 
-  // ⬇️ mêmes states que ton fichier initial
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // ⬇️ même handleSubmit (mécanique inchangée)
-  const handleSubmit = async (e: React.FormEvent) => {
+  async function onSubmit(e: FormEvent) {
     e.preventDefault();
     setError(null);
     setLoading(true);
+
     try {
-      const res = await fetch("http://localhost:3001/auth/login", {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/login`,
+        {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password }),
+        }
+      );
 
       if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        setError((data as { message?: string }).message || "Erreur inconnue");
-      } else {
-        // ⬇️ redirection identique à ton code
-        router.push("/admin/reservations");
+        const body = await res.json().catch(() => null);
+        setError(body?.message ?? "Identifiants incorrects");
+        setLoading(false);
+        return;
       }
+
+      router.replace(next);
     } catch {
-      setError("Erreur réseau, veuillez réessayer.");
+      setError("Impossible de contacter le serveur");
+      setLoading(false);
     }
-    setLoading(false);
-  };
+  }
 
   return (
     <>
       <Navbar />
-      <main className="min-h-screen bg-[var(--color-light)] flex items-center justify-center px-4 py-10">
-        <section className="w-full max-w-md">
-          {/* Onglets visuels (login actif) */}
-          <div className="flex">
-            <div className="flex-1 rounded-t-xl bg-white/80 border border-black/10 border-b-0 px-6 py-3 text-center font-semibold text-[var(--color-dark)] shadow-sm">
-              Se connecter
-            </div>
-            <Link
-              href="/register"
-              className="flex-1 rounded-t-xl bg-[var(--color-light)] border border-black/10 border-b-0 px-6 py-3 text-center font-semibold text-[var(--color-dark)] hover:bg-white/70 transition"
-            >
-              S’inscrire
-            </Link>
+      <main className="px-4 py-50 flex flex-col items-center justify-center bg-[var(--color-light)]">
+        {/* Bannière UX */}
+        <div className="max-w-md w-full text-center mb-8">
+          <h1
+            className="text-3xl font-bold"
+            style={{ fontFamily: "var(--font-pacifico)" }}
+          >
+            Connexion requise
+          </h1>
+          <p className="mt-2 text-gray-700">
+            Connectez-vous pour réserver votre panier bio et suivre vos
+            retraits.
+          </p>
+        </div>
+
+        {/* Carte de connexion */}
+        <div className="max-w-md w-full bg-white rounded-2xl shadow-lg p-8">
+          <div className="flex justify-center mb-4">
+            <Image src="/logo-frog.png" alt="Logo" width={60} height={60} />
           </div>
 
-          {/* Carte + formulaire (mécanique identique) */}
-          <form
-            onSubmit={handleSubmit}
-            className="bg-white rounded-b-xl border border-black/10 shadow-xl px-8 py-8 flex flex-col gap-5"
-          >
-            {error && (
-              <div className="bg-red-100 text-red-700 rounded px-3 py-2 text-sm">
-                {error}
-              </div>
-            )}
-
-            <div className="flex flex-col gap-2">
-              <label
-                htmlFor="email"
-                className="text-sm text-[var(--color-dark)] font-semibold"
-              >
-                Email
-              </label>
+          <form onSubmit={onSubmit} className="space-y-4">
+            <div>
+              <label className="block text-sm">Email</label>
               <input
-                id="email"
                 type="email"
-                className="border border-black/20 rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
+                required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="votre@email.com"
                 autoComplete="email"
-                required
+                className="w-full mt-1 rounded-full border border-gray-300 bg-white
+             px-4 py-2 text-[var(--color-dark)] placeholder-gray-500
+             focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/30
+             focus:border-[var(--color-primary)]"
               />
             </div>
 
-            <div className="flex flex-col gap-2">
-              <label
-                htmlFor="password"
-                className="text-sm text-[var(--color-dark)] font-semibold"
-              >
-                Mot de passe
-              </label>
+            <div>
+              <label className="block text-sm">Mot de passe</label>
               <input
-                id="password"
                 type="password"
-                className="border border-black/20 rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
+                required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Mot de passe"
                 autoComplete="current-password"
-                required
+                className="w-full mt-1 rounded-full border border-gray-300 bg-white
+             px-4 py-2 text-[var(--color-dark)] placeholder-gray-500
+             focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/30
+             focus:border-[var(--color-primary)]"
               />
             </div>
+
+            {error && <p className="text-sm text-red-600">{error}</p>}
 
             <button
               type="submit"
-              className="bg-[var(--color-accent)] cursor-pointer hover:brightness-105 text-white font-bold rounded-full py-2 mt-2 transition"
               disabled={loading}
+              className="w-full bg-[var(--color-primary)] text-white py-2 rounded-full shadow hover:opacity-90 transition"
             >
               {loading ? "Connexion..." : "Se connecter"}
             </button>
           </form>
-        </section>
+
+          <p className="mt-4 text-center text-sm">
+            Nouveau client ?{" "}
+            <a
+              href="/register"
+              className="text-[var(--color-accent)] font-medium hover:underline"
+            >
+              Créez un compte
+            </a>
+          </p>
+        </div>
       </main>
+      <Footer />
     </>
   );
 }

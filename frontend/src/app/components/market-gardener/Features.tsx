@@ -42,7 +42,9 @@ export default function Features() {
       <div className="max-w-5xl mx-auto space-y-8">
         <h2
           className="text-3xl text-center mb-8"
-          style={{ fontFamily: "var(--font-pacifico)" }}
+          style={{
+            fontFamily: "var(--font-pacifico)",
+          }}
         >
           Notre Exploitation 100% BIO
         </h2>
