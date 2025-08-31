@@ -1,4 +1,3 @@
-import Navbar from "./components/navbar/Navbar";
 import HeroBanner from "./components/homepage/HeroBanner";
 import BioBaskets from "./components/homepage/BioBaskets";
 import SellingPoints from "./components/homepage/SellingPoints";
@@ -6,6 +5,7 @@ import type { FAQItem } from "./components/homepage/FAQ";
 import FAQ from "./components/homepage/FAQ";
 import Footer from "./components/Footer";
 import ScrollingBanner from "./components/ScrollingBanner";
+import Navbar from "./components/navbar/Navbar";
 
 const faqItems: FAQItem[] = [
   { id: "q1", question: "Commande", answer: "Procédure simple sur le site." },

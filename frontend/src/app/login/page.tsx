@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState, FormEvent } from "react";
+import { useState, FormEvent, useEffect } from "react";
 import Image from "next/image";
 import Footer from "../components/Footer";
 import Navbar from "../components/navbar/Navbar";
@@ -15,6 +15,27 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/auth/me", {
+          credentials: "include",
+          cache: "no-store",
+        });
+        if (!cancelled && res.ok) {
+          // déjà connecté → vers la page de réservation (ou params ?next=…)
+          router.replace(next);
+        }
+      } catch {
+        // silence UI
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [next, router]);
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();

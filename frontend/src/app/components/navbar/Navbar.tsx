@@ -1,87 +1,103 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import Image from "next/image";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
+import { useEffect, useRef, useState } from "react";
 import NavbarLinks from "./NavbarLinks";
+import { useAuth } from "@/app/hooks/useAuth";
 import NavbarUserButton from "./NavbarUserButton";
 
-type NavbarProps = {
-  user?: { firstname: string; isAdmin: boolean };
-  onLogout?: () => void;
-};
+export default function Navbar() {
+  const router = useRouter();
+  const { user, isAuthenticated } = useAuth();
 
-export default function Navbar({ user, onLogout }: NavbarProps) {
   const [open, setOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
+  const firstFocusable = useRef<HTMLButtonElement | null>(null);
+
+  const [atTop, setAtTop] = useState(true);
   const [hidden, setHidden] = useState(false);
-  const lastYRef = useRef(0);
+  const lastY = useRef(0);
 
   useEffect(() => {
-    const onScrollOrResize = () => {
+    const onScroll = () => {
       const y = window.scrollY;
-      const threshold = window.innerHeight * 0.5; // moitié exacte de l’écran
-
-      setScrolled(y > 8);
-
-      const goingDown = y > lastYRef.current + 2;
-      const beyondThreshold = y > threshold;
-
-      // Masquage seulement au-delà du seuil ET en défilement descendant
-      setHidden(beyondThreshold && goingDown && !open);
-
-      // Réapparition immédiate si on remonte ou si on repasse sous le seuil
-      if (!goingDown || !beyondThreshold) setHidden(false);
-
-      lastYRef.current = y;
+      setAtTop(y <= 8);
+      setHidden(y > lastY.current && y > 64);
+      lastY.current = y;
     };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
-    onScrollOrResize();
-    window.addEventListener("scroll", onScrollOrResize, { passive: true });
-    window.addEventListener("resize", onScrollOrResize);
+  // Verrouillage scroll + focus
+  useEffect(() => {
+    const root = document.documentElement;
+    if (open) {
+      root.style.overflow = "hidden";
+      firstFocusable.current?.focus();
+    } else {
+      root.style.overflow = "";
+    }
     return () => {
-      window.removeEventListener("scroll", onScrollOrResize);
-      window.removeEventListener("resize", onScrollOrResize);
+      root.style.overflow = "";
     };
   }, [open]);
 
+  // Échap pour fermer
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    if (open) window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open]);
+
+  async function handleLogout(): Promise<void> {
+    try {
+      await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/logout`, {
+        method: "POST",
+        credentials: "include",
+      });
+    } catch {
+      // silencieux
+    } finally {
+      setOpen(false);
+      router.replace("/login");
+      router.refresh();
+    }
+  }
+
+  const headerClass = [
+    "fixed inset-x-0 top-0 z-50 transition-transform duration-300",
+    hidden ? "-translate-y-full" : "translate-y-0",
+    atTop
+      ? "bg-[var(--background)]"
+      : "bg-[var(--background)]/90 backdrop-blur-sm border-b border-black/5 shadow-sm",
+  ].join(" ");
+
+  const reserveHref = isAuthenticated ? "/reserver" : "/login";
+  const panelWidthClass = "w-[40vw] max-w-[420px] min-w-[320px]";
+
   return (
     <>
-      {/* Header fixe qui coulisse */}
-      <nav
-        className={[
-          "fixed inset-x-0 top-0 z-50 transform transition-all duration-300 motion-reduce:transition-none",
-          hidden ? "-translate-y-full" : "translate-y-0",
-          scrolled
-            ? "bg-light/90 supports-[backdrop-filter]:backdrop-blur border-b border-black/5 shadow-sm"
-            : "bg-light",
-        ].join(" ")}
-        aria-label="Barre de navigation principale"
-      >
-        <div className="flex items-center justify-between px-8 py-2">
-          {/* Logo */}
-          <div className="flex items-center gap-2">
-            <Link href="/" aria-label="Aller à l’accueil">
-              <Image
-                src="/logo-frog.png"
-                alt="Logo frog"
-                width={40}
-                height={40}
-              />
-            </Link>
+      <header className={headerClass}>
+        <div className="max-w-[1440px] mx-auto flex items-center justify-between px-4 py-3 gap-4">
+          <Link href="/" aria-label="Aller à l’accueil" className="shrink-0">
+            <Image
+              src="/logo-frog.png"
+              alt="Logo"
+              width={40}
+              height={40}
+              priority
+            />
+          </Link>
+
+          <div className="hidden md:block">
+            <NavbarLinks isAuthenticated={isAuthenticated} variant="desktop" />
           </div>
 
-          {/* Liens desktop */}
-          <div className="hidden md:flex flex-1 items-center justify-center">
-            <NavbarLinks />
-          </div>
-
-          {/* Utilisateur desktop */}
-          <div className="hidden md:flex items-center">
-            <NavbarUserButton user={user} onLogout={onLogout} />
-          </div>
-
-          {/* Burger mobile */}
           <button
             onClick={() => setOpen(true)}
             className="flex md:hidden cursor-pointer p-2 rounded hover:bg-primary/10 transition"
@@ -93,90 +109,231 @@ export default function Navbar({ user, onLogout }: NavbarProps) {
               <rect y="14" width="20" height="2" rx="1" fill="#5B8C51" />
             </svg>
           </button>
-        </div>
-      </nav>
 
-      {/* Espace réservé sous header fixe */}
-      <div aria-hidden className="h-12 md:h-[56px]" />
-
-      {/* Menu latéral mobile — un seul CTA sous l’icône login */}
-      <div
-        className={`fixed top-0 right-0 h-full w-64 bg-light border-l z-[60] transform transition-transform duration-300 ease-in-out ${
-          open ? "translate-x-0" : "translate-x-full"
-        } md:hidden`}
-      >
-        <div className="flex flex-col h-full p-6 gap-6 pb-[env(safe-area-inset-bottom)]">
-          {/* Icône / bouton utilisateur en premier */}
-          <div className=" ml-20 mt-10">
+          <div className="hidden md:block">
             <NavbarUserButton
-              user={user}
-              onLogout={onLogout}
-              isMobile
-              onAfterClick={() => setOpen(false)}
+              user={
+                user
+                  ? { firstname: user.firstname, isAdmin: user.is_admin }
+                  : undefined
+              }
+              onLogout={handleLogout}
             />
           </div>
-
-          {/* Liens */}
-          <NavbarLinks
-            onNavigate={() => setOpen(false)}
-            className="flex flex-col gap-6"
-          />
-          {/* Bouton fermer */}
-          <button
-            className="absolute top-3 right-3 p-2 rounded hover:bg-primary/10"
-            aria-label="Fermer le menu"
-            onClick={() => setOpen(false)}
-          >
-            <svg viewBox="0 0 20 20" fill="none" className="w-6 h-6">
-              <line
-                x1="4"
-                y1="4"
-                x2="16"
-                y2="16"
-                stroke="#5B8C51"
-                strokeWidth="2"
-              />
-              <line
-                x1="16"
-                y1="4"
-                x2="4"
-                y2="16"
-                stroke="#5B8C51"
-                strokeWidth="2"
-              />
-            </svg>
-          </button>
         </div>
+      </header>
+
+      {/* Drawer mobile au-dessus du header (z-[60]) */}
+      <div
+        className={[
+          "fixed inset-0 z-[60] md:hidden",
+          open ? "" : "pointer-events-none",
+        ].join(" ")}
+      >
+        {/* Overlay à gauche */}
+        <div
+          onClick={() => setOpen(false)}
+          className={[
+            "absolute top-0 bottom-0 left-0 bg-black/40 transition-opacity",
+            open ? "opacity-100" : "opacity-0",
+          ].join(" ")}
+          style={{ right: "40vw" }}
+        />
+
+        {/* Panneau à droite plein écran vertical, démarre tout en haut */}
+        <aside
+          aria-label="Menu principal"
+          role="dialog"
+          aria-modal="true"
+          className={[
+            "absolute top-0 right-0 h-full",
+            panelWidthClass,
+            "bg-[var(--background)] shadow-2xl ring-1 ring-black/10",
+            "transition-transform duration-300",
+            open ? "translate-x-0" : "translate-x-full",
+            "flex flex-col",
+          ].join(" ")}
+        >
+          {/* En-tête sticky avec bouton Fermer présent dès l’ouverture */}
+          <div className="sticky top-0 z-10 flex items-center justify-between p-4 border-b border-black/5 bg-[var(--background)]">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full  text-white flex items-center justify-center font-bold">
+                {(isAuthenticated ? user?.firstname?.[0] : "U")?.toUpperCase()}
+              </div>
+            </div>
+            <button
+              ref={firstFocusable}
+              type="button"
+              aria-label="Fermer le menu"
+              onClick={() => setOpen(false)}
+              className="inline-flex items-center justify-center w-10 h-10 rounded-full hover:bg-black/5 text-[var(--color-primary)]"
+            >
+              <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden>
+                <path
+                  d="M6 6l12 12M18 6l-12 12"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
+              </svg>
+            </button>
+          </div>
+
+          {/* Contenu scrollable */}
+          <div className="flex-1 overflow-y-auto px-5 pb-24 pt-5 flex flex-col items-center">
+            <nav className="flex flex-col gap-4 text-[var(--color-dark)] font-medium items-center">
+              {isAuthenticated && (
+                <div className="mt-6 flex flex-col gap-3">
+                  <DrawerButtonLink
+                    href="/mon-compte"
+                    onClick={() => setOpen(false)}
+                    label="Mon compte"
+                  />
+                  {user?.is_admin && (
+                    <DrawerButtonLink
+                      href="/admin/paniers"
+                      onClick={() => setOpen(false)}
+                      label="Espace admin"
+                    />
+                  )}
+                </div>
+              )}
+              <Link
+                href="/"
+                aria-label="Aller à l’accueil"
+                className="shrink-0"
+              >
+                <Image
+                  src="/logo-frog.png"
+                  alt="Logo"
+                  width={40}
+                  height={40}
+                  priority
+                />
+              </Link>
+              <DrawerTextLink
+                href="/"
+                onClick={() => setOpen(false)}
+                label="Accueil"
+              />
+              <DrawerTextLink
+                href="/paniers"
+                onClick={() => setOpen(false)}
+                label="Nos paniers"
+              />
+              <DrawerTextLink
+                href="/votre-maraicher"
+                onClick={() => setOpen(false)}
+                label="Votre maraîcher"
+              />
+            </nav>
+
+            <div className="mt-6">
+              <Link
+                href={reserveHref}
+                onClick={() => setOpen(false)}
+                className={[
+                  "inline-flex items-center justify-center",
+                  "rounded-full px-5 h-11 font-semibold",
+                  "bg-[var(--color-yellow)] text-[var(--color-dark)] ring-1 ring-black/10 shadow-sm",
+                  "hover:bg-[var(--color-primary)] hover:text-white transition-all",
+                ].join(" ")}
+              >
+                Réservez
+                <svg
+                  className="ml-2"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 20 20"
+                  aria-hidden
+                  fill="currentColor"
+                >
+                  <path d="M7 4l6 6-6 6" />
+                </svg>
+              </Link>
+            </div>
+          </div>
+
+          {/* Action bas de panneau */}
+          <div className="absolute bottom-0 left-0 right-0 p-5 border-t border-black/5 bg-[var(--background)]">
+            {isAuthenticated ? (
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="w-full h-11 rounded-full bg-[var(--color-primary)] text-white font-semibold hover:opacity-90 transition"
+              >
+                Se déconnecter
+              </button>
+            ) : (
+              <Link
+                href="/login"
+                onClick={() => setOpen(false)}
+                className="block w-full h-11 text-center leading-[2.75rem] rounded-full border font-semibold hover:bg-black/5 transition"
+              >
+                Se connecter
+              </Link>
+            )}
+          </div>
+        </aside>
       </div>
 
-      {/* Overlay mobile */}
-      {open && (
-        <div
-          className="fixed inset-0 bg-black/30 z-[55] md:hidden"
-          onClick={() => setOpen(false)}
-          aria-hidden
-        />
-      )}
-
-      {/* Burger flottant visible quand le header est masqué */}
-      {hidden && !open && (
-        <button
-          onClick={() => setOpen(true)}
-          aria-label="Ouvrir le menu"
-          className="fixed md:hidden bottom-4 right-4 z-[65] w-12 h-12 rounded-full border border-dark/20 bg-light shadow-lg
-                     hover:bg-primary hover:text-white transition"
-        >
-          <svg
-            viewBox="0 0 20 20"
-            fill="currentColor"
-            className="w-6 h-6 mx-auto"
-          >
-            <rect y="4" width="20" height="2" rx="1" />
-            <rect y="9" width="20" height="2" rx="1" />
-            <rect y="14" width="20" height="2" rx="1" />
-          </svg>
-        </button>
-      )}
+      {/* Espace sous header fixe */}
+      <div className="h-16 md:h-[68px]" />
     </>
+  );
+}
+
+/* ---------- Liens du drawer ---------- */
+
+function DrawerTextLink({
+  href,
+  label,
+  onClick,
+}: {
+  href: string;
+  label: string;
+  onClick?: () => void;
+}) {
+  return (
+    <Link
+      href={href}
+      onClick={onClick}
+      className="block px-1 py-2 rounded-md hover:bg-[var(--color-primary)] hover:text-white transition"
+    >
+      {label}
+    </Link>
+  );
+}
+
+function DrawerButtonLink({
+  href,
+  label,
+  onClick,
+}: {
+  href: string;
+  label: string;
+  onClick?: () => void;
+}) {
+  return (
+    <Link
+      href={href}
+      onClick={onClick}
+      className={[
+        "flex items-center justify-between h-11 rounded-full px-4",
+        "border hover:bg-[var(--color-primary)] hover:text-white transition",
+        "text-[var(--color-dark)] font-medium",
+      ].join(" ")}
+    >
+      <span>{label}</span>
+      <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden>
+        <path
+          d="M9 6l6 6-6 6"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          fill="none"
+        />
+      </svg>
+    </Link>
   );
 }
