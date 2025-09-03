@@ -183,7 +183,9 @@ export default function ReservationForm() {
     } else {
       setToast({
         type: "ok",
-        text: `Réservations enregistrées. Total estimé : ${eur.format(total)}.`,
+        text: `Réservations enregistrées. Total à régler sur place : ${eur.format(
+          total
+        )}.`,
       });
       setQuantities({});
       setLocationId("");
@@ -239,7 +241,7 @@ export default function ReservationForm() {
                         <button
                           type="button"
                           onClick={() => setQuantity(b.id, q - 1)}
-                          className="w-8 h-8 rounded-full border text-lg leading-none"
+                          className="w-8 h-8 rounded-full border-2 text-lg leading-none"
                           aria-label={`Retirer 1 ${b.name_basket}`}
                         >
                           −
@@ -252,13 +254,13 @@ export default function ReservationForm() {
                           onChange={(e) =>
                             setQuantity(b.id, Number(e.target.value))
                           }
-                          className="w-14 text-center rounded border px-2 py-1"
+                          className="w-14 text-center rounded border-2 px-2 py-1"
                           aria-label={`Quantité ${b.name_basket}`}
                         />
                         <button
                           type="button"
                           onClick={() => setQuantity(b.id, q + 1)}
-                          className="w-8 h-8 rounded-full border text-lg leading-none"
+                          className="w-8 h-8 rounded-full border-2 text-lg leading-none"
                           aria-label={`Ajouter 1 ${b.name_basket}`}
                         >
                           +
@@ -280,7 +282,7 @@ export default function ReservationForm() {
 
               {/* Total général */}
               <div className="mt-4 flex items-center justify-between">
-                <p className="text-gray-700">Total estimé à régler sur place</p>
+                <p className="text-gray-700">Total à régler sur place</p>
                 <p className="text-xl font-semibold">{eur.format(total)}</p>
               </div>
             </div>
@@ -328,12 +330,7 @@ export default function ReservationForm() {
                 ? "Je confirme ma réservation"
                 : "Envoyer le message"}
             </button>
-            {action === "order" && (
-              <p className="text-xs text-gray-600 mt-2">
-                Le montant affiché sert d’estimation. Le total final reste
-                calculé sur le serveur.
-              </p>
-            )}
+            {action === "order" && <p className="text-xs text-gray-600"></p>}
           </div>
         </form>
 

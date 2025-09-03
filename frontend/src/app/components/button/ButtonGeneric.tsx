@@ -13,7 +13,7 @@ type ButtonGenericProps = {
 
 const toneClasses: Record<Tone, string> = {
   primary:
-    "bg-[var(--color-primary)] hover:bg-[var(--color-dark)] text-[var(--color-light)] hover:text-[var(--color-light)]",
+    "bg-[var(--color-primary)] hover:bg-[var(--color-dark)] text-[var(--color-light)] hover:text-[var(--color-light)] border-[var(--color-dark)] border-2",
   accent:
     "bg-[var(--color-accent)] hover:bg-[var(--color-primary)] text-[var(--color-light)] hover:text-[var(--color-light)]",
   cta: "bg-[var(--color-light)] hover:bg-[var(--color-yellow)] text-[var(--foreground)] hover:text-[var(--foreground)]",

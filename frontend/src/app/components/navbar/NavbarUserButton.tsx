@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useRef } from "react";
 
@@ -25,37 +26,43 @@ export default function NavbarUserButton({
         href="/login"
         onClick={onAfterClick}
         className={[
-          "inline-flex items-center justify-center rounded-full border",
-          "bg-[var(--color-primary)] text-white",
+          "inline-flex items-center justify-center ",
           circleBase,
-          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60",
+          "focus-visible:outline-none focus-visible:ring-2 ",
         ].join(" ")}
         aria-label="Se connecter"
       >
-        <svg viewBox="0 0 24 24" width={18} height={18} aria-hidden>
-          <circle cx="12" cy="8.5" r="3" fill="currentColor" />
-          <path d="M4 19a8 8 0 0 1 16 0" fill="currentColor" />
-        </svg>
+        <Image
+          src="/icons8-login-50.png"
+          alt="Logo"
+          width={40}
+          height={40}
+          priority
+        />
       </Link>
     );
   }
-
-  const initial = user.firstname?.trim()?.[0]?.toUpperCase() ?? "U";
 
   return (
     <details ref={detailsRef} className="relative">
       <summary
         className={[
           "list-none cursor-pointer select-none",
-          "inline-flex items-center justify-center rounded-full border",
+          "inline-flex items-center justify-center ",
           "bg-[var(--color-light)] text-[var(--color-dark)]",
           circleBase,
-          "hover:bg-[var(--color-primary)] hover:text-white transition",
+          ,
           "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60",
         ].join(" ")}
         aria-label="Menu utilisateur"
       >
-        <span className="font-bold">{initial}</span>
+        <Image
+          src="/icons8-logout-50.png"
+          alt="Logout"
+          width={30}
+          height={30}
+          priority
+        />
       </summary>
 
       <div
