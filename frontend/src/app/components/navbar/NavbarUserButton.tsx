@@ -33,7 +33,7 @@ export default function NavbarUserButton({
         aria-label="Se connecter"
       >
         <Image
-          src="/icons8-login-50.png"
+          src="/login-logo-navbar.png"
           alt="Logo"
           width={40}
           height={40}
@@ -57,7 +57,7 @@ export default function NavbarUserButton({
         aria-label="Menu utilisateur"
       >
         <Image
-          src="/icons8-logout-50.png"
+          src="/logout-logo-navbar.png"
           alt="Logout"
           width={30}
           height={30}

@@ -45,12 +45,11 @@ export default function BioBaskets({
             <BasketIcon />
             <div>
               <h3 className="text-lg md:text-xl font-semibold text-[var(--foreground)]">
-                Panier moyen de légumes — 17&nbsp;€
+                Panier de légumes à 10&nbsp;€
               </h3>
               <p className="mt-1 text-sm md:text-base text-[var(--foreground)]/80">
-                La distribution des paniers de légumes s’effectue tous les
-                lundis ou jeudis de 16h30 à 18h30. Une famille de 3/4 personnes
-                peut utiliser nos paniers moyens.
+                Chaque semaine, retrait du panier directement à l’exploitation.
+                Le petit panier à 14&nbsp;€, idéal pour 2&nbsp;personnes.
               </p>
             </div>
           </article>
@@ -59,11 +58,12 @@ export default function BioBaskets({
             <BasketIcon />
             <div>
               <h3 className="text-lg md:text-xl font-semibold text-[var(--foreground)]">
-                Petit panier de légumes — 14&nbsp;€
+                Panier de légumes à 15&nbsp;€
               </h3>
               <p className="mt-1 text-sm md:text-base text-[var(--foreground)]/80">
-                Chaque semaine, retrait du panier directement à l’exploitation.
-                Le petit panier à 14&nbsp;€, idéal pour 2&nbsp;personnes.
+                La distribution des paniers de légumes s’effectue tous les
+                lundis ou jeudis de 16h30 à 18h30. Une famille de 3/4 personnes
+                peut utiliser nos paniers moyens.
               </p>
             </div>
           </article>
