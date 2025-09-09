@@ -41,6 +41,28 @@ const eur = new Intl.NumberFormat("fr-FR", {
   currency: "EUR",
 });
 
+// utils date
+function addDays(base: Date, days: number): Date {
+  const d = new Date(base);
+  d.setDate(d.getDate() + days);
+  return d;
+}
+function toYMD(d: Date): string {
+  return d.toISOString().slice(0, 10);
+}
+function isTueOrFri(d: Date): boolean {
+  const g = d.getDay();
+  return g === 2 || g === 5;
+}
+function nextTueOrFriOnOrAfter(min: Date): Date {
+  const d = new Date(min);
+  for (let i = 0; i < 21; i += 1) {
+    if (isTueOrFri(d)) return d;
+    d.setDate(d.getDate() + 1);
+  }
+  return d;
+}
+
 export default function ReservationForm() {
   const [baskets, setBaskets] = useState<Basket[]>([]);
   const [locations, setLocations] = useState<PickupLocation[]>([]);
@@ -59,6 +81,21 @@ export default function ReservationForm() {
     text: string;
   } | null>(null);
 
+  // bornes (min = J+3)
+  const minDate = useMemo(() => toYMD(addDays(new Date(), 3)), []);
+  const maxDate = useMemo(() => {
+    const d = new Date();
+    d.setMonth(d.getMonth() + 2);
+    return toYMD(d);
+  }, []);
+
+  // pré-sélection de la première date mardi/vendredi ≥ J+3
+  useEffect(() => {
+    const d0 = addDays(new Date(), 3);
+    const first = nextTueOrFriOnOrAfter(d0);
+    setPickupDate(toYMD(first));
+  }, []);
+
   useEffect(() => {
     (async () => {
       setLoading(true);
@@ -66,19 +103,25 @@ export default function ReservationForm() {
         fetch(`${API_BASE}/baskets?actif=true`, { credentials: "include" }),
         fetch(`${API_BASE}/pickup?actif=true`, { credentials: "include" }),
       ]);
+
       const bJson = (await bRes.json()) as Basket[];
       const lJson = (await lRes.json()) as PickupLocation[];
-      setBaskets(bJson);
-      setLocations(lJson);
+
+      // filtre défensif (actif = true)
+      const onlyActiveBaskets = bJson.filter((b) => b.actif === true);
+      const onlyActiveLocations = lJson.filter((l) => l.actif === true);
+
+      setBaskets(onlyActiveBaskets);
+      setLocations(onlyActiveLocations);
+
+      // auto-sélection “Gare” si dispo
+      const gare = onlyActiveLocations.find(
+        (l) => l.name_pickup.trim().toLowerCase() === "gare"
+      );
+      setLocationId(gare ? gare.id : "");
+
       setLoading(false);
     })();
-  }, []);
-
-  const minDate = useMemo(() => new Date().toISOString().slice(0, 10), []);
-  const maxDate = useMemo(() => {
-    const d = new Date();
-    d.setMonth(d.getMonth() + 2);
-    return d.toISOString().slice(0, 10);
   }, []);
 
   // lignes du panier sélectionné
@@ -102,11 +145,9 @@ export default function ReservationForm() {
   function setQuantity(id: string, q: number) {
     setQuantities((prev) => {
       const next = { ...prev };
-      if (q <= 0) {
-        delete next[id];
-      } else {
-        next[id] = Math.min(99, q);
-      }
+      const clamped = Math.max(0, Math.min(99, Math.trunc(q)));
+      if (clamped <= 0) delete next[id];
+      else next[id] = clamped;
       return next;
     });
   }
@@ -138,9 +179,21 @@ export default function ReservationForm() {
       return;
     }
 
-    // garde jour/lieu côté client (évite le rejet par trigger SQL)
+    // gardes client : J+3 min + mardi/vendredi + cohérence lieu/jour
+    const d = new Date(pickupDate + "T00:00:00");
+    const min = new Date(minDate + "T00:00:00");
+    if (d < min) {
+      setToast({ type: "err", text: "Délai minimum non respecté (J+3)." });
+      setTimeout(() => setToast(null), 2600);
+      return;
+    }
+    const dow = d.getDay();
+    if (!(dow === 2 || dow === 5)) {
+      setToast({ type: "err", text: "Retrait le mardi ou le vendredi." });
+      setTimeout(() => setToast(null), 2600);
+      return;
+    }
     const loc = locations.find((l) => l.id === locationId);
-    const dow = new Date(pickupDate + "T00:00:00").getDay();
     if (loc && dow !== loc.day_of_week) {
       setToast({
         type: "err",
@@ -150,7 +203,7 @@ export default function ReservationForm() {
       return;
     }
 
-    // un POST /reservations par ligne du panier
+    // un POST /reservations par ligne (email géré côté API)
     const errors: string[] = [];
     for (const line of cartLines) {
       const payload = {
@@ -214,70 +267,72 @@ export default function ReservationForm() {
             <div>
               <h3 className="text-lg font-semibold mb-3">Vos paniers</h3>
               <div className="divide-y rounded-xl border">
-                {baskets.map((b) => {
-                  const q = quantities[b.id] ?? 0;
-                  const lineTotal = q * b.price_basket;
-                  return (
-                    <div
-                      key={b.id}
-                      className="grid grid-cols-12 items-center gap-3 p-3"
-                    >
-                      <div className="col-span-6">
-                        <p className="font-medium">{b.name_basket}</p>
-                        {b.description_basket ? (
-                          <p className="text-xs text-gray-600">
-                            {b.description_basket}
-                          </p>
-                        ) : null}
-                      </div>
-
-                      <div className="col-span-3 text-right">
-                        <p className="tabular-nums">
-                          {eur.format(b.price_basket)}
-                        </p>
-                      </div>
-
-                      <div className="col-span-3 flex items-center justify-end gap-2">
-                        <button
-                          type="button"
-                          onClick={() => setQuantity(b.id, q - 1)}
-                          className="w-8 h-8 rounded-full border-2 text-lg leading-none"
-                          aria-label={`Retirer 1 ${b.name_basket}`}
-                        >
-                          −
-                        </button>
-                        <input
-                          type="number"
-                          min={0}
-                          max={99}
-                          value={q}
-                          onChange={(e) =>
-                            setQuantity(b.id, Number(e.target.value))
-                          }
-                          className="w-14 text-center rounded border-2 px-2 py-1"
-                          aria-label={`Quantité ${b.name_basket}`}
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setQuantity(b.id, q + 1)}
-                          className="w-8 h-8 rounded-full border-2 text-lg leading-none"
-                          aria-label={`Ajouter 1 ${b.name_basket}`}
-                        >
-                          +
-                        </button>
-                      </div>
-
-                      {q > 0 && (
-                        <div className="col-span-12 text-right text-sm text-gray-700">
-                          Sous-total {b.name_basket} :{" "}
-                          <span className="font-semibold">
-                            {eur.format(lineTotal)}
-                          </span>
+                {baskets
+                  .filter((b) => b.actif === true)
+                  .map((b) => {
+                    const q = quantities[b.id] ?? 0;
+                    const lineTotal = q * b.price_basket;
+                    return (
+                      <div
+                        key={b.id}
+                        className="grid grid-cols-12 items-center gap-3 p-3"
+                      >
+                        <div className="col-span-6">
+                          <p className="font-medium">{b.name_basket}</p>
+                          {b.description_basket ? (
+                            <p className="text-xs text-gray-600">
+                              {b.description_basket}
+                            </p>
+                          ) : null}
                         </div>
-                      )}
-                    </div>
-                  );
-                })}
+
+                        <div className="col-span-3 text-right">
+                          <p className="tabular-nums">
+                            {eur.format(b.price_basket)}
+                          </p>
+                        </div>
+
+                        <div className="col-span-3 flex items-center justify-end gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setQuantity(b.id, q - 1)}
+                            className="w-8 h-8 rounded-full border-2 text-lg leading-none"
+                            aria-label={`Retirer 1 ${b.name_basket}`}
+                          >
+                            −
+                          </button>
+                          <input
+                            type="number"
+                            min={0}
+                            max={99}
+                            value={q}
+                            onChange={(e) =>
+                              setQuantity(b.id, Number(e.target.value))
+                            }
+                            className="w-14 text-center rounded border-2 px-2 py-1"
+                            aria-label={`Quantité ${b.name_basket}`}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setQuantity(b.id, q + 1)}
+                            className="w-8 h-8 rounded-full border-2 text-lg leading-none"
+                            aria-label={`Ajouter 1 ${b.name_basket}`}
+                          >
+                            +
+                          </button>
+                        </div>
+
+                        {q > 0 && (
+                          <div className="col-span-12 text-right text-sm text-gray-700">
+                            Sous-total {b.name_basket} :{" "}
+                            <span className="font-semibold">
+                              {eur.format(lineTotal)}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
               </div>
 
               {/* Total général */}
@@ -288,7 +343,7 @@ export default function ReservationForm() {
             </div>
           )}
 
-          {/* Lieu + date avec garde jour/lieu */}
+          {/* Lieu + date */}
           {action === "order" && (
             <PickupCard
               locations={locations}

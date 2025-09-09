@@ -5,12 +5,13 @@ import { fr } from "date-fns/locale";
 import "react-day-picker/dist/style.css";
 
 type Props = {
-  value: string; // "YYYY-MM-DD" ou ""
+  value: string;
   onChange: (v: string) => void;
-  minDate: string; // "YYYY-MM-DD"
-  maxDate: string; // "YYYY-MM-DD"
+  minDate: string;
+  maxDate: string;
   disabled?: boolean;
 };
+
 
 function strToDate(s: string | null): Date | undefined {
   if (!s) return undefined;

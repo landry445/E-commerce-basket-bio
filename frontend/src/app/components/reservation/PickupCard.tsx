@@ -1,11 +1,12 @@
 "use client";
 
+import { useEffect } from "react";
 import DayPickerField from "./DayPickerField";
 
 type PickupLocation = {
   id: string;
   name_pickup: string;
-  day_of_week: number;
+  day_of_week?: number | null; // optionnel
   actif: boolean;
 };
 
@@ -13,13 +14,24 @@ type Props = {
   locations: PickupLocation[];
   locationId: string;
   onLocation: (id: string) => void;
-  pickupDate: string;
-  onDate: (d: string) => void;
-  minDate: string;
-  maxDate: string;
+
+  pickupDate: string; // YYYY-MM-DD
+  onDate: (iso: string) => void;
+
+  minDate: string; // YYYY-MM-DD (J+3)
+  maxDate: string; // YYYY-MM-DD
+
   disabled?: boolean;
-  required?: boolean;
+  required?: boolean; // pour le select éventuel
 };
+
+// validation locale mardi/vendredi + >= J+3
+function isTueOrFriISO(iso: string): boolean {
+  if (!iso) return false;
+  const d = new Date(iso + "T00:00:00");
+  const g = d.getDay();
+  return g === 2 || g === 5;
+}
 
 export default function PickupCard({
   locations,
@@ -32,16 +44,39 @@ export default function PickupCard({
   disabled,
   required,
 }: Props) {
+  // Filtre strict : “Gare” active uniquement
+  const gareList = locations
+    .filter((l) => l.actif)
+    .filter((l) => l.name_pickup.trim().toLowerCase() === "gare");
+
+  // Auto-sélection si une seule gare
+  useEffect(() => {
+    if (gareList.length === 1 && locationId !== gareList[0].id) {
+      onLocation(gareList[0].id);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [gareList.length]);
+
+  const helper =
+    "Retrait les mardis et vendredis uniquement, réservable jusqu’à J+3.";
+
   return (
-    <div className="space-y-3">
-      <p className="text-lg font-semibold">
-        Sélection du retrait (17h à 18h30)&nbsp;*
-      </p>
-      <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm space-y-3">
-        <div>
-          <label className="block text-sm text-gray-600 mb-1">
-            Point de retrait
-          </label>
+    <section className="rounded-2xl border p-4 space-y-4">
+      <h3 className="text-lg font-semibold">Sélection du retrait *</h3>
+
+      {/* Point de retrait */}
+      <div>
+        <label className="block text-sm text-gray-600 mb-1">
+          Point de retrait
+        </label>
+
+        {gareList.length === 1 ? (
+          <input
+            className="w-full rounded border px-3 py-2 bg-gray-50"
+            value={gareList[0].name_pickup}
+            readOnly
+          />
+        ) : (
           <select
             className="w-full rounded border px-3 py-2"
             value={locationId}
@@ -50,33 +85,35 @@ export default function PickupCard({
             required={required}
           >
             <option value="">Sélection</option>
-            {locations
-              .filter((l) => l.actif)
-              .map((l) => (
-                <option key={l.id} value={l.id}>
-                  {l.name_pickup}
-                </option>
-              ))}
+            {gareList.map((l) => (
+              <option key={l.id} value={l.id}>
+                {l.name_pickup}
+              </option>
+            ))}
           </select>
-          <p className="text-xs mt-1 text-gray-500">
-            Mardis et vendredis uniquement. Les autres jours restent
-            indisponibles.
-          </p>
-        </div>
+        )}
 
-        <div>
-          <label className="block text-sm text-gray-600 mb-1">
-            Date de retrait
-          </label>
-          <DayPickerField
-            value={pickupDate}
-            onChange={onDate}
-            minDate={minDate}
-            maxDate={maxDate}
-            disabled={disabled}
-          />
-        </div>
+        <p className="text-xs mt-1 text-gray-500">{helper}</p>
       </div>
-    </div>
+
+      {/* Date de retrait */}
+      <div>
+        <label className="block text-sm text-gray-600 mb-1">
+          Date de retrait
+        </label>
+
+        {/* DayPickerField existant : min/max + masque des jours intégrés */}
+        <DayPickerField
+          value={pickupDate}
+          onChange={(iso: string) => {
+            const ok = isTueOrFriISO(iso) && iso >= minDate;
+            if (ok) onDate(iso);
+          }}
+          minDate={minDate}
+          maxDate={maxDate}
+          disabled={disabled}
+        />
+      </div>
+    </section>
   );
 }
