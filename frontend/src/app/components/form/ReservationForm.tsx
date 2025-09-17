@@ -41,37 +41,59 @@ const eur = new Intl.NumberFormat("fr-FR", {
   currency: "EUR",
 });
 
-// utils date
-function addDays(base: Date, days: number): Date {
-  const d = new Date(base);
-  d.setDate(d.getDate() + days);
+/* ------------------------ Utils date (local) ------------------------ */
+function startOfDay(d: Date): Date {
+  const x = new Date(d);
+  x.setHours(0, 0, 0, 0);
+  return x;
+}
+function toYMDLocal(d: Date): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+function nextWeekday(date: Date, targetDow: number): Date {
+  const d = new Date(date);
+  const diff = (targetDow + 7 - d.getDay()) % 7 || 7; // prochain jour strict
+  d.setDate(d.getDate() + diff);
   return d;
 }
-function toYMD(d: Date): string {
-  return d.toISOString().slice(0, 10);
-}
-function isTueOrFri(d: Date): boolean {
-  const g = d.getDay();
-  return g === 2 || g === 5;
-}
-function nextTueOrFriOnOrAfter(min: Date): Date {
-  const d = new Date(min);
-  for (let i = 0; i < 21; i += 1) {
-    if (isTueOrFri(d)) return d;
-    d.setDate(d.getDate() + 1);
+
+function computeAllowedDate(now: Date): string | null {
+  const dow = now.getDay(); // 0=dim .. 6=sam
+  const h = now.getHours();
+
+  // Fenêtre vers MARDI : vendredi 00:00 -> lundi < 18:00
+  const inTueWindow =
+    dow === 5 || dow === 6 || dow === 0 || (dow === 1 && h < 18);
+
+  if (inTueWindow) {
+    const d = startOfDay(nextWeekday(now, 2)); // prochain mardi (strict)
+    return toYMDLocal(d);
   }
-  return d;
+
+  // Fenêtre vers VENDREDI : mardi 00:00 -> jeudi < 18:00
+  const inFriWindow = dow === 2 || dow === 3 || (dow === 4 && h < 18);
+
+  if (inFriWindow) {
+    const d = startOfDay(nextWeekday(now, 5)); // prochain vendredi (strict)
+    return toYMDLocal(d);
+  }
+
+  // Sinon : fermé
+  return null;
 }
 
 export default function ReservationForm() {
   const [baskets, setBaskets] = useState<Basket[]>([]);
   const [locations, setLocations] = useState<PickupLocation[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [, setLoading] = useState<boolean>(true);
 
   const [action, setAction] = useState<"order" | "contact">("order");
-  const [locationId, setLocationId] = useState("");
-  const [pickupDate, setPickupDate] = useState("");
-  const [message, setMessage] = useState("");
+  const [locationId, setLocationId] = useState<string>("");
+  const [pickupDate, setPickupDate] = useState<string>("");
+  const [message, setMessage] = useState<string>("");
 
   // panier d’articles : { basketId -> quantité }
   const [quantities, setQuantities] = useState<Record<string, number>>({});
@@ -81,20 +103,24 @@ export default function ReservationForm() {
     text: string;
   } | null>(null);
 
-  // bornes (min = J+3)
-  const minDate = useMemo(() => toYMD(addDays(new Date(), 3)), []);
-  const maxDate = useMemo(() => {
-    const d = new Date();
-    d.setMonth(d.getMonth() + 2);
-    return toYMD(d);
+  // bornes visuelles “neutres” du calendrier
+  const today: Date = useMemo(() => startOfDay(new Date()), []);
+  const minVisu: string = useMemo(() => toYMDLocal(today), [today]);
+  const maxVisu: string = useMemo(() => toYMDLocal(today), [today]);
+
+  // date autorisée unique selon la règle métier
+  const [allowedDate, setAllowedDate] = useState<string | null>(null);
+  useEffect(() => {
+    const a = computeAllowedDate(new Date());
+    setAllowedDate(a);
   }, []);
 
-  // pré-sélection de la première date mardi/vendredi ≥ J+3
+  // calage de la valeur contrôlée sur la date autorisée
   useEffect(() => {
-    const d0 = addDays(new Date(), 3);
-    const first = nextTueOrFriOnOrAfter(d0);
-    setPickupDate(toYMD(first));
-  }, []);
+    if (allowedDate && allowedDate !== pickupDate) setPickupDate(allowedDate);
+    if (!allowedDate && pickupDate) setPickupDate("");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [allowedDate]);
 
   useEffect(() => {
     (async () => {
@@ -103,28 +129,22 @@ export default function ReservationForm() {
         fetch(`${API_BASE}/baskets?actif=true`, { credentials: "include" }),
         fetch(`${API_BASE}/pickup?actif=true`, { credentials: "include" }),
       ]);
-
       const bJson = (await bRes.json()) as Basket[];
       const lJson = (await lRes.json()) as PickupLocation[];
 
-      // filtre défensif (actif = true)
-      const onlyActiveBaskets = bJson.filter((b) => b.actif === true);
-      const onlyActiveLocations = lJson.filter((l) => l.actif === true);
+      setBaskets(bJson.filter((b) => b.actif === true));
+      const locs = lJson.filter((l) => l.actif === true);
+      setLocations(locs);
 
-      setBaskets(onlyActiveBaskets);
-      setLocations(onlyActiveLocations);
-
-      // auto-sélection “Gare” si dispo
-      const gare = onlyActiveLocations.find(
+      // auto-sélection “Gare”
+      const gare = locs.find(
         (l) => l.name_pickup.trim().toLowerCase() === "gare"
       );
       setLocationId(gare ? gare.id : "");
-
       setLoading(false);
     })();
   }, []);
 
-  // lignes du panier sélectionné
   const cartLines = useMemo(
     () =>
       baskets
@@ -145,11 +165,26 @@ export default function ReservationForm() {
   function setQuantity(id: string, q: number) {
     setQuantities((prev) => {
       const next = { ...prev };
-      const clamped = Math.max(0, Math.min(99, Math.trunc(q)));
-      if (clamped <= 0) delete next[id];
-      else next[id] = clamped;
+      const n = Math.max(0, Math.min(99, Math.trunc(q)));
+      if (n <= 0) delete next[id];
+      else next[id] = n;
       return next;
     });
+  }
+
+  function toOrderPayload(params: {
+    locationId: string;
+    pickupDate: string;
+    cartLines: { basket: Basket; quantity: number }[];
+  }) {
+    return {
+      locationId: params.locationId || undefined,
+      pickupDate: params.pickupDate, // 'YYYY-MM-DD'
+      items: params.cartLines.map((l) => ({
+        basketId: l.basket.id,
+        quantity: l.quantity, // 1..99 (la DB contraint à 1..5 si tu l’as en CHECK)
+      })),
+    };
   }
 
   async function submit(e: React.FormEvent<HTMLFormElement>) {
@@ -170,6 +205,15 @@ export default function ReservationForm() {
       return;
     }
 
+    if (pickupDate !== allowedDate) {
+      setToast({
+        type: "err",
+        text: "Créneau fermé. Commande possible uniquement pour le mardi ou le vendredi selon la fenêtre d’ouverture.",
+      });
+      setTimeout(() => setToast(null), 3000);
+      return;
+    }
+
     if (cartLines.length === 0) {
       setToast({
         type: "err",
@@ -178,23 +222,10 @@ export default function ReservationForm() {
       setTimeout(() => setToast(null), 2600);
       return;
     }
-
-    // gardes client : J+3 min + mardi/vendredi + cohérence lieu/jour
-    const d = new Date(pickupDate + "T00:00:00");
-    const min = new Date(minDate + "T00:00:00");
-    if (d < min) {
-      setToast({ type: "err", text: "Délai minimum non respecté (J+3)." });
-      setTimeout(() => setToast(null), 2600);
-      return;
-    }
-    const dow = d.getDay();
-    if (!(dow === 2 || dow === 5)) {
-      setToast({ type: "err", text: "Retrait le mardi ou le vendredi." });
-      setTimeout(() => setToast(null), 2600);
-      return;
-    }
+    // Cohérence jour/lieu côté client (info visuelle)
+    const dow = new Date(pickupDate + "T00:00:00").getDay();
     const loc = locations.find((l) => l.id === locationId);
-    if (loc && dow !== loc.day_of_week) {
+    if (typeof loc?.day_of_week === "number" && dow !== loc.day_of_week) {
       setToast({
         type: "err",
         text: `Ce lieu est disponible le ${JOURS[loc.day_of_week]}.`,
@@ -203,52 +234,65 @@ export default function ReservationForm() {
       return;
     }
 
-    // un POST /reservations par ligne (email géré côté API)
-    const errors: string[] = [];
-    for (const line of cartLines) {
-      const payload = {
-        basket_id: line.basket.id,
-        location_id: locationId,
-        pickup_date: pickupDate,
-        quantity: line.quantity,
-      };
+    // Normalisation des quantités (1..5)
+    const normalizedLines = cartLines.map((l) => {
+      const q = Math.max(1, Math.min(5, l.quantity));
+      return { basket: l.basket, quantity: q };
+    });
 
-      const res = await fetch(`${API_BASE}/reservations`, {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      if (!res.ok) {
-        const body = (await res.json().catch(() => null)) as {
-          message?: string | string[];
-        } | null;
-        const msg = Array.isArray(body?.message)
-          ? body!.message.join(" • ")
-          : body?.message ?? "Requête invalide";
-        errors.push(`${line.basket.name_basket} : ${msg}`);
-      }
-    }
-
-    if (errors.length > 0) {
-      setToast({ type: "err", text: errors.join(" • ") });
-    } else {
+    if (normalizedLines.some((l, i) => l.quantity !== cartLines[i].quantity)) {
       setToast({
-        type: "ok",
-        text: `Réservations enregistrées. Total à régler sur place : ${eur.format(
-          total
-        )}.`,
+        type: "err",
+        text: "Quantité maximale par type de panier : 5.",
       });
-      setQuantities({});
-      setLocationId("");
-      setPickupDate("");
-      setMessage("");
+      setTimeout(() => setToast(null), 2600);
     }
+
+    // --- construire le payload avec normalizedLines ---
+    const payload = toOrderPayload({
+      locationId,
+      pickupDate,
+      cartLines: normalizedLines,
+    });
+
+    const res = await fetch(`${API_BASE}/orders`, {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+    if (!res.ok) {
+      // Message d’erreur lisible (limite journalière, jour invalide, etc.)
+      let msg = `Erreur ${res.status}`;
+      try {
+        const body = (await res.json()) as { message?: string | string[] };
+        msg = Array.isArray(body?.message)
+          ? body.message.join(" • ")
+          : body?.message ?? msg;
+      } catch {
+        // noop
+      }
+      setToast({ type: "err", text: msg });
+      setTimeout(() => setToast(null), 3200);
+      return;
+    }
+
+    // Succès
+    setToast({
+      type: "ok",
+      text: `Réservation enregistrée. Total à régler sur place : ${eur.format(
+        total
+      )}.`,
+    });
+
+    // Remise à zéro douce
+    setQuantities({});
+    setLocationId("");
+    setPickupDate("");
+    setMessage("");
     setTimeout(() => setToast(null), 3200);
   }
-
-  if (loading) return <p className="text-center py-10">Chargement…</p>;
 
   return (
     <main className="bg-[var(--background)] text-[var(--foreground)] font-sans">
@@ -351,14 +395,15 @@ export default function ReservationForm() {
               onLocation={setLocationId}
               pickupDate={pickupDate}
               onDate={setPickupDate}
-              minDate={minDate}
-              maxDate={maxDate}
-              disabled={false}
+              minDate={minVisu}
+              maxDate={maxVisu}
+              allowedDate={allowedDate}
+              disabled={!allowedDate}
               required={true}
             />
           )}
 
-          {/* Message libre (non transmis au /reservations) */}
+          {/* Message libre */}
           <div>
             <label className="block text-sm text-gray-600 mb-1">
               Votre message
@@ -385,7 +430,6 @@ export default function ReservationForm() {
                 ? "Je confirme ma réservation"
                 : "Envoyer le message"}
             </button>
-            {action === "order" && <p className="text-xs text-gray-600"></p>}
           </div>
         </form>
 

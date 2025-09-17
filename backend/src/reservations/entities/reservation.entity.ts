@@ -1,71 +1,66 @@
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  CreateDateColumn,
-  ManyToOne,
-  JoinColumn,
-} from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
 import { Basket } from '../../baskets/entities/basket.entity';
 import { PickupLocation } from '../../pickup/entities/pickup-location.entity';
 
 export enum ReservationStatut {
-  ACTIVE = 'active',
-  ARCHIVED = 'archived',
+  Active = 'active',
+  Archived = 'archived',
 }
 
 @Entity({ name: 'reservations' })
 export class Reservation {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
-  @ManyToOne(() => User, (user) => user.reservations, { onDelete: 'CASCADE' })
+  /* FK user_id + relation */
+  @ManyToOne(() => User, { eager: false })
   @JoinColumn({ name: 'user_id' })
-  user: User;
+  user!: User;
 
-  @ManyToOne(() => Basket, (basket) => basket.reservations)
+  /* FK basket_id + relation */
+  @ManyToOne(() => Basket, { eager: false })
   @JoinColumn({ name: 'basket_id' })
-  basket: Basket;
+  basket!: Basket;
 
-  @ManyToOne(() => PickupLocation, (loc) => loc.reservations)
+  /* FK location_id + relation nullable */
+  @ManyToOne(() => PickupLocation, { eager: false, nullable: true })
   @JoinColumn({ name: 'location_id' })
-  location: PickupLocation;
+  location!: PickupLocation | null;
 
-  @Column()
-  price_reservation: number;
+  @Column({ type: 'int' })
+  price_reservation!: number;
 
+  // 'YYYY-MM-DD'
   @Column({ type: 'date' })
-  pickup_date: string;
+  pickup_date!: string;
 
   @Column({ type: 'smallint', default: 1 })
-  quantity: number;
+  quantity!: number;
 
+  // aligne l’ENUM TypeORM avec l’ENUM Postgres reservation_statut
   @Column({
-    type: process.env.NODE_ENV === 'test' ? 'text' : 'enum',
+    type: 'enum',
     enum: ReservationStatut,
-    default: ReservationStatut.ACTIVE,
+    enumName: 'reservation_statut',
+    default: ReservationStatut.Active,
   })
-  statut: ReservationStatut;
+  statut!: ReservationStatut;
 
-  @Column({
-    type: process.env.NODE_ENV === 'test' ? 'datetime' : 'timestamptz',
-    nullable: true,
-  })
-  email_sent_at: Date | null;
+  // ← nouveau champ pour regrouper plusieurs lignes d'une même réservation logique
+  @Column({ type: 'uuid', nullable: true })
+  group_id!: string | null;
 
-  @Column({
-    type: process.env.NODE_ENV === 'test' ? 'datetime' : 'timestamptz',
-    nullable: true,
-  })
-  sms_sent_at: Date | null;
+  @Column({ type: 'timestamptz', nullable: true })
+  email_sent_at!: Date | null;
 
+  @Column({ type: 'timestamptz', nullable: true })
+  sms_sent_at!: Date | null;
+
+  @Column({ type: 'timestamptz', default: () => 'now()' })
+  date_creation!: Date;
+
+  // si déjà utilisé dans ton service
   @Column({ type: 'boolean', default: false })
-  non_venu: boolean;
-
-  @CreateDateColumn({
-    name: 'date_creation',
-    type: process.env.NODE_ENV === 'test' ? 'datetime' : 'timestamptz',
-  })
-  date_creation: Date;
+  non_venu!: boolean;
 }

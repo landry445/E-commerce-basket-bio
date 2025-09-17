@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import DayPickerField from "./DayPickerField";
 
 type PickupLocation = {
   id: string;
   name_pickup: string;
-  day_of_week?: number | null; // optionnel
+  day_of_week?: number | null;
   actif: boolean;
 };
 
@@ -18,19 +18,24 @@ type Props = {
   pickupDate: string; // YYYY-MM-DD
   onDate: (iso: string) => void;
 
-  minDate: string; // YYYY-MM-DD (J+3)
-  maxDate: string; // YYYY-MM-DD
+  // Bornes d’affichage (visuel uniquement)
+  minDate: string;
+  maxDate: string;
+
+  // Date autorisée par la règle métier (ou null)
+  allowedDate: string | null;
 
   disabled?: boolean;
-  required?: boolean; // pour le select éventuel
+  required?: boolean;
 };
 
-// validation locale mardi/vendredi + >= J+3
-function isTueOrFriISO(iso: string): boolean {
-  if (!iso) return false;
-  const d = new Date(iso + "T00:00:00");
-  const g = d.getDay();
-  return g === 2 || g === 5;
+function parseYmdLocal(ymd: string): Date {
+  const [y, m, d] = ymd.split("-").map(Number);
+  return new Date(y, m - 1, d, 0, 0, 0, 0);
+}
+function formatFrYmd(ymd: string): string {
+  const d = parseYmdLocal(ymd);
+  return d.toLocaleDateString("fr-FR");
 }
 
 export default function PickupCard({
@@ -41,15 +46,20 @@ export default function PickupCard({
   onDate,
   minDate,
   maxDate,
+  allowedDate,
   disabled,
   required,
 }: Props) {
-  // Filtre strict : “Gare” active uniquement
-  const gareList = locations
-    .filter((l) => l.actif)
-    .filter((l) => l.name_pickup.trim().toLowerCase() === "gare");
+  // Lieux actifs “Gare”
+  const gareList = useMemo(
+    () =>
+      locations
+        .filter((l) => l.actif)
+        .filter((l) => l.name_pickup.trim().toLowerCase() === "gare"),
+    [locations]
+  );
 
-  // Auto-sélection si une seule gare
+  // Auto-sélection s’il n’y a qu’une gare
   useEffect(() => {
     if (gareList.length === 1 && locationId !== gareList[0].id) {
       onLocation(gareList[0].id);
@@ -57,8 +67,17 @@ export default function PickupCard({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gareList.length]);
 
+  // Synchronisation stricte de la date avec allowedDate
+  useEffect(() => {
+    if (allowedDate && pickupDate !== allowedDate) onDate(allowedDate);
+    if (!allowedDate && pickupDate) onDate("");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [allowedDate]);
+
   const helper =
-    "Retrait les mardis et vendredis uniquement, réservable jusqu’à J+3.";
+    "Commandes ouvertes : samedi→lundi 18h pour mardi ; mercredi→jeudi 18h30 pour vendredi.";
+
+  const noSlot = !allowedDate;
 
   return (
     <section className="rounded-2xl border p-4 space-y-4">
@@ -96,23 +115,34 @@ export default function PickupCard({
         <p className="text-xs mt-1 text-gray-500">{helper}</p>
       </div>
 
-      {/* Date de retrait */}
+      {/* Date de retrait — exactement la date autorisée */}
       <div>
         <label className="block text-sm text-gray-600 mb-1">
           Date de retrait
         </label>
 
-        {/* DayPickerField existant : min/max + masque des jours intégrés */}
         <DayPickerField
           value={pickupDate}
           onChange={(iso: string) => {
-            const ok = isTueOrFriISO(iso) && iso >= minDate;
-            if (ok) onDate(iso);
+            if (allowedDate && iso === allowedDate) onDate(iso);
           }}
-          minDate={minDate}
-          maxDate={maxDate}
-          disabled={disabled}
+          // Affichage borné (un seul jour cliquable côté champ)
+          minDate={allowedDate ?? minDate}
+          maxDate={allowedDate ?? maxDate}
+          // Limite la sélection à la seule date autorisée
+          onlyDate={allowedDate ?? undefined}
+          disabled={disabled || noSlot}
         />
+
+        {noSlot ? (
+          <p className="mt-2 text-xs text-amber-700">
+            Aucun créneau ouvert pour le moment.
+          </p>
+        ) : (
+          <p className="mt-2 text-xs text-gray-500">
+            Date disponible : {formatFrYmd(allowedDate)}
+          </p>
+        )}
       </div>
     </section>
   );

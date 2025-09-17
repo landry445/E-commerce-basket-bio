@@ -12,8 +12,8 @@ export class PickupLocation {
   @Column({ nullable: true })
   address: string;
 
-  @Column({ type: 'smallint' })
-  day_of_week: number;
+  @Column({ type: 'smallint', array: true, nullable: true })
+  day_of_week: number[] | null;
 
   @Column({ default: true })
   actif: boolean;

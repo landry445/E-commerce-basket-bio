@@ -10,19 +10,21 @@ type Props = {
   minDate: string;
   maxDate: string;
   disabled?: boolean;
+  /** Force un unique jour sélectionnable (YYYY-MM-DD). */
+  onlyDate?: string | null;
 };
-
 
 function strToDate(s: string | null): Date | undefined {
   if (!s) return undefined;
-  return new Date(`${s}T00:00:00`);
+  const [y, m, d] = s.split("-").map(Number);
+  return new Date(y, m - 1, d, 0, 0, 0, 0); // interprétation locale
 }
 function dateToStr(d?: Date): string {
   if (!d) return "";
-  const iso = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()))
-    .toISOString()
-    .slice(0, 10);
-  return iso;
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
 }
 
 export default function DayPickerField({
@@ -31,20 +33,25 @@ export default function DayPickerField({
   minDate,
   maxDate,
   disabled,
+  onlyDate,
 }: Props) {
   const selected = strToDate(value);
-  const from = strToDate(minDate)!;
-  const to = strToDate(maxDate)!;
 
-  const disabledDays = [
-    { before: from, after: to },
-    (date: Date) => {
-      const day = date.getDay(); // 0..6
-      return !(day === 2 || day === 5); // mardi (2) et vendredi (5)
-    },
-  ];
+  // Mode "un seul jour"
+  const from = onlyDate ? strToDate(onlyDate)! : strToDate(minDate)!;
+  const to = onlyDate ? strToDate(onlyDate)! : strToDate(maxDate)!;
 
-  const classNames = {
+  const disabledDays = onlyDate
+    ? [{ before: from, after: to }] // from === to => un seul jour cliquable
+    : [
+        { before: from, after: to },
+        (date: Date) => {
+          const day = date.getDay(); // 0..6
+          return !(day === 2 || day === 5); // mardi(2) / vendredi(5)
+        },
+      ];
+
+  const classNames: Record<string, string> = {
     months: "flex flex-col",
     month: "w-full",
     caption: "flex justify-center p-2",
@@ -62,20 +69,25 @@ export default function DayPickerField({
     button: "cursor-pointer",
   };
 
+  const isDisabled = disabled || (!onlyDate && from > to);
+
   return (
     <div
       className={`rounded-xl border border-gray-200 bg-white p-2 ${
-        disabled ? "opacity-60 pointer-events-none" : ""
+        isDisabled ? "opacity-60 pointer-events-none" : ""
       }`}
     >
       <DayPicker
         mode="single"
         required
-        selected={selected}
-        onSelect={(d) => onChange(dateToStr(d))}
+        selected={onlyDate ? from : selected}
+        onSelect={(d) => {
+          if (d) onChange(dateToStr(d));
+        }}
         fromDate={from}
         toDate={to}
         disabled={disabledDays}
+        month={from}
         locale={fr}
         classNames={classNames}
         showOutsideDays
