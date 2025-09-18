@@ -1,3 +1,4 @@
+// src/app.module.ts
 import { Module } from '@nestjs/common';
 import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
@@ -30,6 +31,8 @@ import { OrdersModule } from './orders/orders.module';
         return {
           type: 'postgres',
           url: process.env.DATABASE_URL,
+          // ssl désactivé en local ; activer en prod si besoin
+          // ssl: { rejectUnauthorized: true },
           autoLoadEntities: true,
           synchronize: false,
         };

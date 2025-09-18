@@ -7,6 +7,10 @@
   "license": "UNLICENSED",
   "scripts": {
     "build": "nest build",
+    "typeorm:ds": "ts-node ormconfig.migrations.ts",
+    "mig:generate": "ts-node node_modules/typeorm/cli.js -d ormconfig.migrations.ts migration:generate dist/migrations/auto",
+    "mig:run": "ts-node node_modules/typeorm/cli.js -d ormconfig.migrations.ts migration:run",
+    "mig:revert": "ts-node node_modules/typeorm/cli.js -d ormconfig.migrations.ts migration:revert",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
     "start:dev": "nest start --watch",
