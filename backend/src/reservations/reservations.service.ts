@@ -22,6 +22,41 @@ export class ReservationsService {
     private readonly pickupRepo: Repository<PickupLocation>
   ) {}
 
+  private static readonly JOURS: ReadonlyArray<string> = [
+    'dimanche',
+    'lundi',
+    'mardi',
+    'mercredi',
+    'jeudi',
+    'vendredi',
+    'samedi',
+  ] as const;
+
+  private static getDow(dateYmd: string): number {
+    // dateYmd = 'YYYY-MM-DD'
+    return new Date(`${dateYmd}T00:00:00`).getDay(); // 0..6
+  }
+
+  private static assertTuesdayOrFriday(dow: number): void {
+    if (!(dow === 2 || dow === 5)) {
+      throw new BadRequestException('Date incompatible : retrait le mardi ou le vendredi.');
+    }
+  }
+
+  private static assertLocationAllowsDow(loc: PickupLocation, dow: number): void {
+    const locDays = (Array.isArray(loc.day_of_week) ? loc.day_of_week : null) ?? null;
+
+    // Si le lieu ne définit pas de contrainte → pas de blocage
+    if (!locDays || locDays.length === 0) return;
+
+    if (!locDays.includes(dow)) {
+      const lisible = locDays.map((n) => ReservationsService.JOURS[n] ?? `${n}`).join(' ou ');
+      throw new BadRequestException(
+        `Date incompatible avec le jour de retrait du lieu : ${lisible}.`
+      );
+    }
+  }
+
   findAll(): Promise<Reservation[]> {
     return this.reservationRepo.find({
       relations: ['user', 'basket', 'location'],
@@ -37,17 +72,19 @@ export class ReservationsService {
 
   /** crée la réservation pour le user connecté (prix calculé côté serveur) */
   async create(dto: CreateReservationDto, userId: string): Promise<Reservation> {
-    const basket = await this.basketRepo.findOne({ where: { id: dto.basket_id } });
-    if (!basket) throw new BadRequestException('Panier introuvable');
+    const [basket, loc] = await Promise.all([
+      this.basketRepo.findOne({ where: { id: dto.basket_id } }),
+      this.pickupRepo.findOne({ where: { id: dto.location_id } }),
+    ]);
 
-    const loc = await this.pickupRepo.findOne({ where: { id: dto.location_id } });
+    if (!basket) throw new BadRequestException('Panier introuvable');
     if (!loc) throw new BadRequestException('Lieu introuvable');
 
-    // cohérence jour/lieu (évite le trigger SQL)
-    const dow = new Date(dto.pickup_date + 'T00:00:00').getDay(); // 0..6
-    if (dow !== loc.day_of_week) {
-      throw new BadRequestException('Date incompatible avec le jour de retrait du lieu');
-    }
+    const dow = ReservationsService.getDow(dto.pickup_date);
+
+    // Règle globale + contrainte du lieu (tableau)
+    ReservationsService.assertTuesdayOrFriday(dow);
+    ReservationsService.assertLocationAllowsDow(loc, dow);
 
     const price = basket.price_basket * dto.quantity;
 
@@ -70,14 +107,15 @@ export class ReservationsService {
     });
     if (!res) throw new NotFoundException('Réservation introuvable');
 
-    const basket = await this.basketRepo.findOne({ where: { id: dto.basket_id } });
-    const loc = await this.pickupRepo.findOne({ where: { id: dto.location_id } });
+    const [basket, loc] = await Promise.all([
+      this.basketRepo.findOne({ where: { id: dto.basket_id } }),
+      this.pickupRepo.findOne({ where: { id: dto.location_id } }),
+    ]);
     if (!basket || !loc) throw new BadRequestException('Données invalides');
 
-    const dow = new Date(dto.pickup_date + 'T00:00:00').getDay();
-    if (dow !== loc.day_of_week) {
-      throw new BadRequestException('Date incompatible avec le jour de retrait du lieu');
-    }
+    const dow = ReservationsService.getDow(dto.pickup_date);
+    ReservationsService.assertTuesdayOrFriday(dow);
+    ReservationsService.assertLocationAllowsDow(loc, dow);
 
     const price = basket.price_basket * dto.quantity;
 

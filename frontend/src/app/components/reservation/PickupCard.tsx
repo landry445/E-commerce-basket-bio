@@ -6,7 +6,7 @@ import DayPickerField from "./DayPickerField";
 type PickupLocation = {
   id: string;
   name_pickup: string;
-  day_of_week?: number | null; // optionnel
+  day_of_week?: number[] | null; // ← tableau
   actif: boolean;
 };
 
@@ -18,20 +18,12 @@ type Props = {
   pickupDate: string; // YYYY-MM-DD
   onDate: (iso: string) => void;
 
-  minDate: string; // YYYY-MM-DD (J+3)
+  allowedDate: string;
   maxDate: string; // YYYY-MM-DD
 
   disabled?: boolean;
   required?: boolean; // pour le select éventuel
 };
-
-// validation locale mardi/vendredi + >= J+3
-function isTueOrFriISO(iso: string): boolean {
-  if (!iso) return false;
-  const d = new Date(iso + "T00:00:00");
-  const g = d.getDay();
-  return g === 2 || g === 5;
-}
 
 export default function PickupCard({
   locations,
@@ -39,8 +31,8 @@ export default function PickupCard({
   onLocation,
   pickupDate,
   onDate,
-  minDate,
   maxDate,
+  allowedDate,
   disabled,
   required,
 }: Props) {
@@ -58,7 +50,7 @@ export default function PickupCard({
   }, [gareList.length]);
 
   const helper =
-    "Retrait les mardis et vendredis uniquement, réservable jusqu’à J+3.";
+    "Réservable selon fenêtre 18 h : mardi (ven 18 h → lun 18 h) ou vendredi (lun 18 h → ven 18 h).";
 
   return (
     <section className="rounded-2xl border p-4 space-y-4">
@@ -102,17 +94,17 @@ export default function PickupCard({
           Date de retrait
         </label>
 
-        {/* DayPickerField existant : min/max + masque des jours intégrés */}
         <DayPickerField
           value={pickupDate}
-          onChange={(iso: string) => {
-            const ok = isTueOrFriISO(iso) && iso >= minDate;
-            if (ok) onDate(iso);
+          onChange={(iso) => {
+            // ne conserve que la date autorisée par la fenêtre
+            if (iso === allowedDate) onDate(iso);
           }}
-          minDate={minDate}
+          allowedDate={allowedDate}
           maxDate={maxDate}
           disabled={disabled}
         />
+        <p className="text-xs text-gray-500 mt-1">{helper}</p>
       </div>
     </section>
   );

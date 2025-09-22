@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState, FormEvent, useEffect } from "react";
+import { useState, FormEvent } from "react";
 import Image from "next/image";
 import Footer from "../components/Footer";
 import Navbar from "../components/navbar/Navbar";
@@ -16,32 +16,10 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const res = await fetch("/api/auth/me", {
-          credentials: "include",
-          cache: "no-store",
-        });
-        if (!cancelled && res.ok) {
-          // déjà connecté → vers la page de réservation (ou params ?next=…)
-          router.replace(next);
-        }
-      } catch {
-        // silence UI
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [next, router]);
-
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
     setError(null);
     setLoading(true);
-
     try {
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/login`,
@@ -52,14 +30,12 @@ export default function LoginPage() {
           body: JSON.stringify({ email, password }),
         }
       );
-
       if (!res.ok) {
         const body = await res.json().catch(() => null);
         setError(body?.message ?? "Identifiants incorrects");
         setLoading(false);
         return;
       }
-
       router.replace(next);
     } catch {
       setError("Impossible de contacter le serveur");

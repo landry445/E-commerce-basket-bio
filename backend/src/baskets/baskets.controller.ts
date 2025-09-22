@@ -29,9 +29,11 @@ import { Role } from 'src/auth/role.enum';
 const multerOptions = {
   storage: memoryStorage(), // fichier gardé en mémoire
   fileFilter: (_req, file, cb) => {
-    file.mimetype.startsWith('image/')
-      ? cb(null, true)
-      : cb(new Error('Only images are allowed'), false);
+    if (file.mimetype.startsWith('image/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only images are allowed'), false);
+    }
   },
   limits: { fileSize: 2 * 1024 * 1024 }, // 2 Mo max
 };

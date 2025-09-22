@@ -4,13 +4,12 @@ import { NextResponse, NextRequest } from "next/server";
 const CLIENT_PROTECTED = ["/reserver", "/mes-reservations", "/mon-compte"];
 const AUTH_PAGES = ["/login", "/register"];
 
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3001";
+
 async function fetchUser(req: NextRequest) {
-  // Appel léger au backend pour le rôle (cookie jwt transmis)
-  // Remplacer l’URL par celle du backend NestJS
-  const url = process.env.NEXT_PUBLIC_API_BASE_URL + "/auth/me";
   try {
-    const res = await fetch(url, {
-      method: "GET",
+    const res = await fetch(`${API_BASE}/auth/me`, {
       headers: { cookie: req.headers.get("cookie") ?? "" },
       cache: "no-store",
     });

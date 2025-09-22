@@ -7,11 +7,10 @@ import "react-day-picker/dist/style.css";
 type Props = {
   value: string;
   onChange: (v: string) => void;
-  minDate: string;
-  maxDate: string;
+  allowedDate: string; // YYYY-MM-DD
+  maxDate: string; // non utilisé ici pour le verrou strict, conservé pour compat éventuelle
   disabled?: boolean;
 };
-
 
 function strToDate(s: string | null): Date | undefined {
   if (!s) return undefined;
@@ -19,48 +18,21 @@ function strToDate(s: string | null): Date | undefined {
 }
 function dateToStr(d?: Date): string {
   if (!d) return "";
-  const iso = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()))
-    .toISOString()
-    .slice(0, 10);
-  return iso;
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
 }
 
 export default function DayPickerField({
   value,
   onChange,
-  minDate,
-  maxDate,
+  allowedDate,
+  maxDate, // eslint-disable-line @typescript-eslint/no-unused-vars
   disabled,
 }: Props) {
   const selected = strToDate(value);
-  const from = strToDate(minDate)!;
-  const to = strToDate(maxDate)!;
-
-  const disabledDays = [
-    { before: from, after: to },
-    (date: Date) => {
-      const day = date.getDay(); // 0..6
-      return !(day === 2 || day === 5); // mardi (2) et vendredi (5)
-    },
-  ];
-
-  const classNames = {
-    months: "flex flex-col",
-    month: "w-full",
-    caption: "flex justify-center p-2",
-    table: "w-full border-collapse",
-    head_row: "grid grid-cols-7 text-xs text-gray-600",
-    row: "grid grid-cols-7",
-    head_cell: "py-1 text-center",
-    cell: "p-1",
-    day: "w-9 h-9 rounded-full mx-auto text-sm hover:bg-[var(--color-primary)]/10",
-    day_selected:
-      "bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary)]",
-    day_disabled: "text-gray-300 line-through",
-    day_outside: "text-gray-300",
-    nav: "flex items-center gap-2",
-    button: "cursor-pointer",
-  };
+  const only = strToDate(allowedDate)!;
 
   return (
     <div
@@ -71,14 +43,12 @@ export default function DayPickerField({
       <DayPicker
         mode="single"
         required
-        selected={selected}
-        onSelect={(d) => onChange(dateToStr(d))}
-        fromDate={from}
-        toDate={to}
-        disabled={disabledDays}
+        selected={selected ?? only}
+        onSelect={(d) => onChange(dateToStr(d || only))}
+        fromDate={only}
+        toDate={only} // bloque toute navigation et tout autre jour
         locale={fr}
-        classNames={classNames}
-        showOutsideDays
+        showOutsideDays={false}
       />
     </div>
   );

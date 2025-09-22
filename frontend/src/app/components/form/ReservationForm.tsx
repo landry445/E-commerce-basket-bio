@@ -19,7 +19,7 @@ type Basket = {
 type PickupLocation = {
   id: string;
   name_pickup: string;
-  day_of_week: number; // 0..6
+  day_of_week?: number[] | null; // ← tableau
   actif: boolean;
 };
 
@@ -42,25 +42,45 @@ const eur = new Intl.NumberFormat("fr-FR", {
 });
 
 // utils date
-function addDays(base: Date, days: number): Date {
-  const d = new Date(base);
-  d.setDate(d.getDate() + days);
-  return d;
-}
 function toYMD(d: Date): string {
-  return d.toISOString().slice(0, 10);
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
 }
-function isTueOrFri(d: Date): boolean {
-  const g = d.getDay();
-  return g === 2 || g === 5;
+
+// --- Fenêtre 18 h ---
+function atHour(base: Date, hour: number): Date {
+  const x = new Date(base);
+  x.setHours(hour, 0, 0, 0);
+  return x;
 }
-function nextTueOrFriOnOrAfter(min: Date): Date {
-  const d = new Date(min);
-  for (let i = 0; i < 21; i += 1) {
-    if (isTueOrFri(d)) return d;
-    d.setDate(d.getDate() + 1);
-  }
+function startOfWeekMonday(base: Date): Date {
+  const d = new Date(base);
+  const dow = d.getDay(); // 0..6 (0 = dim)
+  const diffToMonday = (dow + 6) % 7; // nombre de jours à reculer
+  d.setDate(d.getDate() - diffToMonday);
+  d.setHours(0, 0, 0, 0);
   return d;
+}
+function nextDowOnOrAfter(from: Date, targetDow: number): Date {
+  const d = new Date(from);
+  d.setHours(0, 0, 0, 0);
+  while (d.getDay() !== targetDow) d.setDate(d.getDate() + 1);
+  return d;
+}
+function allowedPickupDate(now = new Date()): string {
+  // Fenêtre vers mardi: [vendredi 18 h ; lundi 18 h)
+  const weekMonday = startOfWeekMonday(now);
+  const weekFriday = new Date(weekMonday);
+  weekFriday.setDate(weekMonday.getDate() + 4); // lundi +4 = vendredi
+  const friday18 = atHour(weekFriday, 18);
+  const monday18 = atHour(weekMonday, 18);
+
+  const inFri18_to_Mon18 = now >= friday18 || now < monday18;
+  const targetDow = inFri18_to_Mon18 ? 2 /* mardi */ : 5; /* vendredi */
+  const targetDate = nextDowOnOrAfter(now, targetDow);
+  return toYMD(targetDate);
 }
 
 export default function ReservationForm() {
@@ -81,19 +101,16 @@ export default function ReservationForm() {
     text: string;
   } | null>(null);
 
-  // bornes (min = J+3)
-  const minDate = useMemo(() => toYMD(addDays(new Date(), 3)), []);
+  // borne supérieure d’affichage du calendrier
   const maxDate = useMemo(() => {
     const d = new Date();
     d.setMonth(d.getMonth() + 2);
     return toYMD(d);
   }, []);
 
-  // pré-sélection de la première date mardi/vendredi ≥ J+3
+  // pré-sélection basée sur la fenêtre 18 h
   useEffect(() => {
-    const d0 = addDays(new Date(), 3);
-    const first = nextTueOrFriOnOrAfter(d0);
-    setPickupDate(toYMD(first));
+    setPickupDate(allowedPickupDate(new Date()));
   }, []);
 
   useEffect(() => {
@@ -107,7 +124,6 @@ export default function ReservationForm() {
       const bJson = (await bRes.json()) as Basket[];
       const lJson = (await lRes.json()) as PickupLocation[];
 
-      // filtre défensif (actif = true)
       const onlyActiveBaskets = bJson.filter((b) => b.actif === true);
       const onlyActiveLocations = lJson.filter((l) => l.actif === true);
 
@@ -179,28 +195,34 @@ export default function ReservationForm() {
       return;
     }
 
-    // gardes client : J+3 min + mardi/vendredi + cohérence lieu/jour
+    // gardes client : mardi/vendredi + cohérence lieu/jour
     const d = new Date(pickupDate + "T00:00:00");
-    const min = new Date(minDate + "T00:00:00");
-    if (d < min) {
-      setToast({ type: "err", text: "Délai minimum non respecté (J+3)." });
-      setTimeout(() => setToast(null), 2600);
-      return;
-    }
     const dow = d.getDay();
     if (!(dow === 2 || dow === 5)) {
       setToast({ type: "err", text: "Retrait le mardi ou le vendredi." });
       setTimeout(() => setToast(null), 2600);
       return;
     }
+
     const loc = locations.find((l) => l.id === locationId);
-    if (loc && dow !== loc.day_of_week) {
-      setToast({
-        type: "err",
-        text: `Ce lieu est disponible le ${JOURS[loc.day_of_week]}.`,
-      });
-      setTimeout(() => setToast(null), 2600);
-      return;
+
+    // ne contrôle le lieu/jour que si le champ est réellement défini
+    if (
+      loc?.day_of_week &&
+      Array.isArray(loc.day_of_week) &&
+      loc.day_of_week.length > 0
+    ) {
+      if (!loc.day_of_week.includes(dow)) {
+        const joursLisibles = loc.day_of_week
+          .map((n) => JOURS[n] ?? String(n))
+          .join(" ou ");
+        setToast({
+          type: "err",
+          text: `Ce lieu est disponible le ${joursLisibles}.`,
+        });
+        setTimeout(() => setToast(null), 2600);
+        return;
+      }
     }
 
     // un POST /reservations par ligne (email géré côté API)
@@ -242,11 +264,14 @@ export default function ReservationForm() {
       });
       setQuantities({});
       setLocationId("");
-      setPickupDate("");
+      setPickupDate(allowedPickupDate(new Date())); // recalcule selon la fenêtre 18 h
       setMessage("");
     }
     setTimeout(() => setToast(null), 3200);
   }
+
+  // date autorisée calculée côté UI et transmise au calendrier
+  const allowedDate = useMemo(() => allowedPickupDate(new Date()), []);
 
   if (loading) return <p className="text-center py-10">Chargement…</p>;
 
@@ -351,10 +376,10 @@ export default function ReservationForm() {
               onLocation={setLocationId}
               pickupDate={pickupDate}
               onDate={setPickupDate}
-              minDate={minDate}
               maxDate={maxDate}
-              disabled={false}
-              required={true}
+              allowedDate={allowedDate}
+              disabled={loading}
+              required
             />
           )}
 
@@ -385,7 +410,6 @@ export default function ReservationForm() {
                 ? "Je confirme ma réservation"
                 : "Envoyer le message"}
             </button>
-            {action === "order" && <p className="text-xs text-gray-600"></p>}
           </div>
         </form>
 
