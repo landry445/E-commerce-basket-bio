@@ -1,7 +1,7 @@
 // src/reservations/reservations.service.ts
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, SelectQueryBuilder } from 'typeorm';
 
 import { Reservation } from './entities/reservation.entity';
 import { CreateReservationDto } from './dto/create-reservation.dto';
@@ -10,7 +10,7 @@ import { plainToInstance } from 'class-transformer';
 
 import { Basket } from '../baskets/entities/basket.entity';
 import { PickupLocation } from '../pickup/entities/pickup-location.entity';
-
+import { AdminReservationListDto } from './dto/admin-reservation-list.dto';
 @Injectable()
 export class ReservationsService {
   constructor(
@@ -57,12 +57,12 @@ export class ReservationsService {
     }
   }
 
-  findAll(): Promise<Reservation[]> {
-    return this.reservationRepo.find({
-      relations: ['user', 'basket', 'location'],
-      order: { pickup_date: 'ASC' },
-    });
-  }
+  // findAll(): Promise<Reservation[]> {
+  //   return this.reservationRepo.find({
+  //     relations: ['user', 'basket', 'location'],
+  //     order: { pickup_date: 'ASC' },
+  //   });
+  // }
 
   async findOne(id: string): Promise<Reservation> {
     const res = await this.reservationRepo.findOne({ where: { id } });
@@ -136,13 +136,13 @@ export class ReservationsService {
     await this.reservationRepo.save(reservation);
   }
 
-  async remove(id: string, userId: string): Promise<void> {
-    const res = await this.reservationRepo.findOne({
-      where: { id, user: { id: userId } },
-    });
-    if (!res) throw new NotFoundException('Réservation introuvable');
-    await this.reservationRepo.remove(res);
-  }
+  // async remove(id: string, userId: string): Promise<void> {
+  //   const res = await this.reservationRepo.findOne({
+  //     where: { id, user: { id: userId } },
+  //   });
+  //   if (!res) throw new NotFoundException('Réservation introuvable');
+  //   await this.reservationRepo.remove(res);
+  // }
 
   async findByUser(userId: string): Promise<ReservationResponseDto[]> {
     const reservations = await this.reservationRepo.find({
@@ -163,5 +163,42 @@ export class ReservationsService {
         { excludeExtraneousValues: true }
       )
     );
+  }
+
+  findAllForAdmin(params?: {
+    status?: 'active' | 'archived';
+    from?: string; // 'YYYY-MM-DD'
+    to?: string; // 'YYYY-MM-DD'
+    limit?: number;
+    offset?: number;
+  }): Promise<AdminReservationListDto[]> {
+    const qb = this.reservationRepo
+      .createQueryBuilder('r')
+      .leftJoin('r.user', 'u')
+      .leftJoin('r.basket', 'b')
+      .select([
+        'r.id AS id',
+        "concat(u.firstname, ' ', u.lastname) AS client_name",
+        'b.name_basket AS basket_name',
+        "to_char(r.pickup_date, 'YYYY-MM-DD') AS pickup_date",
+        'r.statut AS statut',
+        'r.quantity AS quantity',
+      ])
+      .orderBy('r.pickup_date', 'DESC');
+
+    if (params?.status) qb.andWhere('r.statut = :status', { status: params.status });
+    if (params?.from) qb.andWhere('r.pickup_date >= :from', { from: params.from });
+    if (params?.to) qb.andWhere('r.pickup_date <= :to', { to: params.to });
+    if (params?.limit) qb.limit(params.limit);
+    if (params?.offset) qb.offset(params.offset);
+
+    return qb.getRawMany<AdminReservationListDto>();
+  }
+
+  // — suppression admin sans contrainte d’appartenance
+  async removeAsAdmin(id: string): Promise<void> {
+    const res = await this.reservationRepo.findOne({ where: { id } });
+    if (!res) throw new NotFoundException('Réservation non trouvée');
+    await this.reservationRepo.remove(res);
   }
 }

@@ -11,12 +11,14 @@ import {
   UseGuards,
   Req,
   Patch,
+  Query,
 } from '@nestjs/common';
 import { ReservationsService } from './reservations.service';
 import { CreateReservationDto } from './dto/create-reservation.dto';
 import { Reservation } from './entities/reservation.entity';
 import { JwtAuthGuard } from '../auth/strategies/jwt-auth.guard';
 import { ReservationResponseDto } from './dto/reservation-response.dto';
+import { AdminReservationListDto } from './dto/admin-reservation-list.dto';
 import { RolesGuard } from 'src/auth/roles.guard';
 import { Roles } from 'src/auth/roles.decorator';
 import { Role } from 'src/auth/role.enum';
@@ -43,8 +45,20 @@ export class ReservationsController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.Admin)
   @Get()
-  findAll(): Promise<Reservation[]> {
-    return this.reservationsService.findAll();
+  findAllForAdmin(
+    @Query('status') status?: 'active' | 'archived',
+    @Query('from') from?: string,
+    @Query('to') to?: string,
+    @Query('limit') limit?: string,
+    @Query('offset') offset?: string
+  ): Promise<AdminReservationListDto[]> {
+    return this.reservationsService.findAllForAdmin({
+      status,
+      from,
+      to,
+      limit: limit ? parseInt(limit, 10) : 100,
+      offset: offset ? parseInt(offset, 10) : 0,
+    });
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -75,7 +89,7 @@ export class ReservationsController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.Admin)
   @Delete(':id')
-  remove(@Param('id', ParseUUIDPipe) id: string, @Req() req) {
-    return this.reservationsService.remove(id, req.user.id);
+  removeAsAdmin(@Param('id', ParseUUIDPipe) id: string) {
+    return this.reservationsService.removeAsAdmin(id);
   }
 }
