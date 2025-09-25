@@ -1,92 +1,59 @@
-"use client";
+import AdminReservationsTable from "../../components/adminReservation/AdminReservationsTable";
+import type { AdminReservationRow } from "../../components/adminReservation/AdminReservationTypes";
+import { headers } from "next/headers";
 
-import Tablereservation from "@/app/components/table/TableReservation";
-import AdminHeader from "@/app/components/adminLayout/AdminHeader";
-import ConfirmModal from "@/app/components/modal/ConfirmModal";
-import { useEffect, useState } from "react";
-
-export const dynamic = "force-dynamic";
-
-type ReservationAPI = {
+// Réponse plate du DTO AdminReservationListDto
+type ApiAdminRow = {
   id: string;
-  user: { firstname: string; lastname: string };
-  basket: { name_basket: string };
-  location: { name_pickup: string } | null;
-  pickup_date: string;
+  client_name: string;
+  basket_name: string;
+  pickup_date: string; // 'YYYY-MM-DD'
   statut: "active" | "archived";
+  quantity: number;
 };
 
-type Reservation = {
-  id: string;
-  client: string;
-  panier: string;
-  lieu: string;
-  date: string;
-  statut: "active" | "archived";
-};
+async function fetchRows(): Promise<AdminReservationRow[]> {
+  const base = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3001";
+  const cookie = (await headers()).get("cookie") ?? "";
 
-export default function AdminreservationPage() {
-  const [reservations, setReservations] = useState<Reservation[]>([]);
-  const [commandeASupprimer, setCommandeASupprimer] = useState<string | null>(
-    null
-  );
+  const res = await fetch(`${base}/reservations/admin-list`, {
+    method: "GET",
+    headers: {
+      Accept: "application/json",
+      Cookie: cookie,
+    },
+    cache: "no-store",
+  });
 
-  useEffect(() => {
-    fetch("/api/reservations", { credentials: "include" })
-      .then((res) => res.json())
-      .then((data: ReservationAPI[]) => {
-        const mapped = data.map((r) => ({
-          id: r.id,
-          client: `${r.user.firstname} ${r.user.lastname}`,
-          panier: r.basket.name_basket,
-          lieu: r.location ? r.location.name_pickup : "—",
-          date: r.pickup_date,
-          statut: r.statut,
-        }));
-        setReservations(mapped);
-      })
-      .catch(() => setReservations([]));
-  }, []);
-
-  const handleArchive = async (id: string) => {
-    await fetch(`/api/reservations/${id}`, {
-      method: "PUT",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ statut: "archived" }),
-    });
-    setReservations((prev) =>
-      prev.map((c) => (c.id === id ? { ...c, statut: "archived" } : c))
+  if (!res.ok) {
+    console.error(
+      "GET /reservations/admin-list a échoué :",
+      `${res.status} ${res.statusText}`
     );
-  };
+    return [];
+  }
 
-  const confirmSuppression = (id: string) => setCommandeASupprimer(id);
+  const data = (await res.json()) as ApiAdminRow[];
 
-  const handleDeleteConfirm = async () => {
-    if (!commandeASupprimer) return;
-    await fetch(`/api/reservations/${commandeASupprimer}`, {
+  // Pas de mapping compliqué : les noms correspondent déjà au tableau
+  return data;
+}
+
+export default async function Page() {
+  const rows = await fetchRows();
+
+  async function onDelete(id: string) {
+    "use server";
+    const base =
+      process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3001";
+    const cookie = (await headers()).get("cookie") ?? "";
+
+    await fetch(`${base}/reservations/${id}`, {
       method: "DELETE",
-      credentials: "include",
+      headers: { Cookie: cookie },
+      cache: "no-store",
     });
-    setReservations((prev) => prev.filter((c) => c.id !== commandeASupprimer));
-    setCommandeASupprimer(null);
-  };
+  }
 
-  return (
-    <>
-      <AdminHeader title="Réservations" />
-      <Tablereservation
-        reservations={reservations}
-        onArchive={handleArchive}
-        onDelete={confirmSuppression}
-      />
-      <ConfirmModal
-        open={!!commandeASupprimer}
-        message="Êtes-vous sûr de vouloir supprimer cette commande ?"
-        subtext="Cette action est irréversible."
-        onCancel={() => setCommandeASupprimer(null)}
-        onConfirm={handleDeleteConfirm}
-      />
-    </>
-  );
+  return <AdminReservationsTable rows={rows} onDelete={onDelete} />;
 }

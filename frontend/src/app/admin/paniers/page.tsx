@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import AdminHeader from "@/app/components/adminLayout/AdminHeader";
 import Tablebaskets from "@/app/components/table/TableBaskets";
-import Formbasket from "@/app/components/form/FormBasket";
+import Formbasket from "@/app/components/form/FormBasketAdmin";
 import ConfirmModal from "@/app/components/modal/ConfirmModal";
 
 export const dynamic = "force-dynamic";

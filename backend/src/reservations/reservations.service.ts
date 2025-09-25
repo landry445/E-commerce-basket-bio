@@ -165,34 +165,51 @@ export class ReservationsService {
     );
   }
 
-  findAllForAdmin(params?: {
-    status?: 'active' | 'archived';
-    from?: string; // 'YYYY-MM-DD'
-    to?: string; // 'YYYY-MM-DD'
-    limit?: number;
-    offset?: number;
-  }): Promise<AdminReservationListDto[]> {
-    const qb = this.reservationRepo
+  // findAllForAdmin(params?: {
+  //   status?: 'active' | 'archived';
+  //   from?: string; // 'YYYY-MM-DD'
+  //   to?: string; // 'YYYY-MM-DD'
+  //   limit?: number;
+  //   offset?: number;
+  // }): Promise<AdminReservationListDto[]> {
+  //   const qb = this.reservationRepo
+  //     .createQueryBuilder('r')
+  //     .leftJoin('r.user', 'u')
+  //     .leftJoin('r.basket', 'b')
+  //     .select([
+  //       'r.id AS id',
+  //       "concat(u.firstname, ' ', u.lastname) AS client_name",
+  //       'b.name_basket AS basket_name',
+  //       "to_char(r.pickup_date, 'YYYY-MM-DD') AS pickup_date",
+  //       'r.statut AS statut',
+  //       'r.quantity AS quantity',
+  //     ])
+  //     .orderBy('r.pickup_date', 'DESC');
+
+  //   if (params?.status) qb.andWhere('r.statut = :status', { status: params.status });
+  //   if (params?.from) qb.andWhere('r.pickup_date >= :from', { from: params.from });
+  //   if (params?.to) qb.andWhere('r.pickup_date <= :to', { to: params.to });
+  //   if (params?.limit) qb.limit(params.limit);
+  //   if (params?.offset) qb.offset(params.offset);
+
+  //   return qb.getRawMany<AdminReservationListDto>();
+  // }
+
+  async findAdminList(): Promise<AdminReservationListDto[]> {
+    return this.reservationRepo
       .createQueryBuilder('r')
       .leftJoin('r.user', 'u')
       .leftJoin('r.basket', 'b')
       .select([
         'r.id AS id',
-        "concat(u.firstname, ' ', u.lastname) AS client_name",
+        "concat(u.firstname,' ',u.lastname) AS client_name",
         'b.name_basket AS basket_name',
-        "to_char(r.pickup_date, 'YYYY-MM-DD') AS pickup_date",
+        "to_char(r.pickup_date,'YYYY-MM-DD') AS pickup_date",
         'r.statut AS statut',
         'r.quantity AS quantity',
       ])
-      .orderBy('r.pickup_date', 'DESC');
-
-    if (params?.status) qb.andWhere('r.statut = :status', { status: params.status });
-    if (params?.from) qb.andWhere('r.pickup_date >= :from', { from: params.from });
-    if (params?.to) qb.andWhere('r.pickup_date <= :to', { to: params.to });
-    if (params?.limit) qb.limit(params.limit);
-    if (params?.offset) qb.offset(params.offset);
-
-    return qb.getRawMany<AdminReservationListDto>();
+      .orderBy('r.pickup_date', 'DESC')
+      .getRawMany<AdminReservationListDto>();
   }
 
   // — suppression admin sans contrainte d’appartenance

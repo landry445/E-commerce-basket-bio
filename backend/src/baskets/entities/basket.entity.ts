@@ -18,7 +18,7 @@ export class Basket {
   @Column({ nullable: true })
   image_basket: string;
 
-  @Column({ type: 'bytea', nullable: true }) // <= nouvelle colonne
+  @Column({ type: 'bytea', nullable: true })
   image_data: Buffer;
 
   @Column({ nullable: true }) // <= type MIME de l'image

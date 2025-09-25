@@ -42,23 +42,12 @@ export class ReservationsController {
   }
 
   /* ─────────── opérations admin uniquement ─────────── */
+
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.Admin)
-  @Get()
-  findAllForAdmin(
-    @Query('status') status?: 'active' | 'archived',
-    @Query('from') from?: string,
-    @Query('to') to?: string,
-    @Query('limit') limit?: string,
-    @Query('offset') offset?: string
-  ): Promise<AdminReservationListDto[]> {
-    return this.reservationsService.findAllForAdmin({
-      status,
-      from,
-      to,
-      limit: limit ? parseInt(limit, 10) : 100,
-      offset: offset ? parseInt(offset, 10) : 0,
-    });
+  @Get('admin-list')
+  listAdmin() {
+    return this.reservationsService.findAdminList();
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
