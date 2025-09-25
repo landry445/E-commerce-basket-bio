@@ -26,27 +26,59 @@ export default function AdminReservationsTable({ rows, onDelete }: Props) {
     setSelected((prev) => ({ ...prev, [id]: !prev[id] }));
   }
 
+  type RowExport = {
+    client: string;
+    basket: string;
+    date: string;
+    quantity: string;
+    status: string;
+  };
+
   async function exportSelectedPdf() {
-    const jsPDFModule = await import("jspdf"); // import dynamique
-    const doc = new jsPDFModule.default();
+    const [jsPDFModule, autoTable] = await Promise.all([
+      import("jspdf"),
+      import("jspdf-autotable"),
+    ]);
+    const jsPDF = jsPDFModule.default;
+
+    const doc = new jsPDF({ unit: "pt", format: "a4" });
 
     const picked = rows.filter((r) => selected[r.id]);
-    const title = `Réservations sélectionnées (${picked.length})`;
-    doc.setFontSize(14);
-    doc.text(title, 14, 18);
 
-    let y = 28;
-    doc.setFontSize(11);
-    picked.forEach((r, idx) => {
-      const line = `${idx + 1}. ${r.client_name} — ${r.basket_name} — ${
-        r.pickup_date
-      } — x${r.quantity}`;
-      doc.text(line, 14, y);
-      y += 7;
-      if (y > 280) {
-        doc.addPage();
-        y = 20;
-      }
+    // Données structurées pour le tableau
+    const body: RowExport[] = picked.map((r) => ({
+      client: r.client_name,
+      basket: r.basket_name,
+      date: r.pickup_date,
+      quantity: `x${r.quantity}`,
+      status: r.statut,
+    }));
+
+    // Titre + méta
+    doc.setProperties({ title: "Réservations paniers" });
+    doc.setFontSize(14);
+    doc.text(`Réservations(${body.length})`, 40, 40);
+
+    // Tableau
+    autoTable.default(doc, {
+      head: [["Client", "Panier", "Date", "Quantité"]],
+      body: body.map((r) => [r.client, r.basket, r.date, r.quantity]),
+      startY: 60,
+      theme: "grid",
+      styles: { fontSize: 10, cellPadding: 6 },
+      headStyles: { fillColor: [34, 34, 34], textColor: 255 },
+      margin: { left: 40, right: 40 },
+      didDrawPage: () => {
+        // Pied de page : pagination
+        const page = doc.internal.getNumberOfPages();
+        const str = `Page ${page}`;
+        doc.setFontSize(9);
+        doc.text(
+          str,
+          doc.internal.pageSize.getWidth() - 60,
+          doc.internal.pageSize.getHeight() - 20
+        );
+      },
     });
 
     doc.save("reservations-selection.pdf");

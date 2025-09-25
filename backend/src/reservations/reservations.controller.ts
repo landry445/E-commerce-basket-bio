@@ -46,8 +46,8 @@ export class ReservationsController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.Admin)
   @Get('admin-list')
-  listAdmin() {
-    return this.reservationsService.findAdminList();
+  listAdmin(@Query('status') status?: 'active' | 'archived') {
+    return this.reservationsService.findAdminList({ status });
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)

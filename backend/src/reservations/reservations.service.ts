@@ -1,9 +1,8 @@
-// src/reservations/reservations.service.ts
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, SelectQueryBuilder } from 'typeorm';
+import { Repository } from 'typeorm';
 
-import { Reservation } from './entities/reservation.entity';
+import { Reservation, ReservationStatut } from './entities/reservation.entity';
 import { CreateReservationDto } from './dto/create-reservation.dto';
 import { ReservationResponseDto } from './dto/reservation-response.dto';
 import { plainToInstance } from 'class-transformer';
@@ -11,6 +10,7 @@ import { plainToInstance } from 'class-transformer';
 import { Basket } from '../baskets/entities/basket.entity';
 import { PickupLocation } from '../pickup/entities/pickup-location.entity';
 import { AdminReservationListDto } from './dto/admin-reservation-list.dto';
+
 @Injectable()
 export class ReservationsService {
   constructor(
@@ -45,10 +45,7 @@ export class ReservationsService {
 
   private static assertLocationAllowsDow(loc: PickupLocation, dow: number): void {
     const locDays = (Array.isArray(loc.day_of_week) ? loc.day_of_week : null) ?? null;
-
-    // Si le lieu ne définit pas de contrainte → pas de blocage
     if (!locDays || locDays.length === 0) return;
-
     if (!locDays.includes(dow)) {
       const lisible = locDays.map((n) => ReservationsService.JOURS[n] ?? `${n}`).join(' ou ');
       throw new BadRequestException(
@@ -56,13 +53,6 @@ export class ReservationsService {
       );
     }
   }
-
-  // findAll(): Promise<Reservation[]> {
-  //   return this.reservationRepo.find({
-  //     relations: ['user', 'basket', 'location'],
-  //     order: { pickup_date: 'ASC' },
-  //   });
-  // }
 
   async findOne(id: string): Promise<Reservation> {
     const res = await this.reservationRepo.findOne({ where: { id } });
@@ -81,8 +71,6 @@ export class ReservationsService {
     if (!loc) throw new BadRequestException('Lieu introuvable');
 
     const dow = ReservationsService.getDow(dto.pickup_date);
-
-    // Règle globale + contrainte du lieu (tableau)
     ReservationsService.assertTuesdayOrFriday(dow);
     ReservationsService.assertLocationAllowsDow(loc, dow);
 
@@ -136,14 +124,75 @@ export class ReservationsService {
     await this.reservationRepo.save(reservation);
   }
 
-  // async remove(id: string, userId: string): Promise<void> {
-  //   const res = await this.reservationRepo.findOne({
-  //     where: { id, user: { id: userId } },
-  //   });
-  //   if (!res) throw new NotFoundException('Réservation introuvable');
-  //   await this.reservationRepo.remove(res);
-  // }
+  /** Liste admin à plat avec filtres (status, intervalle), pagination basique */
+  async findAdminList(params?: {
+    status?: 'active' | 'archived';
+    from?: string; // 'YYYY-MM-DD'
+    to?: string; // 'YYYY-MM-DD'
+    limit?: number; // défaut 100
+    offset?: number; // défaut 0
+  }): Promise<AdminReservationListDto[]> {
+    const qb = this.reservationRepo
+      .createQueryBuilder('r')
+      .leftJoin('r.user', 'u')
+      .leftJoin('r.basket', 'b')
+      .select([
+        'r.id AS id',
+        "concat(u.firstname, \' \', u.lastname) AS client_name",
+        'b.name_basket AS basket_name',
+        "to_char(r.pickup_date, 'YYYY-MM-DD') AS pickup_date",
+        'r.statut AS statut',
+        'r.quantity AS quantity',
+      ])
+      .orderBy('r.pickup_date', 'DESC');
 
+    // Date du jour en Europe/Paris (référence unique pour le filtrage)
+    const todayExpr = `(now() at time zone 'Europe/Paris')::date`;
+
+    // Fenêtre de dates optionnelle
+    if (params?.from) qb.andWhere('r.pickup_date >= :from', { from: params.from });
+    if (params?.to) qb.andWhere('r.pickup_date <= :to', { to: params.to });
+
+    // Séparation stricte + filet de sécurité:
+    // - Actives: seulement aujourd'hui et futur, et statut 'active'
+    // - Archives: statut 'archived' OU date passée (si le cron n'a pas encore tourné)
+    if (params?.status === 'active') {
+      qb.andWhere(`r.pickup_date >= ${todayExpr}`).andWhere(`r.statut = :s`, {
+        s: ReservationStatut.ACTIVE,
+      });
+    } else if (params?.status === 'archived') {
+      qb.andWhere(`(r.statut = :sArch OR r.pickup_date < ${todayExpr})`, {
+        sArch: ReservationStatut.ARCHIVED,
+      });
+    }
+
+    qb.limit(params?.limit ?? 100);
+    qb.offset(params?.offset ?? 0);
+
+    return qb.getRawMany<AdminReservationListDto>();
+  }
+
+  /** Archivage serveur des réservations dont la date est antérieure à aujourd’hui (Europe/Paris) */
+  async archivePastReservations(): Promise<number> {
+    const res = await this.reservationRepo
+      .createQueryBuilder()
+      .update(Reservation)
+      .set({ statut: ReservationStatut.ARCHIVED })
+      .where(`pickup_date < (now() at time zone 'Europe/Paris')::date`)
+      .andWhere(`statut != :archived`, { archived: ReservationStatut.ARCHIVED })
+      .execute();
+
+    return res.affected ?? 0;
+  }
+
+  // — suppression admin sans contrainte d’appartenance
+  async removeAsAdmin(id: string): Promise<void> {
+    const res = await this.reservationRepo.findOne({ where: { id } });
+    if (!res) throw new NotFoundException('Réservation non trouvée');
+    await this.reservationRepo.remove(res);
+  }
+
+  /** Mes réservations (côté client) */
   async findByUser(userId: string): Promise<ReservationResponseDto[]> {
     const reservations = await this.reservationRepo.find({
       where: { user: { id: userId } },
@@ -163,59 +212,5 @@ export class ReservationsService {
         { excludeExtraneousValues: true }
       )
     );
-  }
-
-  // findAllForAdmin(params?: {
-  //   status?: 'active' | 'archived';
-  //   from?: string; // 'YYYY-MM-DD'
-  //   to?: string; // 'YYYY-MM-DD'
-  //   limit?: number;
-  //   offset?: number;
-  // }): Promise<AdminReservationListDto[]> {
-  //   const qb = this.reservationRepo
-  //     .createQueryBuilder('r')
-  //     .leftJoin('r.user', 'u')
-  //     .leftJoin('r.basket', 'b')
-  //     .select([
-  //       'r.id AS id',
-  //       "concat(u.firstname, ' ', u.lastname) AS client_name",
-  //       'b.name_basket AS basket_name',
-  //       "to_char(r.pickup_date, 'YYYY-MM-DD') AS pickup_date",
-  //       'r.statut AS statut',
-  //       'r.quantity AS quantity',
-  //     ])
-  //     .orderBy('r.pickup_date', 'DESC');
-
-  //   if (params?.status) qb.andWhere('r.statut = :status', { status: params.status });
-  //   if (params?.from) qb.andWhere('r.pickup_date >= :from', { from: params.from });
-  //   if (params?.to) qb.andWhere('r.pickup_date <= :to', { to: params.to });
-  //   if (params?.limit) qb.limit(params.limit);
-  //   if (params?.offset) qb.offset(params.offset);
-
-  //   return qb.getRawMany<AdminReservationListDto>();
-  // }
-
-  async findAdminList(): Promise<AdminReservationListDto[]> {
-    return this.reservationRepo
-      .createQueryBuilder('r')
-      .leftJoin('r.user', 'u')
-      .leftJoin('r.basket', 'b')
-      .select([
-        'r.id AS id',
-        "concat(u.firstname,' ',u.lastname) AS client_name",
-        'b.name_basket AS basket_name',
-        "to_char(r.pickup_date,'YYYY-MM-DD') AS pickup_date",
-        'r.statut AS statut',
-        'r.quantity AS quantity',
-      ])
-      .orderBy('r.pickup_date', 'DESC')
-      .getRawMany<AdminReservationListDto>();
-  }
-
-  // — suppression admin sans contrainte d’appartenance
-  async removeAsAdmin(id: string): Promise<void> {
-    const res = await this.reservationRepo.findOne({ where: { id } });
-    if (!res) throw new NotFoundException('Réservation non trouvée');
-    await this.reservationRepo.remove(res);
   }
 }
