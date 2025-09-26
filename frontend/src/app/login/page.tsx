@@ -6,15 +6,37 @@ import Image from "next/image";
 import Footer from "../components/Footer";
 import Navbar from "../components/navbar/Navbar";
 
+type MeResponse = {
+  id: string;
+  email: string;
+  is_admin: boolean;
+};
+
 export default function LoginPage() {
   const router = useRouter();
   const params = useSearchParams();
+
+  // Si aucun "next" n'est fourni, cible par défaut = page réserver
   const next = params.get("next") ?? "/reserver";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  async function fetchMe(): Promise<MeResponse | null> {
+    try {
+      const meRes = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/me`,
+        { credentials: "include" }
+      );
+      if (!meRes.ok) return null;
+      const me: MeResponse = await meRes.json();
+      return me;
+    } catch {
+      return null;
+    }
+  }
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
@@ -30,13 +52,30 @@ export default function LoginPage() {
           body: JSON.stringify({ email, password }),
         }
       );
+
       if (!res.ok) {
         const body = await res.json().catch(() => null);
         setError(body?.message ?? "Identifiants incorrects");
         setLoading(false);
         return;
       }
-      router.replace(next);
+
+      // À ce stade, le cookie httpOnly est posé par le backend.
+      const me = await fetchMe();
+
+      if (me?.is_admin) {
+        // Admin: priorité à l’admin. Si un "next" admin est présent, on le respecte.
+        const target =
+          next.startsWith("/admin/reservations") &&
+          next !== "/admin/reservations"
+            ? next
+            : "/admin/reservations";
+        router.replace(target);
+      } else {
+        // Client: jamais redirigé vers l’admin, même si "next" pointe vers /admin
+        const target = next.startsWith("/admin") ? "/reserver" : next;
+        router.replace(target);
+      }
     } catch {
       setError("Impossible de contacter le serveur");
       setLoading(false);

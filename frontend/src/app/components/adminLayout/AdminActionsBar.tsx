@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 export default function AdminActionsBar() {
@@ -31,15 +32,13 @@ export default function AdminActionsBar() {
       >
         Se déconnecter
       </button>
-      <a
+      <Link
         href="/"
         className="px-3 py-1 rounded-full border border-[var(--color-dark)] bg-white font-sans text-[var(--color-dark)] text-xs shadow-sm hover:bg-gray-100 transition"
-        target="_blank"
-        rel="noopener noreferrer"
         style={{ minWidth: 82 }}
       >
         Voir le site
-      </a>
+      </Link>
     </div>
   );
 }

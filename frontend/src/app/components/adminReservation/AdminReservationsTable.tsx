@@ -92,7 +92,7 @@ export default function AdminReservationsTable({ rows, onDelete }: Props) {
           <button
             type="button"
             onClick={exportSelectedPdf}
-            className="px-3 py-1.5 rounded-full text-white"
+            className="px-3 py-1.5 rounded-full text-white cursor-pointer"
             style={{ background: "var(--color-dark)" }}
           >
             Exporter PDF (sélection)
@@ -138,7 +138,7 @@ export default function AdminReservationsTable({ rows, onDelete }: Props) {
                   <button
                     type="button"
                     onClick={() => onDelete(r.id)}
-                    className="px-2 py-1 rounded-full text-white bg-red-600"
+                    className="px-2 py-1 rounded-full text-white bg-red-600 cursor-pointer"
                   >
                     Supprimer
                   </button>

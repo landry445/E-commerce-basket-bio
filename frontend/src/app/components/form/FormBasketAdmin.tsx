@@ -5,7 +5,7 @@ import Image from "next/image";
 type Basket = {
   id: string;
   name: string;
-  price: string;
+  price: string; // <- en euros sous forme texte (ex: "14.00")
   description: string;
   actif: boolean;
 };
@@ -28,7 +28,7 @@ export default function FormBasket(props: FormBasketProps) {
   const initial = props.initialValues ?? {};
 
   const [name, setName] = useState(initial.name ?? "");
-  const [price, setPrice] = useState(initial.price ?? "");
+  const [price, setPrice] = useState(initial.price ?? ""); // euros "14.00"
   const [description, setDescription] = useState(initial.description ?? "");
   const [actif, setActif] = useState(
     mode === "edit" ? (initial as Basket).actif : initial.actif ?? true
@@ -43,11 +43,8 @@ export default function FormBasket(props: FormBasketProps) {
     const selected = e.target.files?.[0] ?? null;
     setFile(selected);
     setFileName(selected ? selected.name : "");
-    if (selected) {
-      setPreview(URL.createObjectURL(selected));
-    } else {
-      setPreview("");
-    }
+    if (selected) setPreview(URL.createObjectURL(selected));
+    else setPreview("");
   };
 
   const handleButtonClick = () => {
@@ -58,15 +55,11 @@ export default function FormBasket(props: FormBasketProps) {
     e.preventDefault();
     const formData = new FormData();
     formData.append("name", name);
-    formData.append("price", price);
+    formData.append("price", price); // euros, ex "14.00"
     formData.append("description", description);
     formData.append("actif", String(actif));
-    if (file) {
-      formData.append("image", file);
-    }
-    if (mode === "edit") {
-      formData.append("id", (initial as Basket).id);
-    }
+    if (file) formData.append("image", file);
+    if (mode === "edit") formData.append("id", (initial as Basket).id);
     onSubmit(formData);
   };
 
@@ -95,11 +88,9 @@ export default function FormBasket(props: FormBasketProps) {
           onChange={(e) => setDescription(e.target.value)}
         />
 
-        {/* Upload d'image custom */}
+        {/* Upload d'image */}
         <div>
-          <label className="font-medium block mb-2"></label>
           <div className="flex items-center gap-4">
-            {/* Input natif caché */}
             <input
               ref={fileInputRef}
               id="image"
@@ -108,7 +99,6 @@ export default function FormBasket(props: FormBasketProps) {
               className="hidden"
               onChange={handleFileChange}
             />
-            {/* Bouton stylé */}
             <button
               type="button"
               onClick={handleButtonClick}
@@ -116,12 +106,10 @@ export default function FormBasket(props: FormBasketProps) {
             >
               Choisir une image
             </button>
-            {/* Nom du fichier */}
             <span className="text-gray-500 text-sm">
               {fileName || "Aucun fichier choisi"}
             </span>
           </div>
-          {/* Preview locale si nouveau fichier */}
           {preview && (
             <Image
               src={preview}
@@ -132,7 +120,6 @@ export default function FormBasket(props: FormBasketProps) {
               unoptimized
             />
           )}
-          {/* Image déjà existante en BDD (mode edit) */}
           {!preview && mode === "edit" && (initial as Basket).id && (
             <Image
               src={`http://localhost:3001/baskets/${
@@ -147,6 +134,7 @@ export default function FormBasket(props: FormBasketProps) {
             />
           )}
         </div>
+
         <div className="flex items-center gap-3 mt-2">
           <input
             type="checkbox"
@@ -160,6 +148,7 @@ export default function FormBasket(props: FormBasketProps) {
           </label>
         </div>
       </div>
+
       <div className="flex flex-col items-end mt-3">
         <button
           type="submit"
