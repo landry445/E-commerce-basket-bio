@@ -6,7 +6,7 @@ interface AdminHeaderProps {
 
 export default function AdminHeader({ title, onBack }: AdminHeaderProps) {
   return (
-    <div className="flex items-center justify-between mb-8">
+    <div className="flex items-center justify-between ">
       <h1 className="font-[var(--font-pacifico)] text-3xl text-dark">
         Gérer votre <span className="italic">{title}</span>
       </h1>
