@@ -10,7 +10,14 @@ import { plainToInstance } from 'class-transformer';
 import { Basket } from '../baskets/entities/basket.entity';
 import { PickupLocation } from '../pickup/entities/pickup-location.entity';
 import { AdminReservationListDto } from './dto/admin-reservation-list.dto';
+import { ClientOrderCompactDto } from './dto/client-order-compact.dto';
 
+type RawRow = {
+  id: string;
+  pickupdate: string; // alias en minuscules
+  basketname: string | null;
+  totalqty: string | null; // agrégat/nombre vus comme string
+};
 @Injectable()
 export class ReservationsService {
   constructor(
@@ -213,4 +220,30 @@ export class ReservationsService {
       )
     );
   }
+
+  async findMineCompact(userId: string, limit: number) {
+    const safeLimit = Math.max(1, Math.min(Number(limit) || 5, 50));
+
+    const rows = await this.reservationRepo
+      .createQueryBuilder('r')
+      // si ta relation s’appelle bien "basket" dans l’entité Reservation :
+      .innerJoin('r.basket', 'b')
+      .where('r.user_id = :userId', { userId })
+      .select('r.id', 'id')
+      // alias en minuscules (évite les surprises côté driver)
+      .addSelect("to_char(r.pickup_date, 'YYYY-MM-DD')", 'pickupdate')
+      .addSelect("COALESCE(b.name_basket, '')", 'basketname')
+      .addSelect('COALESCE(r.quantity, 0)', 'totalqty')
+      .orderBy('r.pickup_date', 'DESC')
+      .limit(safeLimit)
+      .getRawMany<RawRow>();
+
+    return rows.map((r) => ({
+      id: r.id,
+      pickupDate: r.pickupdate, // correspond à l’alias 'pickupdate'
+      basketName: r.basketname ?? '',
+      totalQty: Number(r.totalqty ?? '0') || 0,
+    }));
+  }
 }
+

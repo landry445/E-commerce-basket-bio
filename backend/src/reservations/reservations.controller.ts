@@ -12,6 +12,8 @@ import {
   Req,
   Patch,
   Query,
+  DefaultValuePipe,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { ReservationsService } from './reservations.service';
 import { CreateReservationDto } from './dto/create-reservation.dto';
@@ -32,6 +34,15 @@ export class ReservationsController {
   @Get('me')
   findMyReservations(@Req() req): Promise<ReservationResponseDto[]> {
     return this.reservationsService.findByUser(req.user.id);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('me/compact')
+  async mineCompact(
+    @Req() req,
+    @Query('limit', new DefaultValuePipe(5), ParseIntPipe) limit: number
+  ) {
+    return this.reservationsService.findMineCompact(req.user.id, limit);
   }
 
   /* ─────────── création accessible au client ─────────── */

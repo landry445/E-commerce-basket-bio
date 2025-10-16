@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Navbar from "@/app/components/navbar/Navbar";
 import Footer from "@/app/components/Footer";
@@ -13,62 +13,172 @@ type UserMe = {
   phone: string;
 };
 
-type ReservationItem = {
+type ClientOrderCompact = {
   id: string;
-  basketName: string;
-  pickupLocation: string;
   pickupDate: string; // YYYY-MM-DD
+  totalQty: number;
+  items: string; // "2×Panier S, 1×Panier M"
 };
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? "http://localhost:3001";
+type UserUpdateInput = {
+  firstname: string;
+  lastname: string;
+  phone: string;
+};
+
+const API_BASE: string =
+  process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3001";
+const LIMIT = 5;
 
 export default function AccountPage() {
   const router = useRouter();
-  const [me, setMe] = useState<UserMe | null>(null);
-  const [reservations, setReservations] = useState<ReservationItem[] | null>(
-    null
-  );
-  const [loading, setLoading] = useState(true);
 
+  // --- État principal
+  const [me, setMe] = useState<UserMe | null>(null);
+  const [form, setForm] = useState<UserUpdateInput>({
+    firstname: "",
+    lastname: "",
+    phone: "",
+  });
+  const [saving, setSaving] = useState<boolean>(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [saveOk, setSaveOk] = useState<boolean>(false);
+  const [orders, setOrders] = useState<ClientOrderCompact[] | null>(null);
+
+  const [loading, setLoading] = useState<boolean>(true);
+
+  // extrait : remplace ton useEffect de chargement
   useEffect(() => {
     let cancelled = false;
-
     async function load() {
+      setLoading(true);
       try {
-        const [uRes, rRes] = await Promise.all([
+        const [uRes, oRes] = await Promise.all([
           fetch(`${API_BASE}/users/me`, { credentials: "include" }),
-          fetch(`${API_BASE}/reservations/me?scope=past`, {
+          fetch(`${API_BASE}/reservations/me/compact?limit=5`, {
             credentials: "include",
           }),
         ]);
 
-        if (uRes.status === 401 || rRes.status === 401) {
+        if (uRes.status === 401) {
           router.replace("/login");
           return;
         }
 
-        if (!uRes.ok || !rRes.ok) {
-          throw new Error("Erreur de chargement");
-        }
+        const user = uRes.ok ? ((await uRes.json()) as UserMe) : null;
+        const rawOrders = oRes.ok
+          ? ((await oRes.json()) as {
+              id: string;
+              pickupDate: string;
+              basketName: string;
+              totalQty: number;
+            }[])
+          : [];
+        const orders: ClientOrderCompact[] = rawOrders.map((o) => ({
+          id: o.id,
+          pickupDate: o.pickupDate,
+          totalQty: o.totalQty,
+          items: o.basketName || "-", // adapt if needed
+        }));
 
-        const [uJson, rJson] = await Promise.all([uRes.json(), rRes.json()]);
         if (!cancelled) {
-          setMe(uJson as UserMe);
-          setReservations(rJson as ReservationItem[]);
+          if (user) {
+            setMe(user);
+            setForm({
+              firstname: user.firstname ?? "",
+              lastname: user.lastname ?? "",
+              phone: user.phone ?? "",
+            });
+          }
+          // tri défensif décroissant par date
+          orders.sort((a, b) => (a.pickupDate < b.pickupDate ? 1 : -1));
+          setOrders(orders);
         }
-      } catch {
-        // Option douce : retour page login en cas d’échec auth
-        router.replace("/login");
       } finally {
         if (!cancelled) setLoading(false);
       }
     }
-
-    load();
+    void load();
     return () => {
       cancelled = true;
     };
   }, [router]);
+
+  // --- Validation simple téléphone (ex: 10 chiffres FR, souple)
+  const phoneError = useMemo(() => {
+    const p = form.phone.trim();
+    if (!p) return null;
+    const digits = p.replace(/\D/g, "");
+    if (digits.length < 9 || digits.length > 15) return "Numéro invalide";
+    return null;
+  }, [form.phone]);
+
+  // --- Soumission du formulaire (PATCH /users/me)
+  async function onSaveProfile() {
+    setSaving(true);
+    setSaveOk(false);
+    setSaveError(null);
+
+    try {
+      if (phoneError) {
+        setSaveError(phoneError);
+        return;
+      }
+
+      const res = await fetch(`${API_BASE}/users/me`, {
+        method: "PATCH",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({
+          firstname: form.firstname.trim(),
+          lastname: form.lastname.trim(),
+          phone: form.phone.trim(),
+        } as UserUpdateInput),
+      });
+
+      if (res.status === 401) {
+        router.replace("/login");
+        return;
+      }
+
+      if (!res.ok) {
+        const msg = await safeMessage(res);
+        setSaveError(msg ?? "Échec de la mise à jour");
+        return;
+      }
+
+      const updated = (await res.json()) as UserMe;
+      setMe(updated);
+      setForm({
+        firstname: updated.firstname,
+        lastname: updated.lastname,
+        phone: updated.phone ?? "",
+      });
+      setSaveOk(true);
+    } catch {
+      setSaveError("Erreur inattendue");
+    } finally {
+      setSaving(false);
+      // efface le flag de succès après 2 s
+      setTimeout(() => setSaveOk(false), 2000);
+    }
+  }
+
+  // --- Formatage date
+  function fmtDateYMD(ymd: string): string {
+    // ymd attendu: "YYYY-MM-DD"
+    const d = new Date(`${ymd}T00:00:00Z`);
+    if (Number.isNaN(d.getTime())) return "-";
+    return d.toLocaleDateString("fr-FR", {
+      weekday: "long",
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
+  }
 
   return (
     <>
@@ -82,15 +192,15 @@ export default function AccountPage() {
             Mon compte
           </h1>
 
-          {/* État de chargement */}
+          {/* Chargement */}
           {loading && (
             <div className="animate-pulse space-y-4">
-              <div className="h-24 bg-white rounded-2xl shadow" />
-              <div className="h-40 bg-white rounded-2xl shadow" />
+              <div className="h-28 bg-white rounded-2xl shadow" />
+              <div className="h-52 bg-white rounded-2xl shadow" />
             </div>
           )}
 
-          {/* Bloc Infos client */}
+          {/* Bloc profil */}
           {!loading && me && (
             <div className="bg-white rounded-2xl shadow p-5 mb-8">
               <h2
@@ -99,48 +209,89 @@ export default function AccountPage() {
               >
                 Mes informations
               </h2>
+
               <div className="grid md:grid-cols-2 gap-4 text-sm">
-                <InfoRow label="Nom">{me.lastname}</InfoRow>
-                <InfoRow label="Prénom">{me.firstname}</InfoRow>
-                <InfoRow label="Email">{me.email}</InfoRow>
-                <InfoRow label="Téléphone">{me.phone}</InfoRow>
+                <Field
+                  label="Prénom"
+                  value={form.firstname}
+                  onChange={(v) => setForm((s) => ({ ...s, firstname: v }))}
+                />
+                <Field
+                  label="Nom"
+                  value={form.lastname}
+                  onChange={(v) => setForm((s) => ({ ...s, lastname: v }))}
+                />
+                <Field
+                  label="Téléphone"
+                  value={form.phone}
+                  onChange={(v) => setForm((s) => ({ ...s, phone: v }))}
+                  error={phoneError ?? undefined}
+                />
+                <ReadOnlyField label="Email" value={me.email} />
+              </div>
+
+              <div className="mt-4 flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={onSaveProfile}
+                  disabled={saving || !!phoneError}
+                  className={[
+                    "px-4 py-2 rounded-lg border shadow-sm",
+                    saving || phoneError
+                      ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+                      : "bg-black text-white",
+                  ].join(" ")}
+                >
+                  {saving ? "Enregistrement…" : "Enregistrer"}
+                </button>
+
+                {saveOk && (
+                  <span className="text-green-700 text-sm">
+                    Modifications enregistrées
+                  </span>
+                )}
+                {saveError && (
+                  <span className="text-red-600 text-sm">{saveError}</span>
+                )}
               </div>
             </div>
           )}
 
-          {/* Historique des réservations */}
-          {!loading && reservations && (
+          {/* Bloc commandes compactes */}
+          {!loading && (
             <div className="bg-white rounded-2xl shadow p-5">
-              <h2
-                className="text-xl mb-4"
-                style={{ fontFamily: "var(--font-pacifico)" }}
-              >
-                Mes réservations passées
-              </h2>
+              <div className="mb-4 flex items-center justify-between">
+                <h2
+                  className="text-xl"
+                  style={{ fontFamily: "var(--font-pacifico)" }}
+                >
+                  Mes commandes
+                </h2>
+                <span className="text-xs text-gray-500">Dernières {LIMIT}</span>
+              </div>
 
-              {reservations.length === 0 ? (
-                <p className="text-sm text-gray-600">
-                  Aucune réservation passée.
-                </p>
-              ) : (
+              {(!orders || orders.length === 0) && (
+                <p className="text-sm text-gray-600">Aucune commande.</p>
+              )}
+
+              {orders && orders.length > 0 && (
                 <div className="overflow-x-auto">
                   <table className="min-w-full text-sm">
                     <thead>
                       <tr className="text-left border-b">
                         <th className="py-2 pr-4">Date</th>
-                        <th className="py-2 pr-4">Panier</th>
-                        <th className="py-2 pr-4">Lieu de retrait</th>
-                        <th className="py-2">Statut</th>
+                        <th className="py-2 pr-4">Paniers</th>
+                        <th className="py-2 pr-4">Quantité</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {reservations.map((r) => (
-                        <tr key={r.id} className="border-b last:border-0">
+                      {orders.map((o) => (
+                        <tr key={o.id} className="border-b last:border-0">
                           <td className="py-3 pr-4">
-                            {new Date(r.pickupDate).toLocaleDateString("fr-FR")}
+                            {fmtDateYMD(o.pickupDate)}
                           </td>
-                          <td className="py-3 pr-4">{r.basketName}</td>
-                          <td className="py-3 pr-4">{r.pickupLocation}</td>
+                          <td className="py-3 pr-4">{o.items || "-"}</td>
+                          <td className="py-3 pr-4">{o.totalQty}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -156,39 +307,84 @@ export default function AccountPage() {
   );
 }
 
-function InfoRow({
+function Field({
   label,
-  children,
+  value,
+  onChange,
+  error,
 }: {
   label: string;
-  children: React.ReactNode;
+  value: string;
+  onChange: (v: string) => void;
+  error?: string;
 }) {
   return (
     <div className="flex flex-col">
-      <span className="text-gray-500">{label}</span>
-      <span className="font-medium">{children}</span>
+      <label className="text-gray-500 mb-1">{label}</label>
+      <input
+        className={[
+          "rounded-lg border px-3 py-2",
+          error ? "border-red-400" : "border-gray-300",
+        ].join(" ")}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+      />
+      {error && <span className="mt-1 text-xs text-red-600">{error}</span>}
     </div>
   );
 }
 
-// function StatusPill({
-//   status,
+function ReadOnlyField({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex flex-col">
+      <label className="text-gray-500 mb-1">{label}</label>
+      <input
+        className="rounded-lg border px-3 py-2 bg-gray-50 text-gray-600 border-gray-200"
+        value={value}
+        readOnly
+      />
+    </div>
+  );
+}
+
+// function TabButton({
+//   active,
+//   children,
+//   onClick,
 // }: {
-//   status: "completed" | "no_show" | "cancelled";
+//   active: boolean;
+//   children: React.ReactNode;
+//   onClick: () => void;
 // }) {
-//   const labelMap: Record<typeof status, string> = {
-//     completed: "Retiré",
-//     no_show: "Non venu",
-//     cancelled: "Annulé",
-//   };
-//   const colorMap: Record<typeof status, string> = {
-//     completed: "bg-green-100 text-green-800",
-//     no_show: "bg-yellow-100 text-yellow-800",
-//     cancelled: "bg-red-100 text-red-800",
-//   };
 //   return (
-//     <span className={`px-2 py-1 rounded-full text-xs ${colorMap[status]}`}>
-//       {labelMap[status]}
-//     </span>
+//     <button
+//       type="button"
+//       onClick={onClick}
+//       className={[
+//         "px-3 py-1.5 rounded-full border",
+//         active ? "bg-black text-white" : "bg-white",
+//       ].join(" ")}
+//     >
+//       {children}
+//     </button>
 //   );
 // }
+
+async function safeMessage(res: Response): Promise<string | null> {
+  try {
+    const ct = res.headers.get("content-type") ?? "";
+    if (!ct.includes("application/json")) return null;
+    const data = (await res.json()) as unknown;
+    if (
+      data &&
+      typeof data === "object" &&
+      "message" in data &&
+      typeof (data as { message: unknown }).message === "string"
+    ) {
+      return (data as { message: string }).message;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}

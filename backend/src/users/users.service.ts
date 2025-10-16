@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UserResponseDto } from './dto/user-response.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 import * as bcrypt from 'bcrypt';
 import { plainToInstance } from 'class-transformer';
 import { AdminUserResponseDto } from '../admin/dto/admin-user-response.dto';
@@ -77,6 +78,18 @@ export class UsersService {
 
   async deleteUserById(id: string): Promise<void> {
     await this.userRepo.delete(id);
+  }
+
+  async updatePartial(userId: string, dto: UpdateUserDto): Promise<UserResponseDto> {
+    const user = await this.userRepo.findOne({ where: { id: userId } });
+    if (!user) throw new NotFoundException('Utilisateur non trouvé');
+
+    if (dto.firstname !== undefined) user.firstname = dto.firstname.trim();
+    if (dto.lastname !== undefined) user.lastname = dto.lastname.trim();
+    if (dto.phone !== undefined) user.phone = dto.phone.trim();
+
+    const saved = await this.userRepo.save(user);
+    return this.toResponse(saved); // déjà présent, ne fuit pas password_hash. :contentReference[oaicite:3]{index=3}
   }
 
   private toResponse(user: User): UserResponseDto {
