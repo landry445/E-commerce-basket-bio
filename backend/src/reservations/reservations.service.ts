@@ -10,7 +10,7 @@ import { plainToInstance } from 'class-transformer';
 import { Basket } from '../baskets/entities/basket.entity';
 import { PickupLocation } from '../pickup/entities/pickup-location.entity';
 import { AdminReservationListDto } from './dto/admin-reservation-list.dto';
-import { ClientOrderCompactDto } from './dto/client-order-compact.dto';
+import { MailerService } from '../mail/mailer.service';
 
 type RawRow = {
   id: string;
@@ -26,7 +26,8 @@ export class ReservationsService {
     @InjectRepository(Basket)
     private readonly basketRepo: Repository<Basket>,
     @InjectRepository(PickupLocation)
-    private readonly pickupRepo: Repository<PickupLocation>
+    private readonly pickupRepo: Repository<PickupLocation>,
+    private readonly mailer: MailerService
   ) {}
 
   private static readonly JOURS: ReadonlyArray<string> = [
@@ -73,7 +74,6 @@ export class ReservationsService {
       this.basketRepo.findOne({ where: { id: dto.basket_id } }),
       this.pickupRepo.findOne({ where: { id: dto.location_id } }),
     ]);
-
     if (!basket) throw new BadRequestException('Panier introuvable');
     if (!loc) throw new BadRequestException('Lieu introuvable');
 
@@ -92,7 +92,50 @@ export class ReservationsService {
       price_reservation: price,
     });
 
-    return this.reservationRepo.save(entity);
+    const saved = await this.reservationRepo.save(entity);
+
+    // ---- nouveau bloc: envoi du mail de confirmation ----
+    try {
+      const withRels = await this.reservationRepo.findOne({
+        where: { id: saved.id },
+        relations: ['user', 'basket', 'location'],
+      });
+
+      if (withRels?.user?.email) {
+        const unitPriceCents = Math.round((withRels.basket?.price_basket ?? 0) * 100);
+        const qty = withRels.quantity ?? 1;
+
+        const html = this.mailer.orderConfirmationHTML({
+          firstname: withRels.user.firstname ?? '',
+          pickupDateISO: new Date(withRels.pickup_date).toISOString().slice(0, 10),
+          pickupName: withRels.location?.name_pickup ?? '',
+          items: [
+            {
+              name: withRels.basket?.name_basket ?? 'Panier',
+              quantity: qty,
+              unitPriceCents,
+            },
+          ],
+          totalCents: unitPriceCents * qty,
+        });
+
+        await this.mailer.send({
+          to: withRels.user.email,
+          subject: 'Confirmation de réservation',
+          html,
+          text: 'Confirmation de réservation',
+        });
+
+        // marquage horodaté (utile pour relances)
+        await this.reservationRepo.update({ id: saved.id }, { email_sent_at: new Date() });
+      }
+    } catch (e) {
+      // log discret
+      // eslint-disable-next-line no-console
+      console.error('MAIL_SEND_ERROR', (e as Error).message);
+    }
+
+    return saved;
   }
 
   /** mise à jour (recalcule aussi le prix) */
@@ -176,7 +219,10 @@ export class ReservationsService {
     qb.limit(params?.limit ?? 100);
     qb.offset(params?.offset ?? 0);
 
-    return qb.getRawMany<AdminReservationListDto>();
+    const rows = await qb.getRawMany(); // objets { id, client_name, ... }
+    return rows.map((r) =>
+      plainToInstance(AdminReservationListDto, r, { excludeExtraneousValues: true })
+    );
   }
 
   /** Archivage serveur des réservations dont la date est antérieure à aujourd’hui (Europe/Paris) */
@@ -246,4 +292,3 @@ export class ReservationsService {
     }));
   }
 }
-

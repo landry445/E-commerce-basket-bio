@@ -89,12 +89,16 @@ export class UsersService {
     if (dto.phone !== undefined) user.phone = dto.phone.trim();
 
     const saved = await this.userRepo.save(user);
-    return this.toResponse(saved); 
+    return this.toResponse(saved);
   }
 
   private toResponse(user: User): UserResponseDto {
     return plainToInstance(UserResponseDto, user, {
       excludeExtraneousValues: true,
     });
+  }
+
+  async comparePassword(plain: string, hash: string): Promise<boolean> {
+    return bcrypt.compare(plain, hash);
   }
 }

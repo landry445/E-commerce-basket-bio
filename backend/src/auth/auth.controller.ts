@@ -8,6 +8,7 @@ import {
   Get,
   UseGuards,
   Req,
+  Query,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
@@ -15,10 +16,14 @@ import { CookieOptions, Response } from 'express';
 import { CreateUserDto } from '../users/dto/create-user.dto';
 import { UserResponseDto } from '../users/dto/user-response.dto';
 import { JwtAuthGuard } from './strategies/jwt-auth.guard';
+import { EmailVerificationService } from './email-verification.service';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(
+    private authService: AuthService,
+    private readonly emailVerify: EmailVerificationService
+  ) {}
 
   private cookieBase(): CookieOptions {
     const isProd = process.env.NODE_ENV === 'production';
@@ -54,5 +59,13 @@ export class AuthController {
   @Get('me')
   me(@Req() req: { user: { id: string; email: string; is_admin: boolean } }) {
     return { id: req.user.id, email: req.user.email, is_admin: !!req.user.is_admin };
+  }
+
+  @Get('verify-email') // +++
+  async verifyEmail(@Query('token') token: string, @Res() res: Response) {
+    await this.emailVerify.verifyToken(token);
+    const redirectOk =
+      process.env.EMAIL_VERIFY_REDIRECT_OK ?? 'http://localhost:3000/verification-ok';
+    res.redirect(302, redirectOk);
   }
 }

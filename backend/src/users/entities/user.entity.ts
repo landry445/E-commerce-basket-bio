@@ -18,7 +18,7 @@ export class User {
   @Column({ unique: true })
   phone: string;
 
-  @Column({ unique: true })
+  @Column()
   password_hash: string;
 
   @Column({ default: false })
@@ -29,4 +29,7 @@ export class User {
 
   @OneToMany(() => Reservation, (r: Reservation) => r.user, { cascade: true })
   reservations: Reservation[];
+
+  @Column({ type: 'timestamptz', nullable: true })
+  email_verified_at!: Date | null;
 }

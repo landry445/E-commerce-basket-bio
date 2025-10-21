@@ -8,6 +8,12 @@ type MailInput = {
   text?: string;
 };
 
+type SignupTemplateParams = {
+  firstname: string;
+  verifyUrl: string;
+  expiresHours: number;
+};
+
 type OrderItem = { name: string; quantity: number; unitPriceCents: number };
 
 type OrderTemplateParams = {
@@ -70,6 +76,18 @@ export class MailerService {
       </tfoot>
     </table>
     <p style="margin-top:12px;">Merci pour votre réservation.</p>
+  </div>`;
+  }
+
+  signupConfirmationHTML(p: SignupTemplateParams): string {
+    return `
+  <div style="font-family:Arial,Helvetica,sans-serif;line-height:1.4;">
+    <h2 style="margin:0 0 12px 0;">Validation de ton e-mail</h2>
+    <p>Bonjour ${p.firstname || 'client'},</p>
+    <p>Ton compte a été créé. Pour l’activer, ouvre le lien ci-dessous&nbsp;:</p>
+    <p><a href="${p.verifyUrl}">${p.verifyUrl}</a></p>
+    <p>Ce lien reste valide ${p.expiresHours} heures.</p>
+    <p style="margin-top:12px;">À très vite.</p>
   </div>`;
   }
 }

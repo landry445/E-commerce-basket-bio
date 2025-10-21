@@ -57,7 +57,8 @@ export class ReservationsController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.Admin)
   @Get('admin-list')
-  listAdmin(@Query('status') status?: 'active' | 'archived') {
+  listAdmin(@Query('status') status?: 'active' | 'archived'): Promise<AdminReservationListDto[]> {
+    // ← retour typé
     return this.reservationsService.findAdminList({ status });
   }
 

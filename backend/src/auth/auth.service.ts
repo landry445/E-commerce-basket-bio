@@ -1,10 +1,10 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '../users/users.service';
 import { MailerService } from '../mail/mailer.service';
-import * as bcrypt from 'bcrypt';
 import { CreateUserDto } from '../users/dto/create-user.dto';
 import { UserResponseDto } from '../users/dto/user-response.dto';
+import { EmailVerificationService } from './email-verification.service';
 
 type AuthUser = {
   id: string;
@@ -20,14 +20,33 @@ export class AuthService {
   constructor(
     private readonly mailService: MailerService,
     private readonly usersService: UsersService,
-    private readonly jwtService: JwtService
+    private readonly jwtService: JwtService,
+    private readonly emailVerify: EmailVerificationService
   ) {}
 
-  async validateUser(email: string, pass: string): Promise<AuthUser | null> {
-    const user = (await this.usersService.findByEmail(email)) as AuthUser | null;
+  async validateUser(email: string, password: string) {
+    const user = await this.usersService.findByEmail(email);
     if (!user) return null;
-    const isMatch = await bcrypt.compare(pass, user.password_hash);
-    if (!isMatch) return null;
+
+    const ok = await this.usersService.comparePassword(password, user.password_hash);
+    if (!ok) return null;
+
+    // Bloc vérification e-mail
+    if (!user.email_verified_at) {
+      // Renvoi d’un lien frais avant de bloquer
+      const firstname = user.firstname ?? user.email.split('@')[0];
+      try {
+        await this.emailVerify.sendSignupConfirmationMail({
+          user: { id: user.id, email: user.email, firstname },
+        });
+      } catch (e) {
+        this.logger.warn(`Renvoi du mail de vérification en échec: ${String(e)}`);
+      }
+      throw new UnauthorizedException(
+        'Adresse e-mail non vérifiée. Un nouveau lien vient d’être envoyé.'
+      );
+    }
+
     return user;
   }
 
@@ -37,29 +56,19 @@ export class AuthService {
   }
 
   async register(dto: CreateUserDto): Promise<UserResponseDto> {
-    // 1) création de l'utilisateur
+    // création utilisateur
     const created = await this.usersService.create(dto);
 
-    // 2) e-mail de bienvenue (non bloquant pour l'inscription)
-    //    - personnalisation avec le prénom saisi, sinon fallback sur la partie locale de l'e-mail
-    const firstname =
-      (dto as unknown as { firstname?: string }).firstname ?? dto.email.split('@')[0];
-
+    // envoi du mail de vérification (24 h)
+    const firstname = created.firstname ?? created.email.split('@')[0];
     try {
-      const sendFn = (this.mailService as any).sendWelcomeEmail;
-      if (typeof sendFn === 'function') {
-        await sendFn.call(this.mailService, {
-          to: dto.email,
-          firstname,
-        });
-      } else {
-        this.logger.debug('MailerService.sendWelcomeEmail not available, skipping welcome email.');
-      }
+      await this.emailVerify.sendSignupConfirmationMail({
+        user: { id: created.id, email: created.email, firstname },
+      });
     } catch (e) {
-      this.logger.warn(`Envoi e-mail de bienvenue en échec: ${String(e)}`);
+      this.logger.warn(`Envoi e-mail de vérification en échec: ${String(e)}`);
     }
 
-    // 3) retour DTO pour le front
     return created;
   }
 }
