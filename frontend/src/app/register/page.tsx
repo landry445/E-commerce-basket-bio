@@ -76,8 +76,11 @@ export default function RegisterPage() {
       if (!res.ok) {
         setError(data.message || "Inscription impossible.");
       } else {
-        // cohérence UX : retour sur login avec le next conservé
-        router.push(`/login?next=${encodeURIComponent(next)}`);
+        router.push(
+          `/register/success?email=${encodeURIComponent(
+            email
+          )}&next=${encodeURIComponent(next)}`
+        );
       }
     } catch {
       setError("Erreur réseau, réessayer.");

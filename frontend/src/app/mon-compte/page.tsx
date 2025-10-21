@@ -28,7 +28,7 @@ type UserUpdateInput = {
 
 const API_BASE: string =
   process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3001";
-const LIMIT = 5;
+
 
 export default function AccountPage() {
   const router = useRouter();
@@ -47,7 +47,7 @@ export default function AccountPage() {
 
   const [loading, setLoading] = useState<boolean>(true);
 
-  // extrait : remplace ton useEffect de chargement
+  // --- Chargement des données utilisateur et commandes
   useEffect(() => {
     let cancelled = false;
     async function load() {
@@ -78,7 +78,7 @@ export default function AccountPage() {
           id: o.id,
           pickupDate: o.pickupDate,
           totalQty: o.totalQty,
-          items: o.basketName || "-", // adapt if needed
+          items: o.basketName || "-",
         }));
 
         if (!cancelled) {
@@ -90,7 +90,7 @@ export default function AccountPage() {
               phone: user.phone ?? "",
             });
           }
-          // tri défensif décroissant par date
+
           orders.sort((a, b) => (a.pickupDate < b.pickupDate ? 1 : -1));
           setOrders(orders);
         }
@@ -267,7 +267,6 @@ export default function AccountPage() {
                 >
                   Mes commandes
                 </h2>
-                <span className="text-xs text-gray-500">Dernières {LIMIT}</span>
               </div>
 
               {(!orders || orders.length === 0) && (
@@ -346,29 +345,6 @@ function ReadOnlyField({ label, value }: { label: string; value: string }) {
     </div>
   );
 }
-
-// function TabButton({
-//   active,
-//   children,
-//   onClick,
-// }: {
-//   active: boolean;
-//   children: React.ReactNode;
-//   onClick: () => void;
-// }) {
-//   return (
-//     <button
-//       type="button"
-//       onClick={onClick}
-//       className={[
-//         "px-3 py-1.5 rounded-full border",
-//         active ? "bg-black text-white" : "bg-white",
-//       ].join(" ")}
-//     >
-//       {children}
-//     </button>
-//   );
-// }
 
 async function safeMessage(res: Response): Promise<string | null> {
   try {

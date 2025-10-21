@@ -89,7 +89,7 @@ export class UsersService {
     if (dto.phone !== undefined) user.phone = dto.phone.trim();
 
     const saved = await this.userRepo.save(user);
-    return this.toResponse(saved); // déjà présent, ne fuit pas password_hash. :contentReference[oaicite:3]{index=3}
+    return this.toResponse(saved); 
   }
 
   private toResponse(user: User): UserResponseDto {

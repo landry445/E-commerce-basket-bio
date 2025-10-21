@@ -40,7 +40,7 @@ export class ReservationsController {
   @Get('me/compact')
   async mineCompact(
     @Req() req,
-    @Query('limit', new DefaultValuePipe(5), ParseIntPipe) limit: number
+    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number
   ) {
     return this.reservationsService.findMineCompact(req.user.id, limit);
   }
