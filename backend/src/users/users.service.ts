@@ -1,6 +1,6 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { QueryFailedError, Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UserResponseDto } from './dto/user-response.dto';
@@ -9,6 +9,9 @@ import * as bcrypt from 'bcrypt';
 import { plainToInstance } from 'class-transformer';
 import { AdminUserResponseDto } from '../admin/dto/admin-user-response.dto';
 
+function normEmail(input: string): string {
+  return input.trim().toLowerCase();
+}
 @Injectable()
 export class UsersService {
   constructor(
@@ -18,15 +21,28 @@ export class UsersService {
 
   async create(dto: CreateUserDto): Promise<UserResponseDto> {
     const hash = await bcrypt.hash(dto.password, 10);
-
     const user = this.userRepo.create({
       ...dto,
+      email: normEmail(dto.email), // <-- email normalisé
       password_hash: hash,
     });
 
-    const saved = await this.userRepo.save(user);
-
-    return this.toResponse(saved);
+    try {
+      const saved = await this.userRepo.save(user);
+      return this.toResponse(saved);
+    } catch (e) {
+      const err = e as QueryFailedError & { driverError?: { code?: string; constraint?: string } };
+      if (err.driverError?.code === '23505') {
+        if (err.driverError?.constraint === 'users_email_key') {
+          throw new ConflictException('Adresse e-mail déjà utilisée');
+        }
+        if (err.driverError?.constraint === 'users_phone_key') {
+          throw new ConflictException('Numéro de téléphone déjà utilisé');
+        }
+        throw new ConflictException('Conflit d’unicité');
+      }
+      throw e;
+    }
   }
 
   async findOne(id: string): Promise<UserResponseDto> {
@@ -36,7 +52,9 @@ export class UsersService {
   }
 
   async findByEmail(email: string): Promise<User | null> {
-    return this.userRepo.findOne({ where: { email } });
+    return this.userRepo.findOne({
+      where: { email: normEmail(email) }, // <-- comparaison cohérente
+    });
   }
 
   async findOneWithReservations(userId: string) {

@@ -17,6 +17,16 @@ import { CreateUserDto } from '../users/dto/create-user.dto';
 import { UserResponseDto } from '../users/dto/user-response.dto';
 import { JwtAuthGuard } from './strategies/jwt-auth.guard';
 import { EmailVerificationService } from './email-verification.service';
+import { IsEmail, MaxLength } from 'class-validator'; // +++
+import { Transform } from 'class-transformer'; // +++
+
+// +++ DTO validé (compatible ValidationPipe en mode whitelist)
+class ResendDto {
+  @IsEmail()
+  @MaxLength(254)
+  @Transform(({ value }) => (typeof value === 'string' ? value.trim().toLowerCase() : value))
+  email!: string;
+}
 
 @Controller('auth')
 export class AuthController {
@@ -54,18 +64,32 @@ export class AuthController {
     return this.authService.register(dto);
   }
 
-  // ↓↓↓ nouveau
   @UseGuards(JwtAuthGuard)
   @Get('me')
   me(@Req() req: { user: { id: string; email: string; is_admin: boolean } }) {
     return { id: req.user.id, email: req.user.email, is_admin: !!req.user.is_admin };
   }
 
-  @Get('verify-email') // +++
-  async verifyEmail(@Query('token') token: string, @Res() res: Response) {
-    await this.emailVerify.verifyToken(token);
-    const redirectOk =
-      process.env.EMAIL_VERIFY_REDIRECT_OK ?? 'http://localhost:3000/verification-ok';
-    res.redirect(302, redirectOk);
+  @Get('verify-email')
+  async verifyEmail(@Query('token') token: string, @Res() res: Response): Promise<void> {
+    const ok = process.env.EMAIL_VERIFY_REDIRECT_OK ?? 'http://localhost:3000/verification-ok';
+    const ko = process.env.EMAIL_VERIFY_REDIRECT_KO ?? 'http://localhost:3000/verification-erreur';
+    try {
+      await this.emailVerify.verifyToken(token);
+      res.redirect(302, ok);
+    } catch {
+      res.redirect(302, ko);
+    }
+  }
+
+  // +++ Nouveau : renvoi d’un lien de vérification (réponse neutre)
+  @Post('resend-verification')
+  @HttpCode(200)
+  async resend(@Body() dto: ResendDto): Promise<{ ok: true }> {
+    const user = await this.authService.findUserByEmailSafe(dto.email);
+    if (user && !user.email_verified_at) {
+      await this.authService.sendVerificationMail(user.id);
+    }
+    return { ok: true };
   }
 }

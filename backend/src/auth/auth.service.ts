@@ -71,4 +71,21 @@ export class AuthService {
 
     return created;
   }
+
+  async findUserByEmailSafe(email: string) {
+    try {
+      return this.usersService.findByEmail(email);
+    } catch {
+      return null;
+    }
+  }
+
+  async sendVerificationMail(userId: string): Promise<void> {
+    const u = await this.usersService.findOne(userId);
+    if (!u || u.email) return;
+    const firstname = u.firstname ?? u.email.split('@')[0];
+    await this.emailVerify.sendSignupConfirmationMail({
+      user: { id: u.id, email: u.email, firstname },
+    });
+  }
 }
