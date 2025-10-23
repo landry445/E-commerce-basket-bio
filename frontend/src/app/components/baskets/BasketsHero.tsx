@@ -39,7 +39,7 @@ export default function BasketsHero() {
       <div className="grid md:grid-cols-2">
         {/* Left panel (texte fixe) */}
         <div
-          className="flex items-center px-6 py-12 md:px-10 md:py-16"
+          className="flex items-center px-6 py-12 md:px-10 md:py-16 justify-center"
           style={{ background: "var(--color-primary)" }}
         >
           <div className="max-w-xl text-center">

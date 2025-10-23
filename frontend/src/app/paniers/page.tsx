@@ -1,4 +1,4 @@
-import BasketsHero from "@/app/components/baskets/BasketsHero";
+import BasketsHero from "../components/baskets/BasketsHero";
 import Navbar from "../components/navbar/Navbar";
 import Footer from "../components/Footer";
 import BasketsContent from "../components/baskets/BasketsContent";
