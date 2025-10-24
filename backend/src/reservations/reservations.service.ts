@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, DataSource } from 'typeorm';
 
 import { Reservation, ReservationStatut } from './entities/reservation.entity';
 import { CreateReservationDto } from './dto/create-reservation.dto';
@@ -18,9 +18,14 @@ type RawRow = {
   basketname: string | null;
   totalqty: string | null; // agrégat/nombre vus comme string
 };
+
+type BulkItem = { basket_id: string; quantity: number };
+type BulkPayload = { location_id: string; pickup_date: string; items: BulkItem[] };
+
 @Injectable()
 export class ReservationsService {
   constructor(
+    private readonly ds: DataSource,
     @InjectRepository(Reservation)
     private readonly reservationRepo: Repository<Reservation>,
     @InjectRepository(Basket)
@@ -68,7 +73,7 @@ export class ReservationsService {
     return res;
   }
 
-  /** crée la réservation pour le user connecté (prix calculé côté serveur) */
+  /** crée UNE réservation pour UN panier (compat héritée) + e-mail individuel */
   async create(dto: CreateReservationDto, userId: string): Promise<Reservation> {
     const [basket, loc] = await Promise.all([
       this.basketRepo.findOne({ where: { id: dto.basket_id } }),
@@ -94,7 +99,7 @@ export class ReservationsService {
 
     const saved = await this.reservationRepo.save(entity);
 
-    // ---- nouveau bloc: envoi du mail de confirmation ----
+    // ---- e-mail individuel (garde rétrocompat si l’UI poste encore au /reservations) ----
     try {
       const withRels = await this.reservationRepo.findOne({
         where: { id: saved.id },
@@ -126,16 +131,138 @@ export class ReservationsService {
           text: 'Confirmation de réservation',
         });
 
-        // marquage horodaté (utile pour relances)
         await this.reservationRepo.update({ id: saved.id }, { email_sent_at: new Date() });
       }
     } catch (e) {
-      // log discret
       // eslint-disable-next-line no-console
-      console.error('MAIL_SEND_ERROR', (e as Error).message);
+      console.error('MAIL_SEND_ERROR', e);
     }
 
     return saved;
+  }
+
+  /**
+   * crée PLUSIEURS réservations en une fois (un enregistrement par panier)
+   * puis envoie UN SEUL e-mail récapitulatif ("bon de commande").
+   */
+  async createBulk(payload: BulkPayload, userId: string): Promise<{ ids: string[] }> {
+    if (!payload.items || payload.items.length === 0) {
+      throw new BadRequestException('Aucun panier sélectionné.');
+    }
+
+    const loc = await this.pickupRepo.findOne({ where: { id: payload.location_id } });
+    if (!loc) throw new BadRequestException('Lieu introuvable');
+
+    const dow = ReservationsService.getDow(payload.pickup_date);
+    ReservationsService.assertTuesdayOrFriday(dow);
+    ReservationsService.assertLocationAllowsDow(loc, dow);
+
+    // charge tous les paniers nécessaires
+    const basketIds = Array.from(new Set(payload.items.map((i) => i.basket_id)));
+    const baskets = await this.basketRepo
+      .createQueryBuilder('b')
+      .where('b.id IN (:...ids)', { ids: basketIds })
+      .getMany();
+
+    const map = new Map(baskets.map((b) => [b.id, b]));
+    // vérifications
+    for (const it of payload.items) {
+      if (!map.get(it.basket_id)) {
+        throw new BadRequestException('Panier introuvable');
+      }
+      if (!Number.isInteger(it.quantity) || it.quantity < 1) {
+        throw new BadRequestException('Quantité invalide');
+      }
+    }
+
+    // transaction
+    const qr = this.ds.createQueryRunner();
+    await qr.connect();
+    await qr.startTransaction();
+
+    const createdIds: string[] = [];
+    try {
+      for (const it of payload.items) {
+        const b = map.get(it.basket_id)!;
+        const price = b.price_basket * it.quantity;
+
+        const entity = this.reservationRepo.create({
+          user: { id: userId },
+          basket: { id: it.basket_id },
+          location: { id: payload.location_id },
+          pickup_date: payload.pickup_date,
+          quantity: it.quantity,
+          price_reservation: price,
+        });
+
+        const saved = await qr.manager.save(Reservation, entity);
+        createdIds.push(saved.id);
+      }
+
+      await qr.commitTransaction();
+    } catch (e) {
+      await qr.rollbackTransaction();
+      throw e;
+    } finally {
+      await qr.release();
+    }
+
+    // e-mail unique récapitulatif
+    try {
+      const userRow = await this.reservationRepo.query(
+        `SELECT 
+      email, 
+      CONCAT_WS(' ', firstname, lastname) AS full_name
+    FROM users 
+    WHERE id = $1 
+    LIMIT 1`,
+        [userId]
+      );
+
+      const to: string | undefined = userRow?.[0]?.email;
+      const displayName: string =
+        (userRow?.[0]?.full_name as string | undefined)?.trim() || 'client';
+      if (to) {
+        const lines = payload.items.map((it) => {
+          const b = map.get(it.basket_id)!;
+          return {
+            name: b.name_basket,
+            quantity: it.quantity,
+            unitPriceCents: Math.round(b.price_basket * 100),
+          };
+        });
+
+        const totalCents = lines.reduce((s, l) => s + l.unitPriceCents * l.quantity, 0);
+
+        const html = this.mailer.orderConfirmationHTML({
+          firstname: displayName, // ← au lieu de l’ancien calcul
+          pickupDateISO: new Date(payload.pickup_date).toISOString().slice(0, 10),
+          pickupName: loc.name_pickup,
+          items: lines,
+          totalCents,
+        });
+
+        await this.mailer.send({
+          to,
+          subject: 'Confirmation de réservation',
+          html,
+          text: 'Confirmation de réservation',
+        });
+
+        // marquer la date d’envoi sur toutes les réservations créées
+        await this.reservationRepo
+          .createQueryBuilder()
+          .update(Reservation)
+          .set({ email_sent_at: () => 'now()' })
+          .where('id IN (:...ids)', { ids: createdIds })
+          .execute();
+      }
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.error('MAIL_SEND_ERROR', e);
+    }
+
+    return { ids: createdIds };
   }
 
   /** mise à jour (recalcule aussi le prix) */
@@ -196,16 +323,11 @@ export class ReservationsService {
       ])
       .orderBy('r.pickup_date', 'DESC');
 
-    // Date du jour en Europe/Paris (référence unique pour le filtrage)
     const todayExpr = `(now() at time zone 'Europe/Paris')::date`;
 
-    // Fenêtre de dates optionnelle
     if (params?.from) qb.andWhere('r.pickup_date >= :from', { from: params.from });
     if (params?.to) qb.andWhere('r.pickup_date <= :to', { to: params.to });
 
-    // Séparation stricte + filet de sécurité:
-    // - Actives: seulement aujourd'hui et futur, et statut 'active'
-    // - Archives: statut 'archived' OU date passée (si le cron n'a pas encore tourné)
     if (params?.status === 'active') {
       qb.andWhere(`r.pickup_date >= ${todayExpr}`).andWhere(`r.statut = :s`, {
         s: ReservationStatut.ACTIVE,
@@ -219,13 +341,13 @@ export class ReservationsService {
     qb.limit(params?.limit ?? 100);
     qb.offset(params?.offset ?? 0);
 
-    const rows = await qb.getRawMany(); // objets { id, client_name, ... }
+    const rows = await qb.getRawMany();
     return rows.map((r) =>
       plainToInstance(AdminReservationListDto, r, { excludeExtraneousValues: true })
     );
   }
 
-  /** Archivage serveur des réservations dont la date est antérieure à aujourd’hui (Europe/Paris) */
+  /** Archivage serveur des réservations antérieures à aujourd’hui (Europe/Paris) */
   async archivePastReservations(): Promise<number> {
     const res = await this.reservationRepo
       .createQueryBuilder()
@@ -238,7 +360,6 @@ export class ReservationsService {
     return res.affected ?? 0;
   }
 
-  // — suppression admin sans contrainte d’appartenance
   async removeAsAdmin(id: string): Promise<void> {
     const res = await this.reservationRepo.findOne({ where: { id } });
     if (!res) throw new NotFoundException('Réservation non trouvée');
@@ -272,11 +393,9 @@ export class ReservationsService {
 
     const rows = await this.reservationRepo
       .createQueryBuilder('r')
-      // si ta relation s’appelle bien "basket" dans l’entité Reservation :
       .innerJoin('r.basket', 'b')
       .where('r.user_id = :userId', { userId })
       .select('r.id', 'id')
-      // alias en minuscules (évite les surprises côté driver)
       .addSelect("to_char(r.pickup_date, 'YYYY-MM-DD')", 'pickupdate')
       .addSelect("COALESCE(b.name_basket, '')", 'basketname')
       .addSelect('COALESCE(r.quantity, 0)', 'totalqty')
@@ -286,7 +405,7 @@ export class ReservationsService {
 
     return rows.map((r) => ({
       id: r.id,
-      pickupDate: r.pickupdate, // correspond à l’alias 'pickupdate'
+      pickupDate: r.pickupdate,
       basketName: r.basketname ?? '',
       totalQty: Number(r.totalqty ?? '0') || 0,
     }));

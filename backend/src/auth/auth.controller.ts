@@ -20,6 +20,8 @@ import { EmailVerificationService } from './email-verification.service';
 import { IsEmail, MaxLength } from 'class-validator'; // +++
 import { Transform } from 'class-transformer'; // +++
 
+// type RequestUser = { user: { id: string; email: string | null; is_admin: boolean } };
+
 // +++ DTO validé (compatible ValidationPipe en mode whitelist)
 class ResendDto {
   @IsEmail()
@@ -66,7 +68,7 @@ export class AuthController {
 
   @UseGuards(JwtAuthGuard)
   @Get('me')
-  me(@Req() req: { user: { id: string; email: string; is_admin: boolean } }) {
+  me(@Req() req: { user: { id: string; email: string | null; is_admin: boolean } }) {
     return { id: req.user.id, email: req.user.email, is_admin: !!req.user.is_admin };
   }
 

@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
+import type { JSX } from "react";
 import ReservationHero from "../reservation/ReservationHero";
 import ReservationIntro from "../reservation/ReservationIntro";
 import ActionChoice from "../reservation/ActionChoice";
@@ -19,7 +20,7 @@ type Basket = {
 type PickupLocation = {
   id: string;
   name_pickup: string;
-  day_of_week?: number[] | null; // ← tableau
+  day_of_week?: number[] | null;
   actif: boolean;
 };
 
@@ -41,7 +42,6 @@ const eur = new Intl.NumberFormat("fr-FR", {
   currency: "EUR",
 });
 
-// utils date
 function toYMD(d: Date): string {
   const y = d.getFullYear();
   const m = String(d.getMonth() + 1).padStart(2, "0");
@@ -49,7 +49,6 @@ function toYMD(d: Date): string {
   return `${y}-${m}-${day}`;
 }
 
-// --- Fenêtre 18 h ---
 function atHour(base: Date, hour: number): Date {
   const x = new Date(base);
   x.setHours(hour, 0, 0, 0);
@@ -57,8 +56,8 @@ function atHour(base: Date, hour: number): Date {
 }
 function startOfWeekMonday(base: Date): Date {
   const d = new Date(base);
-  const dow = d.getDay(); // 0..6 (0 = dim)
-  const diffToMonday = (dow + 6) % 7; // nombre de jours à reculer
+  const dow = d.getDay();
+  const diffToMonday = (dow + 6) % 7;
   d.setDate(d.getDate() - diffToMonday);
   d.setHours(0, 0, 0, 0);
   return d;
@@ -70,20 +69,19 @@ function nextDowOnOrAfter(from: Date, targetDow: number): Date {
   return d;
 }
 function allowedPickupDate(now = new Date()): string {
-  // Fenêtre vers mardi: [vendredi 18 h ; lundi 18 h)
   const weekMonday = startOfWeekMonday(now);
   const weekFriday = new Date(weekMonday);
-  weekFriday.setDate(weekMonday.getDate() + 4); // lundi +4 = vendredi
+  weekFriday.setDate(weekMonday.getDate() + 4);
   const friday18 = atHour(weekFriday, 18);
   const monday18 = atHour(weekMonday, 18);
 
   const inFri18_to_Mon18 = now >= friday18 || now < monday18;
-  const targetDow = inFri18_to_Mon18 ? 2 /* mardi */ : 5; /* vendredi */
+  const targetDow = inFri18_to_Mon18 ? 2 : 5;
   const targetDate = nextDowOnOrAfter(now, targetDow);
   return toYMD(targetDate);
 }
 
-export default function ReservationForm() {
+export default function ReservationForm(): JSX.Element {
   const [baskets, setBaskets] = useState<Basket[]>([]);
   const [locations, setLocations] = useState<PickupLocation[]>([]);
   const [loading, setLoading] = useState(true);
@@ -93,22 +91,18 @@ export default function ReservationForm() {
   const [pickupDate, setPickupDate] = useState("");
   const [message, setMessage] = useState("");
 
-  // panier d’articles : { basketId -> quantité }
   const [quantities, setQuantities] = useState<Record<string, number>>({});
-
   const [toast, setToast] = useState<{
     type: "ok" | "err";
     text: string;
   } | null>(null);
 
-  // borne supérieure d’affichage du calendrier
   const maxDate = useMemo(() => {
     const d = new Date();
     d.setMonth(d.getMonth() + 2);
     return toYMD(d);
   }, []);
 
-  // pré-sélection basée sur la fenêtre 18 h
   useEffect(() => {
     setPickupDate(allowedPickupDate(new Date()));
   }, []);
@@ -130,7 +124,6 @@ export default function ReservationForm() {
       setBaskets(onlyActiveBaskets);
       setLocations(onlyActiveLocations);
 
-      // auto-sélection “Gare” si dispo
       const gare = onlyActiveLocations.find(
         (l) => l.name_pickup.trim().toLowerCase() === "gare"
       );
@@ -140,7 +133,6 @@ export default function ReservationForm() {
     })();
   }, []);
 
-  // lignes du panier sélectionné
   const cartLines = useMemo(
     () =>
       baskets
@@ -195,7 +187,6 @@ export default function ReservationForm() {
       return;
     }
 
-    // gardes client : mardi/vendredi + cohérence lieu/jour
     const d = new Date(pickupDate + "T00:00:00");
     const dow = d.getDay();
     if (!(dow === 2 || dow === 5)) {
@@ -205,8 +196,6 @@ export default function ReservationForm() {
     }
 
     const loc = locations.find((l) => l.id === locationId);
-
-    // ne contrôle le lieu/jour que si le champ est réellement défini
     if (
       loc?.day_of_week &&
       Array.isArray(loc.day_of_week) &&
@@ -225,52 +214,46 @@ export default function ReservationForm() {
       }
     }
 
-    // un POST /reservations par ligne (email géré côté API)
-    const errors: string[] = [];
-    for (const line of cartLines) {
-      const payload = {
-        basket_id: line.basket.id,
-        location_id: locationId,
-        pickup_date: pickupDate,
-        quantity: line.quantity,
-      };
+    // ---- NOUVEAU : un seul POST /reservations/bulk ----
+    const payload = {
+      location_id: locationId,
+      pickup_date: pickupDate,
+      items: cartLines.map((l) => ({
+        basket_id: l.basket.id,
+        quantity: l.quantity,
+      })),
+    };
 
-      const res = await fetch(`${API_BASE}/reservations`, {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+    const res = await fetch(`${API_BASE}/reservations/bulk`, {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
 
-      if (!res.ok) {
-        const body = (await res.json().catch(() => null)) as {
-          message?: string | string[];
-        } | null;
-        const msg = Array.isArray(body?.message)
-          ? body!.message.join(" • ")
-          : body?.message ?? "Requête invalide";
-        errors.push(`${line.basket.name_basket} : ${msg}`);
-      }
-    }
-
-    if (errors.length > 0) {
-      setToast({ type: "err", text: errors.join(" • ") });
+    if (!res.ok) {
+      const body = (await res.json().catch(() => null)) as {
+        message?: string | string[];
+      } | null;
+      const msg = Array.isArray(body?.message)
+        ? body!.message.join(" • ")
+        : body?.message ?? "Requête invalide";
+      setToast({ type: "err", text: msg });
     } else {
       setToast({
         type: "ok",
-        text: `Réservations enregistrées. Total à régler sur place : ${eur.format(
+        text: `Réservation enregistrée. Un e-mail de confirmation vient d’être envoyé. Total à régler : ${eur.format(
           total
         )}.`,
       });
       setQuantities({});
       setLocationId("");
-      setPickupDate(allowedPickupDate(new Date())); // recalcule selon la fenêtre 18 h
+      setPickupDate(allowedPickupDate(new Date()));
       setMessage("");
     }
     setTimeout(() => setToast(null), 3200);
   }
 
-  // date autorisée calculée côté UI et transmise au calendrier
   const allowedDate = useMemo(() => allowedPickupDate(new Date()), []);
 
   if (loading) return <p className="text-center py-10">Chargement…</p>;
@@ -287,7 +270,6 @@ export default function ReservationForm() {
         >
           <ActionChoice value={action} onChange={setAction} />
 
-          {/* Sélecteur multi-paniers avec sous-totaux */}
           {action === "order" && (
             <div>
               <h3 className="text-lg font-semibold mb-3">Vos paniers</h3>
@@ -360,7 +342,6 @@ export default function ReservationForm() {
                   })}
               </div>
 
-              {/* Total général */}
               <div className="mt-4 flex items-center justify-between">
                 <p className="text-gray-700">Total à régler sur place</p>
                 <p className="text-xl font-semibold">{eur.format(total)}</p>
@@ -368,7 +349,6 @@ export default function ReservationForm() {
             </div>
           )}
 
-          {/* Lieu + date */}
           {action === "order" && (
             <PickupCard
               locations={locations}
@@ -383,7 +363,6 @@ export default function ReservationForm() {
             />
           )}
 
-          {/* Message libre (non transmis au /reservations) */}
           <div>
             <label className="block text-sm text-gray-600 mb-1">
               Votre message
