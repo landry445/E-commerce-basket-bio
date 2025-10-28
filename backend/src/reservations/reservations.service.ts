@@ -410,4 +410,25 @@ export class ReservationsService {
       totalQty: Number(r.totalqty ?? '0') || 0,
     }));
   }
+
+  async findOneForView(id: string, ownerId: string) {
+    const r = await this.reservationRepo.findOne({
+      where: { id },
+      relations: ['user', 'basket', 'location'],
+    });
+    if (!r) throw new NotFoundException('Réservation non trouvée');
+    if (r.user?.id !== ownerId) throw new BadRequestException('Accès refusé');
+
+    const item = {
+      name: r.basket?.name_basket ?? 'Panier',
+      qty: r.quantity ?? 1,
+      price: Number(r.basket?.price_basket ?? 0),
+    };
+    return {
+      id: r.id,
+      pickup_label: `${new Date(r.pickup_date ?? '')?.toISOString().slice(0, 10)} • ${r.location?.name_pickup ?? ''}`,
+      items: [item],
+      total: item.price * item.qty,
+    };
+  }
 }

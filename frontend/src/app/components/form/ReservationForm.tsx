@@ -2,6 +2,8 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import type { JSX } from "react";
+import { useRouter } from "next/navigation";
+
 import ReservationHero from "../reservation/ReservationHero";
 import ReservationIntro from "../reservation/ReservationIntro";
 import ActionChoice from "../reservation/ActionChoice";
@@ -23,6 +25,8 @@ type PickupLocation = {
   day_of_week?: number[] | null;
   actif: boolean;
 };
+
+type BulkResponse = { ids: string[] };
 
 const API_BASE: string =
   process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3001";
@@ -82,6 +86,8 @@ function allowedPickupDate(now = new Date()): string {
 }
 
 export default function ReservationForm(): JSX.Element {
+  const router = useRouter();
+
   const [baskets, setBaskets] = useState<Basket[]>([]);
   const [locations, setLocations] = useState<PickupLocation[]>([]);
   const [loading, setLoading] = useState(true);
@@ -214,10 +220,11 @@ export default function ReservationForm(): JSX.Element {
       }
     }
 
-    // ---- NOUVEAU : un seul POST /reservations/bulk ----
+    // ---- POST /reservations/bulk ----
     const payload = {
       location_id: locationId,
       pickup_date: pickupDate,
+      note: message || null,
       items: cartLines.map((l) => ({
         basket_id: l.basket.id,
         quantity: l.quantity,
@@ -239,24 +246,32 @@ export default function ReservationForm(): JSX.Element {
         ? body!.message.join(" • ")
         : body?.message ?? "Requête invalide";
       setToast({ type: "err", text: msg });
-    } else {
-      setToast({
-        type: "ok",
-        text: `Réservation enregistrée. Un e-mail de confirmation vient d’être envoyé. Total à régler : ${eur.format(
-          total
-        )}.`,
-      });
-      setQuantities({});
-      setLocationId("");
-      setPickupDate(allowedPickupDate(new Date()));
-      setMessage("");
+      setTimeout(() => setToast(null), 3200);
+      return;
     }
-    setTimeout(() => setToast(null), 3200);
+
+    const data = (await res.json()) as BulkResponse;
+    const firstId: string | undefined =
+      Array.isArray(data.ids) && data.ids.length > 0 ? data.ids[0] : undefined;
+
+    setToast({
+      type: "ok",
+      text: `Réservation enregistrée. Un e-mail de confirmation vient d’être envoyé. Total à régler : ${eur.format(
+        total
+      )}.`,
+    });
+
+    // courte latence pour laisser apparaître le toast
+    setTimeout(() => {
+      if (firstId) {
+        router.push(`/reserver/confirmee/${firstId}`);
+      } else {
+        router.push("/mon-compte");
+      }
+    }, 500);
   }
 
   const allowedDate = useMemo(() => allowedPickupDate(new Date()), []);
-
-  if (loading) return <p className="text-center py-10">Chargement…</p>;
 
   return (
     <main className="bg-[var(--background)] text-[var(--foreground)] font-sans">

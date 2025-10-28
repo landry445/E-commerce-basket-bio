@@ -114,4 +114,13 @@ export class ReservationsController {
   ) {
     return this.reservationsService.createBulk(body, req.user.id);
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('view/:id')
+  async viewOneForOwner(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Req() req: { user: { id: string } }
+  ) {
+    return this.reservationsService.findOneForView(id, req.user.id);
+  }
 }

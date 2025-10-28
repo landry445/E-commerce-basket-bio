@@ -80,7 +80,7 @@ export class MailerService {
       </tfoot>
     </table>
     <p style="font-size:13px;color:#555;margin-top:16px">
-      Paiement sur place. En cas d’empêchement, répondre à cet e-mail.
+      Paiement sur place. En cas d’empêchement, veuillez répondre à cet e-mail.
     </p>
   </div>`;
   }

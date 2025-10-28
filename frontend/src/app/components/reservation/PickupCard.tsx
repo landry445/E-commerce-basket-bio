@@ -49,9 +49,6 @@ export default function PickupCard({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gareList.length]);
 
-  const helper =
-    "Réservable selon fenêtre 18 h : mardi (ven 18 h → lun 18 h) ou vendredi (lun 18 h → ven 18 h).";
-
   return (
     <section className="rounded-2xl border p-4 space-y-4">
       <h3 className="text-lg font-semibold">Sélection du retrait *</h3>
@@ -85,7 +82,16 @@ export default function PickupCard({
           </select>
         )}
 
-        <p className="text-xs mt-1 text-gray-500">{helper}</p>
+        <div
+          role="note"
+          aria-label="Fenêtres de réservation"
+          className="mt-1 text-gray-500 text-sm"
+        >
+          <ul className="list-disc pl-5">
+            <li>Pour mardi : du samedi 00:00 au lundi 18:00.</li>
+            <li>Pour vendredi : du mercredi 00:00 au jeudi 18:00.</li>
+          </ul>
+        </div>
       </div>
 
       {/* Date de retrait */}
@@ -104,7 +110,6 @@ export default function PickupCard({
           maxDate={maxDate}
           disabled={disabled}
         />
-        <p className="text-xs text-gray-500 mt-1">{helper}</p>
       </div>
     </section>
   );
