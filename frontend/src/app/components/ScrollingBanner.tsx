@@ -19,9 +19,10 @@ const DURATIONS: Record<Speed, string> = {
 
 export default function ScrollingBanner({
   items = [
+    "Le Jardin Des Rainettes",
     "Agriculture Bio Locale",
-    "Les Paniers de Plessé",
-    "Frais & de Saison",
+    "Les Paniers Fraîcheur",
+    "Légumes de Saison",
   ],
   direction = "ltr",
   speed = "normal",

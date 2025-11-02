@@ -8,4 +8,5 @@ export class AdminReservationListDto {
   @Expose() pickup_date!: string; // 'YYYY-MM-DD'
   @Expose() statut!: 'active' | 'archived';
   @Expose() quantity!: number;
+  @Expose() customer_note!: string;
 }

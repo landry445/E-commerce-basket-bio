@@ -5,4 +5,5 @@ export type AdminReservationRow = {
   pickup_date: string; // 'YYYY-MM-DD'
   statut: "active" | "archived";
   quantity: number;
+  customer_note: string;
 };

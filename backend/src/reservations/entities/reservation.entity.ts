@@ -68,4 +68,7 @@ export class Reservation {
     type: process.env.NODE_ENV === 'test' ? 'datetime' : 'timestamptz',
   })
   date_creation: Date;
+
+  @Column({ type: 'text', default: '' })
+  customer_note!: string;
 }

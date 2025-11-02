@@ -9,6 +9,7 @@ import ReservationIntro from "../reservation/ReservationIntro";
 import ActionChoice from "../reservation/ActionChoice";
 import PickupCard from "../reservation/PickupCard";
 import Toast from "../reservation/ReservationToast";
+import { isBookingOpenClient } from "@/app/lib/bookingWindow";
 
 type Basket = {
   id: string;
@@ -53,11 +54,6 @@ function toYMD(d: Date): string {
   return `${y}-${m}-${day}`;
 }
 
-function atHour(base: Date, hour: number): Date {
-  const x = new Date(base);
-  x.setHours(hour, 0, 0, 0);
-  return x;
-}
 function startOfWeekMonday(base: Date): Date {
   const d = new Date(base);
   const dow = d.getDay();
@@ -73,16 +69,40 @@ function nextDowOnOrAfter(from: Date, targetDow: number): Date {
   return d;
 }
 function allowedPickupDate(now = new Date()): string {
-  const weekMonday = startOfWeekMonday(now);
-  const weekFriday = new Date(weekMonday);
-  weekFriday.setDate(weekMonday.getDate() + 4);
-  const friday18 = atHour(weekFriday, 18);
-  const monday18 = atHour(weekMonday, 18);
+  // Choisit automatiquement la prochaine date de retrait conforme à la fenêtre en cours
+  // Si fenêtre "mardi" ouverte -> mardi courant ; si "vendredi" ouverte -> vendredi courant
+  // Sinon prochain mardi/vendredi cohérent.
+  const d = new Date(now);
+  d.setSeconds(0, 0);
 
-  const inFri18_to_Mon18 = now >= friday18 || now < monday18;
-  const targetDow = inFri18_to_Mon18 ? 2 : 5;
-  const targetDate = nextDowOnOrAfter(now, targetDow);
-  return toYMD(targetDate);
+  const weekMonday = startOfWeekMonday(d);
+  const tuesday = new Date(weekMonday);
+  tuesday.setDate(weekMonday.getDate() + 1);
+  const thursday = new Date(weekMonday);
+  thursday.setDate(weekMonday.getDate() + 3);
+  const friday = new Date(weekMonday);
+  friday.setDate(weekMonday.getDate() + 4);
+
+  // fenêtres
+  const tueStart = new Date(friday);
+  tueStart.setDate(friday.getDate() - 0 - 0);
+  tueStart.setHours(18, 0, 0, 0); // ven 18:00
+  const tueEnd = new Date(tuesday);
+  tueEnd.setHours(8, 0, 0, 0); // mar 08:00
+
+  const friStart = new Date(tuesday);
+  friStart.setHours(18, 0, 0, 0); // mar 18:00
+  const friEnd = new Date(thursday);
+  friEnd.setHours(8, 0, 0, 0); // jeu 08:00
+
+  if (d >= tueStart && d < tueEnd) return toYMD(tuesday); // mardi courant
+  if (d >= friStart && d < friEnd) return toYMD(friday); // vendredi courant
+
+  // sinon, choisir le prochain créneau logique (prochain mardi ou vendredi)
+  const nextTue = nextDowOnOrAfter(d, 2);
+  const nextFri = nextDowOnOrAfter(d, 5);
+  // heuristique simple : prendre le plus proche
+  return toYMD(nextTue <= nextFri ? nextTue : nextFri);
 }
 
 export default function ReservationForm(): JSX.Element {
@@ -102,6 +122,17 @@ export default function ReservationForm(): JSX.Element {
     type: "ok" | "err";
     text: string;
   } | null>(null);
+
+  const kind: "tuesday" | "friday" | null = useMemo(() => {
+    if (!pickupDate) return null;
+    const d = new Date(pickupDate + "T00:00:00");
+    return d.getDay() === 2 ? "tuesday" : d.getDay() === 5 ? "friday" : null;
+  }, [pickupDate]);
+
+  const open: boolean = useMemo(() => {
+    if (!kind || !pickupDate) return false;
+    return isBookingOpenClient(kind, pickupDate);
+  }, [kind, pickupDate]);
 
   const maxDate = useMemo(() => {
     const d = new Date();
@@ -224,7 +255,7 @@ export default function ReservationForm(): JSX.Element {
     const payload = {
       location_id: locationId,
       pickup_date: pickupDate,
-      note: message || null,
+      customer_note: message.trim() || undefined,
       items: cartLines.map((l) => ({
         basket_id: l.basket.id,
         quantity: l.quantity,
@@ -396,14 +427,23 @@ export default function ReservationForm(): JSX.Element {
           <div className="pt-4 border-t text-center">
             <button
               type="submit"
+              disabled={action === "order" && !open}
               className="cursor-pointer rounded-full px-6 py-2 text-white bg-[var(--color-primary)]
-                         shadow hover:brightness-95 active:brightness-90 transition
-                         focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/40"
+             shadow hover:brightness-95 active:brightness-90 transition
+             focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/40
+             disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {action === "order"
                 ? "Je confirme ma réservation"
                 : "Envoyer le message"}
             </button>
+            {action === "order" && kind ? (
+              <p className="text-sm mt-2">
+                {open
+                  ? "Réservations ouvertes pour ce créneau"
+                  : "Réservations fermées pour ce créneau"}
+              </p>
+            ) : null}
           </div>
         </form>
 

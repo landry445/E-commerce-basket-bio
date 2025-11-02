@@ -31,11 +31,17 @@ type OrderEmailPayload = {
   pickupName: string;
   items: OrderEmailItem[];
   totalCents: number;
+  customerNote?: string;
 };
 
-// function eur(cents: number): string {
-//   return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(cents / 100);
-// }
+function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
 
 @Injectable()
 export class MailerService {
@@ -43,6 +49,13 @@ export class MailerService {
 
   public orderConfirmationHTML(p: OrderEmailPayload): string {
     const eur = new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' });
+    const note = (p.customerNote ?? '').trim();
+    const noteBlock = note
+      ? `<div style="margin-top:14px;padding:10px;background:#f8faf7;border:1px solid #eee;border-radius:8px">
+       <div style="font-weight:600;margin-bottom:6px">Votre message</div>
+       <div style="white-space:pre-wrap">${escapeHtml(note)}</div>
+     </div>`
+      : '';
     const rows = p.items
       .map((it) => {
         const line = it.unitPriceCents * it.quantity;
@@ -79,8 +92,9 @@ export class MailerService {
         </tr>
       </tfoot>
     </table>
+     ${noteBlock}
     <p style="font-size:13px;color:#555;margin-top:16px">
-      Paiement sur place. En cas d’empêchement, veuillez répondre à cet e-mail.
+      Paiement sur place. En cas d’empêchement, merci de nous informer par email ou par téléphone.
     </p>
   </div>`;
   }

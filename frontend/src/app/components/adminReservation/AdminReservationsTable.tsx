@@ -1,4 +1,3 @@
-// app/admin/components/adminReservation/AdminReservationsTable.tsx
 "use client";
 
 import { useMemo, useState } from "react";
@@ -124,6 +123,7 @@ export default function AdminReservationsTable({ rows, onDelete }: Props) {
               <th className="text-left py-2 px-4">Client</th>
               <th className="text-left py-2 px-4">Quantité</th>
               <th className="text-left py-2 px-4">Panier</th>
+              <th className="text-left py-2 px-4">Message</th>
               <th className="text-left py-2 px-4">Date</th>
               <th className="text-left py-2 px-4"></th>
             </tr>
@@ -150,6 +150,11 @@ export default function AdminReservationsTable({ rows, onDelete }: Props) {
                   <td className="py-2 px-4">{r.client_name}</td>
                   <td className="py-2 px-4">x{r.quantity}</td>
                   <td className="py-2 px-4">{r.basket_name}</td>
+                  <td className="py-2 px-4 max-w-[320px]">
+                    <span title={r.customer_note} className="block truncate">
+                      {r.customer_note || "—"}
+                    </span>
+                  </td>
                   <td className="py-2 px-4">{r.pickup_date}</td>
                   <td className="py-2 px-4">
                     <button

@@ -1,6 +1,12 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
+import { DateTime } from 'luxon';
 
 import { Reservation, ReservationStatut } from './entities/reservation.entity';
 import { CreateReservationDto } from './dto/create-reservation.dto';
@@ -11,16 +17,23 @@ import { Basket } from '../baskets/entities/basket.entity';
 import { PickupLocation } from '../pickup/entities/pickup-location.entity';
 import { AdminReservationListDto } from './dto/admin-reservation-list.dto';
 import { MailerService } from '../mail/mailer.service';
+import { isBookingWindowOpen, PickupKind } from './utils/booking-window';
 
 type RawRow = {
   id: string;
   pickupdate: string; // alias en minuscules
   basketname: string | null;
   totalqty: string | null; // agrégat/nombre vus comme string
+  customer_note: string | null;
 };
 
 type BulkItem = { basket_id: string; quantity: number };
-type BulkPayload = { location_id: string; pickup_date: string; items: BulkItem[] };
+type BulkPayload = {
+  location_id: string;
+  pickup_date: string;
+  items: BulkItem[];
+  customer_note?: string;
+};
 
 @Injectable()
 export class ReservationsService {
@@ -67,6 +80,25 @@ export class ReservationsService {
     }
   }
 
+  private assertWindowOpen(pickupDate: Date): void {
+    const zone = 'Europe/Paris';
+    const dt = DateTime.fromJSDate(pickupDate, { zone }).startOf('day');
+
+    const kind: PickupKind =
+      dt.weekday === 2
+        ? 'tuesday'
+        : dt.weekday === 5
+          ? 'friday'
+          : (() => {
+              throw new ForbiddenException('Jour de retrait invalide');
+            })();
+
+    const ok = isBookingWindowOpen(kind, { pickupDateISO: dt.toISO() ?? '' });
+    if (!ok) {
+      throw new ForbiddenException('Réservations fermées pour ce créneau');
+    }
+  }
+
   async findOne(id: string): Promise<Reservation> {
     const res = await this.reservationRepo.findOne({ where: { id } });
     if (!res) throw new NotFoundException('Réservation non trouvée');
@@ -85,6 +117,7 @@ export class ReservationsService {
     const dow = ReservationsService.getDow(dto.pickup_date);
     ReservationsService.assertTuesdayOrFriday(dow);
     ReservationsService.assertLocationAllowsDow(loc, dow);
+    this.assertWindowOpen(new Date(dto.pickup_date + 'T00:00:00'));
 
     const price = basket.price_basket * dto.quantity;
 
@@ -95,6 +128,7 @@ export class ReservationsService {
       pickup_date: dto.pickup_date,
       quantity: dto.quantity,
       price_reservation: price,
+      customer_note: dto.customer_note ?? '',
     });
 
     const saved = await this.reservationRepo.save(entity);
@@ -122,6 +156,7 @@ export class ReservationsService {
             },
           ],
           totalCents: unitPriceCents * qty,
+          customerNote: (withRels.customer_note ?? '').trim(),
         });
 
         await this.mailer.send({
@@ -180,6 +215,8 @@ export class ReservationsService {
     await qr.connect();
     await qr.startTransaction();
 
+    const note: string = (payload.customer_note ?? '').trim();
+
     const createdIds: string[] = [];
     try {
       for (const it of payload.items) {
@@ -193,6 +230,7 @@ export class ReservationsService {
           pickup_date: payload.pickup_date,
           quantity: it.quantity,
           price_reservation: price,
+          customer_note: note,
         });
 
         const saved = await qr.manager.save(Reservation, entity);
@@ -235,11 +273,12 @@ export class ReservationsService {
         const totalCents = lines.reduce((s, l) => s + l.unitPriceCents * l.quantity, 0);
 
         const html = this.mailer.orderConfirmationHTML({
-          firstname: displayName, // ← au lieu de l’ancien calcul
+          firstname: displayName,
           pickupDateISO: new Date(payload.pickup_date).toISOString().slice(0, 10),
           pickupName: loc.name_pickup,
           items: lines,
           totalCents,
+          customerNote: note,
         });
 
         await this.mailer.send({
@@ -281,6 +320,7 @@ export class ReservationsService {
     const dow = ReservationsService.getDow(dto.pickup_date);
     ReservationsService.assertTuesdayOrFriday(dow);
     ReservationsService.assertLocationAllowsDow(loc, dow);
+    this.assertWindowOpen(new Date(dto.pickup_date + 'T00:00:00'));
 
     const price = basket.price_basket * dto.quantity;
 
@@ -320,6 +360,7 @@ export class ReservationsService {
         "to_char(r.pickup_date, 'YYYY-MM-DD') AS pickup_date",
         'r.statut AS statut',
         'r.quantity AS quantity',
+        "COALESCE(r.customer_note, '') AS customer_note",
       ])
       .orderBy('r.pickup_date', 'DESC');
 

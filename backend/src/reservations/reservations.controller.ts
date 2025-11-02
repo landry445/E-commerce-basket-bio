@@ -1,4 +1,3 @@
-// src/reservations/reservations.controller.ts
 import {
   Controller,
   Get,
