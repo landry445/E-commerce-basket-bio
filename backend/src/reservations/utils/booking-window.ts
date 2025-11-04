@@ -31,8 +31,8 @@ export function isBookingWindowOpen(kind: PickupKind, input: BookingWindowCheckI
   } else {
     // kind === 'friday'
     // fenêtre : mardi 18:00 -> jeudi 08:00
-    start = pickup.minus({ days: 3 }).set({ hour: 18, minute: 0 }); // mardi 18:00
-    end = pickup.minus({ days: 1 }).set({ hour: 8, minute: 0 }); // jeudi 08:00
+    start = pickup.minus({ days: 4 }).set({ hour: 18, minute: 0 }); // mardi 18:00
+    end = pickup.set({ hour: 8, minute: 0 }); // jeudi 08:00
   }
 
   // Inclusif au début, exclusif à la fin

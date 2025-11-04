@@ -9,7 +9,7 @@ export class Basket {
   @Column()
   name_basket: string;
 
-  @Column()
+  @Column('numeric', { precision: 10, scale: 2 })
   price_basket: number;
 
   @Column({ nullable: true })

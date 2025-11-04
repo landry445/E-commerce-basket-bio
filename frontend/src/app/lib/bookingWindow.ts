@@ -21,7 +21,7 @@ export function isBookingOpenClient(
     end = pickup.set({ hour: 8, minute: 0 }); // mar 08:00
   } else {
     start = pickup.minus({ days: 3 }).set({ hour: 18, minute: 0 }); // mar 18:00
-    end = pickup.minus({ days: 1 }).set({ hour: 8, minute: 0 }); // jeu 08:00
+    end = pickup.set({ hour: 8, minute: 0 }); // jeu 08:00
   }
 
   return now >= start && now < end;
