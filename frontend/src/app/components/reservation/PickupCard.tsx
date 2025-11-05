@@ -87,9 +87,10 @@ export default function PickupCard({
           aria-label="Fenêtres de réservation"
           className="mt-1 text-gray-500 text-sm"
         >
-          <ul className="list-disc pl-5">
-            <li>Pour mardi : du samedi 00:00 au lundi 18:00.</li>
-            <li>Pour vendredi : du mercredi 00:00 au jeudi 18:00.</li>
+          <ul className="list-disc pl-5 text">
+            Les reservations sont possibles uniquement:
+            <li>Pour Le mardi : du vendredi 18:00 au mardi 8:00.</li>
+            <li>Pour vendredi : du mardi 18:00 au vendredi 8:00.</li>
           </ul>
         </div>
       </div>
