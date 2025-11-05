@@ -1,96 +1,193 @@
 "use client";
 
-import Tablereservation from "@/app/components/table/TableReservation";
-import AdminHeader from "@/app/components/adminLayout/AdminHeader";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import ConfirmModal from "@/app/components/modal/ConfirmModal";
-import { useEffect, useState } from "react";
+import AdminReservationsTable from "@/app/components/adminReservation/AdminReservationsTable";
+import type { AdminReservationRow } from "@/app/components/adminReservation/AdminReservationTypes";
 
-type ReservationAPI = {
-  id: string;
-  user: { firstname: string; lastname: string };
-  basket: { name_basket: string };
-  location: { name_pickup: string } | null;
-  pickup_date: string;
-  statut: "active" | "archived";
-};
+export const dynamic = "force-dynamic";
 
-type Reservation = {
-  id: string;
-  client: string;
-  panier: string;
-  lieu: string;
-  date: string;
-  statut: "active" | "archived";
-};
+export default function AdminReservationsPage() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const tabParam = searchParams.get("tab");
+  const status: "active" | "archived" =
+    tabParam === "archives" ? "archived" : "active";
 
-export default function AdminreservationPage() {
-  const [reservations, setReservations] = useState<Reservation[]>([]);
-  const [commandeASupprimer, setCommandeASupprimer] = useState<string | null>(
-    null
-  );
+  // --- État local
+  const [rows, setRows] = useState<AdminReservationRow[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+
+  // suppression simple via modal existante
+  const [selected, setSelected] = useState<AdminReservationRow | null>(null);
+  const [showConfirm, setShowConfirm] = useState<boolean>(false);
+
+  // --- Pagination locale
+  const PAGE_SIZE = 50;
+  const [page, setPage] = useState<number>(1);
+
+  // --- Récupération liste
+  const fetchRows = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/admin/reservations?status=${status}`, {
+        credentials: "include",
+        headers: { Accept: "application/json" },
+        cache: "no-store",
+      });
+      if (!res.ok) {
+        console.error(
+          "GET /api/admin/reservations a échoué:",
+          res.status,
+          res.statusText
+        );
+        setRows([]);
+        return;
+      }
+      const data: AdminReservationRow[] = await res.json();
+      setRows(data);
+      // retour première page lors d’un changement d’onglet
+      setPage(1);
+    } catch (e) {
+      console.error("Erreur chargement réservations:", e);
+      setRows([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [status]);
 
   useEffect(() => {
-    fetch("http://localhost:3001/reservations", { credentials: "include" })
-      .then((res) => res.json())
-      .then((data: ReservationAPI[]) => {
-        const mapped = data.map((r) => ({
-          id: r.id,
-          client: `${r.user.firstname} ${r.user.lastname}`,
-          panier: r.basket.name_basket,
-          lieu: r.location ? r.location.name_pickup : "—",
-          date: r.pickup_date,
-          statut: r.statut,
-        }));
-        setReservations(mapped);
-      })
-      .catch(() => setReservations([]));
-  }, []);
+    void fetchRows();
+  }, [fetchRows]);
 
-  // Archivage (à adapter selon ton endpoint existant)
-  const handleArchive = async (id: string) => {
-    await fetch(`http://localhost:3001/reservations/${id}`, {
-      method: "PUT",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ statut: "archived" }), // Adapter selon DTO
-    });
-    setReservations((prev) =>
-      prev.map((c) => (c.id === id ? { ...c, statut: "archived" } : c))
-    );
+  // --- Découpage sur 50
+  const total = rows.length;
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const pageSafe = Math.min(page, totalPages);
+  const rowsPage = useMemo(
+    () => rows.slice((pageSafe - 1) * PAGE_SIZE, pageSafe * PAGE_SIZE),
+    [rows, pageSafe]
+  );
+
+  // --- Changement d’onglet
+  const onTab = (next: "active" | "archived") => {
+    const q = new URLSearchParams(searchParams.toString());
+    q.set("tab", next === "archived" ? "archives" : "actives");
+    router.replace(`/admin/reservations?${q.toString()}`);
   };
 
-  const confirmSuppression = (id: string) => {
-    setCommandeASupprimer(id);
-  };
+  const title = useMemo(
+    () =>
+      status === "archived"
+        ? "Réservations  Archives"
+        : "Réservations  Actives",
+    [status]
+  );
 
-  const handleDeleteConfirm = async () => {
-    if (commandeASupprimer) {
-      await fetch(`http://localhost:3001/reservations/${commandeASupprimer}`, {
+  // --- Suppression (1 ligne)
+  const requestDelete = (row: AdminReservationRow) => {
+    setSelected(row);
+    setShowConfirm(true);
+  };
+  const confirmDelete = async () => {
+    if (!selected) return;
+    try {
+      const res = await fetch(`/api/admin/reservations?id=${selected.id}`, {
         method: "DELETE",
         credentials: "include",
+        headers: { Accept: "application/json" },
+        cache: "no-store",
       });
-      setReservations((prev) =>
-        prev.filter((c) => c.id !== commandeASupprimer)
-      );
-      setCommandeASupprimer(null);
+      if (!res.ok && res.status !== 204) {
+        console.error("DELETE a échoué:", res.status, res.statusText);
+      }
+      setRows((prev) => prev.filter((r) => r.id !== selected.id));
+    } catch (e) {
+      console.error("Erreur suppression réservation:", e);
+    } finally {
+      setShowConfirm(false);
+      setSelected(null);
     }
+  };
+  const cancelDelete = () => {
+    setShowConfirm(false);
+    setSelected(null);
+  };
+
+  // --- Suppression multiple (optimiste)
+  const deleteMany = async (ids: string[]): Promise<void> => {
+    if (ids.length === 0) return;
+    // appels parallèles ; l’API actuelle supprime déjà via ?id=...
+    const calls = ids.map((id) =>
+      fetch(`/api/admin/reservations?id=${id}`, {
+        method: "DELETE",
+        credentials: "include",
+        headers: { Accept: "application/json" },
+        cache: "no-store",
+      })
+    );
+    await Promise.allSettled(calls);
+    setRows((prev) => prev.filter((r) => !ids.includes(r.id)));
   };
 
   return (
-    <>
-      <AdminHeader title="Réservations" />
-      <Tablereservation
-        reservations={reservations}
-        onArchive={handleArchive}
-        onDelete={confirmSuppression}
-      />
+    <main className="p-6 space-y-4">
+      <div className="flex items-center justify-between">
+        <h1 className="text-3xl font-[var(--font-pacifico)]">{title}</h1>
+        <nav className="flex gap-2">
+          <button
+            type="button"
+            onClick={() => onTab("active")}
+            className={[
+              "px-3 py-1.5 rounded-full border cursor-pointer",
+              status === "active"
+                ? "bg-accent text-white font-bold"
+                : "bg-white border-accent",
+            ].join(" ")}
+          >
+            Actives
+          </button>
+          <button
+            type="button"
+            onClick={() => onTab("archived")}
+            className={[
+              "px-3 py-1.5 rounded-full border cursor-pointer",
+              status === "archived"
+                ? "bg-accent text-white font-bold"
+                : "bg-white border-accent",
+            ].join(" ")}
+          >
+            Archives
+          </button>
+        </nav>
+      </div>
+
+      {loading ? (
+        <p className="text-sm text-gray-500">Chargement…</p>
+      ) : (
+        <AdminReservationsTable
+          rows={rowsPage}
+          totalCount={total}
+          page={pageSafe}
+          pageSize={PAGE_SIZE}
+          onPageChange={setPage}
+          onDelete={async (id: string) => {
+            const row = rows.find((r) => r.id === id);
+            if (!row) return;
+            requestDelete(row);
+          }}
+          onDeleteMany={deleteMany}
+        />
+      )}
+
       <ConfirmModal
-        open={!!commandeASupprimer}
-        message="Êtes-vous sûr de vouloir supprimer cette commande ?"
+        open={showConfirm}
+        message="Supprimer cette réservation ?"
         subtext="Cette action est irréversible."
-        onCancel={() => setCommandeASupprimer(null)}
-        onConfirm={handleDeleteConfirm}
+        onCancel={cancelDelete}
+        onConfirm={confirmDelete}
       />
-    </>
+    </main>
   );
 }

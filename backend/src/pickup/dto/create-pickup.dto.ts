@@ -1,15 +1,17 @@
-import { IsString, IsOptional, IsInt, Min, Max } from 'class-validator';
+import { IsArray, IsOptional, IsBoolean, IsString } from 'class-validator';
 
 export class CreatePickupDto {
   @IsString()
   name_pickup: string;
 
-  @IsOptional()
   @IsString()
-  address?: string;
+  address: string;
 
-  @IsInt()
-  @Min(0)
-  @Max(6)
-  day_of_week: number;
+  @IsOptional()
+  @IsArray()
+  day_of_week?: number[];
+
+  @IsOptional()
+  @IsBoolean()
+  actif?: boolean;
 }

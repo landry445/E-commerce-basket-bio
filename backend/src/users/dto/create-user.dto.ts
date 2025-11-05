@@ -1,4 +1,5 @@
-import { IsEmail, IsString, Matches } from 'class-validator';
+import { Transform } from 'class-transformer';
+import { IsEmail, IsString, Matches, MaxLength } from 'class-validator';
 
 export class CreateUserDto {
   @IsString()
@@ -8,7 +9,9 @@ export class CreateUserDto {
   lastname: string;
 
   @IsEmail()
-  email: string;
+  @MaxLength(100)
+  @Transform(({ value }) => (typeof value === 'string' ? value.trim().toLowerCase() : value))
+  email!: string;
 
   @Matches(/^\+?\d{10,15}$/, { message: 'Numéro de téléphone invalide' })
   phone: string;
@@ -18,5 +21,6 @@ export class CreateUserDto {
     message:
       'Le mot de passe doit contenir au moins 8 caractères, dont une minuscule, une majuscule, un chiffre et un caractère spécial',
   })
+  @MaxLength(72)
   password: string;
 }

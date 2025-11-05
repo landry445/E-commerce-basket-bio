@@ -12,12 +12,11 @@ import {
   Req,
   Res,
   Options,
+  BadRequestException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
-import { Express } from 'express';
-import { Response } from 'express';
-import { Request } from 'express';
+import type { Express, Request, Response } from 'express';
 
 import { BasketsService } from './baskets.service';
 import { Basket } from './entities/basket.entity';
@@ -26,15 +25,29 @@ import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
 import { Role } from 'src/auth/role.enum';
 
+// Multer en RAM, filtre image + limite 2 Mo
 const multerOptions = {
-  storage: memoryStorage(), // fichier gardé en mémoire
-  fileFilter: (_req, file, cb) => {
-    file.mimetype.startsWith('image/')
-      ? cb(null, true)
-      : cb(new Error('Only images are allowed'), false);
+  storage: memoryStorage(),
+  fileFilter: (
+    _req: Request,
+    file: Express.Multer.File,
+    cb: (error: Error | null, acceptFile: boolean) => void
+  ) => {
+    if (file.mimetype.startsWith('image/')) cb(null, true);
+    else cb(new Error('Only images are allowed'), false);
   },
-  limits: { fileSize: 2 * 1024 * 1024 }, // 2 Mo max
+  limits: { fileSize: 2 * 1024 * 1024 },
 };
+
+// Parseur euro robuste : "2,00" | "2.00" | 2 → 2.00
+function parseEuro(input: unknown): number {
+  if (typeof input === 'number')
+    return Number.isFinite(input) ? Math.round(input * 100) / 100 : NaN;
+  if (typeof input !== 'string') return NaN;
+  const s = input.trim().replace(/\s/g, '').replace(',', '.');
+  const n = Number(s);
+  return Number.isFinite(n) ? Math.round(n * 100) / 100 : NaN;
+}
 
 @Controller('baskets')
 export class BasketsController {
@@ -51,7 +64,7 @@ export class BasketsController {
   }
 
   @Options(':id/image')
-  optionsImage(@Req() req: Request, @Res() res: Response) {
+  optionsImage(@Req() _req: Request, @Res() res: Response) {
     res.setHeader(
       'Access-Control-Allow-Origin',
       process.env.FRONTEND_URL || 'http://localhost:3000'
@@ -59,7 +72,7 @@ export class BasketsController {
     res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Origin, Content-Type, Accept');
     res.setHeader('Access-Control-Allow-Credentials', 'true');
-    res.status(204).send(); // No Content
+    res.status(204).send();
   }
 
   @Get(':id/image')
@@ -70,7 +83,7 @@ export class BasketsController {
     }
     res.setHeader('Content-Type', basket.image_mime);
 
-    // --- Headers CORS minimum pour images cross-origin ---
+    // CORS minimal pour affichage cross-origin
     res.setHeader(
       'Access-Control-Allow-Origin',
       process.env.FRONTEND_URL || 'http://localhost:3000'
@@ -78,7 +91,6 @@ export class BasketsController {
     res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Origin, Content-Type, Accept');
     res.setHeader('Access-Control-Allow-Credentials', 'true');
-    // ------------------------------------------------------
 
     res.send(basket.image_data);
   }
@@ -87,11 +99,22 @@ export class BasketsController {
   @Roles(Role.Admin)
   @Post()
   @UseInterceptors(FileInterceptor('image', multerOptions))
-  async create(@UploadedFile() file: Express.Multer.File, @Req() req): Promise<Basket> {
-    const { name, price, description, actif } = req.body;
+  async create(@UploadedFile() file: Express.Multer.File, @Req() req: Request): Promise<Basket> {
+    const { name, price, description, actif } = req.body as {
+      name?: string;
+      price?: string;
+      description?: string;
+      actif?: string | boolean;
+    };
+
+    const priceNum = parseEuro(price);
+    if (Number.isNaN(priceNum)) {
+      throw new BadRequestException('Prix invalide');
+    }
+
     return this.basketsService.create({
-      name_basket: name,
-      price_basket: Math.round(parseFloat(price) * 100),
+      name_basket: String(name ?? '').trim(),
+      price_basket: priceNum, // euros décimaux, cohérent avec numeric(10,2)
       description,
       image_data: file?.buffer,
       image_mime: file?.mimetype,
@@ -106,15 +129,26 @@ export class BasketsController {
   async update(
     @Param('id', ParseUUIDPipe) id: string,
     @UploadedFile() file: Express.Multer.File,
-    @Req() req
+    @Req() req: Request
   ): Promise<Basket> {
-    const { name, price, description, actif } = req.body;
-    // On récupère le panier actuel pour l’ancienne image
+    const { name, price, description, actif } = req.body as {
+      name?: string;
+      price?: string;
+      description?: string;
+      actif?: string | boolean;
+    };
+
+    const priceNum = parseEuro(price);
+    if (Number.isNaN(priceNum)) {
+      throw new BadRequestException('Prix invalide');
+    }
+
+    // Conserver l’image existante s’il n’y a pas de nouveau fichier
     const current = await this.basketsService.findOne(id);
 
     return this.basketsService.update(id, {
-      name_basket: name,
-      price_basket: Math.round(parseFloat(price) * 100),
+      name_basket: String(name ?? '').trim(),
+      price_basket: priceNum, // euros décimaux
       description,
       image_data: file?.buffer || current.image_data,
       image_mime: file?.mimetype || current.image_mime,

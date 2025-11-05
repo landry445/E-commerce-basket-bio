@@ -1,0 +1,29 @@
+"use client";
+
+import Image from "next/image";
+
+export default function Hero() {
+  return (
+    <section className="relative h-[400px]">
+      <Image
+        src="/header-farmer.png"
+        alt="Votre maraîcher"
+        fill
+        className="object-cover"
+        priority
+        sizes="100vw"
+      />
+      <div className="absolute inset-0 flex items-center justify-center">
+        <h1
+          className="text-5xl md:text-6xl text-center px-4"
+          style={{
+            fontFamily: "var(--font-pacifico)",
+            color: "var(--color-light)",
+          }}
+        >
+          Votre maraîcher : une exploitation agricole bio
+        </h1>
+      </div>
+    </section>
+  );
+}

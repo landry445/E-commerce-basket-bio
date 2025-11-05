@@ -2,13 +2,15 @@
 import { useEffect, useState } from "react";
 import AdminHeader from "@/app/components/adminLayout/AdminHeader";
 import Tablebaskets from "@/app/components/table/TableBaskets";
-import Formbasket from "@/app/components/form/FormBasket";
+import Formbasket from "@/app/components/form/FormBasketAdmin";
 import ConfirmModal from "@/app/components/modal/ConfirmModal";
+
+export const dynamic = "force-dynamic";
 
 type Basket = {
   id: string;
   name: string;
-  price: string;
+  priceEuro: number; // <- number en euros
   description: string;
   actif: boolean;
 };
@@ -16,7 +18,7 @@ type Basket = {
 type Backendbasket = {
   id: string;
   name_basket: string;
-  price_basket: number;
+  price_basket: number | string; // parfois string selon la sérialisation
   description: string;
   actif: boolean;
 };
@@ -28,14 +30,13 @@ export default function AdminbasketsPage() {
   const [baskets, setBaskets] = useState<Basket[]>([]);
 
   const fetchbaskets = async () => {
-    const res = await fetch("http://localhost:3001/baskets", {
-      credentials: "include",
-    });
+    const res = await fetch("/api/baskets", { credentials: "include" });
     const data: Backendbasket[] = await res.json();
     const mapped: Basket[] = data.map((b) => ({
       id: b.id,
       name: b.name_basket,
-      price: (b.price_basket / 100).toFixed(2),
+      // ⬇️ plus de /100 ; conversion robuste si string
+      priceEuro: Number(b.price_basket),
       description: b.description,
       actif: b.actif,
     }));
@@ -43,13 +44,13 @@ export default function AdminbasketsPage() {
   };
 
   useEffect(() => {
-    fetchbaskets();
+    void fetchbaskets();
   }, []);
 
   const handleDelete = async () => {
     if (!selected) return;
     try {
-      await fetch(`http://localhost:3001/baskets/${selected.id}`, {
+      await fetch(`/api/baskets/${selected.id}`, {
         method: "DELETE",
         credentials: "include",
       });
@@ -61,14 +62,52 @@ export default function AdminbasketsPage() {
     setSelected(null);
   };
 
-  // Création
+  async function toggleActif(id: string, next: boolean) {
+    // Optimiste local
+    setBaskets((prev) =>
+      prev.map((b) => (b.id === id ? { ...b, actif: next } : b))
+    );
+    try {
+      // Tentative PATCH partiel
+      const r = await fetch(`/api/baskets/${id}`, {
+        method: "PATCH",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ actif: next }),
+      });
+      if (r.ok) return;
+
+      // Plan B: certains backends exigent un PUT complet (FormData)
+      const current = baskets.find((b) => b.id === id);
+      if (!current) return;
+      const fd = new FormData();
+      fd.append("id", current.id);
+      fd.append("name", current.name);
+      fd.append("price", String(current.priceEuro.toFixed(2)));
+      fd.append("description", current.description ?? "");
+      fd.append("actif", String(next));
+      const r2 = await fetch(`/api/baskets/${id}`, {
+        method: "PUT",
+        credentials: "include",
+        body: fd,
+      });
+      if (!r2.ok) throw new Error("PUT non accepté");
+    } catch (e) {
+      console.error("Erreur toggle actif:", e);
+      // rollback
+      setBaskets((prev) =>
+        prev.map((b) => (b.id === id ? { ...b, actif: !next } : b))
+      );
+    }
+  }
+
   const handleCreate = (formData: FormData) => {
     void (async () => {
       try {
-        await fetch("http://localhost:3001/baskets", {
+        await fetch("/api/baskets", {
           method: "POST",
           credentials: "include",
-          body: formData, // pas d’en-tête Content-Type ici !
+          body: formData,
         });
         await fetchbaskets();
         setStep("list");
@@ -78,12 +117,11 @@ export default function AdminbasketsPage() {
     })();
   };
 
-  // Edition
   const handleUpdate = (formData: FormData) => {
     void (async () => {
       try {
         const id = formData.get("id") as string;
-        await fetch(`http://localhost:3001/baskets/${id}`, {
+        await fetch(`/api/baskets/${id}`, {
           method: "PUT",
           credentials: "include",
           body: formData,
@@ -129,6 +167,7 @@ export default function AdminbasketsPage() {
               setSelected(basket);
               setShowConfirm(true);
             }}
+            onToggleActif={toggleActif} // <- nouveau
           />
         </>
       )}
@@ -150,13 +189,19 @@ export default function AdminbasketsPage() {
         <Formbasket
           mode="edit"
           onSubmit={handleUpdate}
-          initialValues={selected}
+          initialValues={{
+            id: selected.id,
+            name: selected.name,
+            price: selected.priceEuro.toFixed(2),
+            description: selected.description,
+            actif: selected.actif,
+          }}
         />
       )}
 
       <ConfirmModal
         open={showConfirm}
-        message="Êtes-vous sûr de vouloir supprimer ce panier ?"
+        message="Êtes-vous sûr de vouloir supprimer ce panier ?"
         subtext="Cette action est irréversible."
         onCancel={() => setShowConfirm(false)}
         onConfirm={handleDelete}

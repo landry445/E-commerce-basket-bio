@@ -2,10 +2,17 @@
 import { useRef, useState } from "react";
 import Image from "next/image";
 
+// --- helper conversion "fr" -> nombre ---
+function normalizeEuroClient(v: string): number {
+  const s = v.trim().replace(/\s/g, "").replace(",", ".");
+  const n = Number(s);
+  return Number.isFinite(n) ? Math.round(n * 100) / 100 : NaN;
+}
+
 type Basket = {
   id: string;
   name: string;
-  price: string;
+  price: string; // euros sous forme texte (ex: "14.00")
   description: string;
   actif: boolean;
 };
@@ -28,7 +35,7 @@ export default function FormBasket(props: FormBasketProps) {
   const initial = props.initialValues ?? {};
 
   const [name, setName] = useState(initial.name ?? "");
-  const [price, setPrice] = useState(initial.price ?? "");
+  const [price, setPrice] = useState(initial.price ?? ""); // "2,00" accepté
   const [description, setDescription] = useState(initial.description ?? "");
   const [actif, setActif] = useState(
     mode === "edit" ? (initial as Basket).actif : initial.actif ?? true
@@ -36,6 +43,7 @@ export default function FormBasket(props: FormBasketProps) {
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string>("");
   const [fileName, setFileName] = useState<string>("");
+  const [priceError, setPriceError] = useState<string>("");
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -43,11 +51,8 @@ export default function FormBasket(props: FormBasketProps) {
     const selected = e.target.files?.[0] ?? null;
     setFile(selected);
     setFileName(selected ? selected.name : "");
-    if (selected) {
-      setPreview(URL.createObjectURL(selected));
-    } else {
-      setPreview("");
-    }
+    if (selected) setPreview(URL.createObjectURL(selected));
+    else setPreview("");
   };
 
   const handleButtonClick = () => {
@@ -56,23 +61,32 @@ export default function FormBasket(props: FormBasketProps) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    // --- normalisation du prix ---
+    const priceNumber = normalizeEuroClient(price);
+    if (Number.isNaN(priceNumber)) {
+      setPriceError("Prix invalide");
+      return;
+    }
+    setPriceError("");
+
+    // On envoie un prix normalisé (point + 2 décimales)
+    const priceNormalized = priceNumber.toFixed(2); // "2.00"
+
     const formData = new FormData();
     formData.append("name", name);
-    formData.append("price", price);
+    formData.append("price", priceNormalized);
     formData.append("description", description);
     formData.append("actif", String(actif));
-    if (file) {
-      formData.append("image", file);
-    }
-    if (mode === "edit") {
-      formData.append("id", (initial as Basket).id);
-    }
+    if (file) formData.append("image", file);
+    if (mode === "edit") formData.append("id", (initial as Basket).id);
+
     onSubmit(formData);
   };
 
   return (
     <form onSubmit={handleSubmit} className="flex w-full gap-8 mt-2">
-      <div className="flex-1 flex flex-col gap-4">
+      <div className="flex-1 flex flex-col gap-2">
         <input
           className="rounded-full border border-gray-300 px-6 py-2 bg-white font-sans placeholder:text-gray-400 text-base"
           type="text"
@@ -80,14 +94,21 @@ export default function FormBasket(props: FormBasketProps) {
           value={name}
           onChange={(e) => setName(e.target.value)}
         />
-        <input
-          className="rounded-full border border-gray-300 px-6 py-2 bg-white font-sans placeholder:text-gray-400 text-base"
-          type="number"
-          step="0.01"
-          placeholder="Prix (ex : 14.00)"
-          value={price}
-          onChange={(e) => setPrice(e.target.value)}
-        />
+
+        <div className="flex flex-col gap-1">
+          <input
+            className="rounded-full border border-gray-300 px-6 py-2 bg-white font-sans placeholder:text-gray-400 text-base"
+            type="text"
+            inputMode="decimal"
+            placeholder="Prix (ex : 2,00 ou 2.00)"
+            value={price}
+            onChange={(e) => setPrice(e.target.value)}
+          />
+          {priceError ? (
+            <span className="text-sm text-red-600">{priceError}</span>
+          ) : null}
+        </div>
+
         <textarea
           className="rounded-xl border border-gray-300 px-6 py-4 bg-white font-sans placeholder:text-gray-400 text-base min-h-[160px] resize-none"
           placeholder="Description"
@@ -95,11 +116,9 @@ export default function FormBasket(props: FormBasketProps) {
           onChange={(e) => setDescription(e.target.value)}
         />
 
-        {/* Upload d'image custom */}
-        <div>
-          <label className="font-medium block mb-2"></label>
+        {/* Upload d'image */}
+        <div className="mt-2">
           <div className="flex items-center gap-4">
-            {/* Input natif caché */}
             <input
               ref={fileInputRef}
               id="image"
@@ -108,7 +127,6 @@ export default function FormBasket(props: FormBasketProps) {
               className="hidden"
               onChange={handleFileChange}
             />
-            {/* Bouton stylé */}
             <button
               type="button"
               onClick={handleButtonClick}
@@ -116,12 +134,11 @@ export default function FormBasket(props: FormBasketProps) {
             >
               Choisir une image
             </button>
-            {/* Nom du fichier */}
             <span className="text-gray-500 text-sm">
               {fileName || "Aucun fichier choisi"}
             </span>
           </div>
-          {/* Preview locale si nouveau fichier */}
+
           {preview && (
             <Image
               src={preview}
@@ -132,7 +149,7 @@ export default function FormBasket(props: FormBasketProps) {
               unoptimized
             />
           )}
-          {/* Image déjà existante en BDD (mode edit) */}
+
           {!preview && mode === "edit" && (initial as Basket).id && (
             <Image
               src={`http://localhost:3001/baskets/${
@@ -147,6 +164,7 @@ export default function FormBasket(props: FormBasketProps) {
             />
           )}
         </div>
+
         <div className="flex items-center gap-3 mt-2">
           <input
             type="checkbox"
@@ -160,6 +178,7 @@ export default function FormBasket(props: FormBasketProps) {
           </label>
         </div>
       </div>
+
       <div className="flex flex-col items-end mt-3">
         <button
           type="submit"

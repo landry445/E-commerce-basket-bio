@@ -9,6 +9,7 @@ import { ReservationsModule } from './reservations/reservations.module';
 import { PickupModule } from './pickup/pickup.module';
 import { AuthModule } from './auth/auth.module';
 import { AdminModule } from './admin/admin.module';
+import { MailModule } from './mail/mail.module';
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { AdminModule } from './admin/admin.module';
     PickupModule,
     AuthModule,
     AdminModule,
+    MailModule,
   ],
   controllers: [AppController],
   providers: [AppService],

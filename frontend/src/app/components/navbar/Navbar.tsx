@@ -1,105 +1,105 @@
 "use client";
 
-import { useState } from "react";
-import Image from "next/image";
-import NavbarLinks from "./NavbarLinks";
-import NavbarUserButton from "./NavbarUserButton";
+import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
+import { useAuth } from "@/app/hooks/useAuth";
+import DesktopBar from "./DesktopBar";
+import MobileDrawer from "./MobileDrawer";
 
-type NavbarProps = {
-  user?: { firstname: string; isAdmin: boolean };
-  onLogout?: () => void;
-};
+export default function Navbar() {
+  const router = useRouter();
+  const { user, isAuthenticated } = useAuth();
 
-export default function Navbar({ user, onLogout }: NavbarProps) {
   const [open, setOpen] = useState(false);
+  const firstFocusable = useRef<HTMLButtonElement | null>(null);
+
+  // Header masqué au scroll
+  const [atTop, setAtTop] = useState(true);
+  const [hidden, setHidden] = useState(false);
+  const lastY = useRef(0);
+
+  useEffect(() => {
+    const onScroll = () => {
+      const y = window.scrollY;
+      setAtTop(y <= 8);
+      setHidden(y > lastY.current && y > 64);
+      lastY.current = y;
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  // Verrouillage du scroll + focus initial
+  useEffect(() => {
+    const root = document.documentElement;
+    if (open) {
+      root.style.overflow = "hidden";
+      firstFocusable.current?.focus();
+    } else {
+      root.style.overflow = "";
+    }
+    return () => {
+      root.style.overflow = "";
+    };
+  }, [open]);
+
+  // Fermeture via Échap
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    if (open) window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open]);
+
+  async function handleLogout(): Promise<void> {
+    try {
+      await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/logout`, {
+        method: "POST",
+        credentials: "include",
+      });
+    } catch {
+      // silencieux
+    } finally {
+      setOpen(false);
+      router.replace("/login");
+      router.refresh();
+    }
+  }
+
+  const headerClass = [
+    "fixed inset-x-0 top-0 z-50 transition-transform duration-300",
+    hidden ? "-translate-y-full" : "translate-y-0",
+    atTop
+      ? "bg-[var(--background)]"
+      : "bg-[var(--background)]/90 backdrop-blur-sm border-b border-black/5 shadow-sm",
+  ].join(" ");
+
+  const reserveHref = isAuthenticated ? "/reserver" : "/login";
 
   return (
-    <nav className="flex items-center justify-between px-8 py-2 bg-light border-b relative">
-      {/* Logo */}
-      <div className="flex items-center gap-2">
-        <Image src="/logo-frog.png" alt="Logo frog" width={40} height={40} />
-      </div>
+    <>
+      <DesktopBar
+        className={headerClass}
+        isAuthenticated={isAuthenticated}
+        user={user ?? undefined}
+        onMenuOpen={() => setOpen(true)}
+        onLogout={handleLogout}
+      />
 
-      {/* Liens desktop */}
-      <div className="hidden md:flex flex-1 items-center justify-center">
-        <NavbarLinks />
-      </div>
+      <MobileDrawer
+        open={open}
+        onClose={() => setOpen(false)}
+        firstFocusableRef={firstFocusable}
+        isAuthenticated={isAuthenticated}
+        user={user ?? undefined}
+        reserveHref={reserveHref}
+        onLogout={handleLogout}
+      />
 
-      {/* Utilisateur desktop */}
-      <div className="hidden md:flex items-center">
-        <NavbarUserButton user={user} onLogout={onLogout} />
-      </div>
-
-      {/* Burger mobile */}
-      <button
-        onClick={() => setOpen(true)}
-        className="flex md:hidden cursor-pointer p-2 rounded hover:bg-primary/10 transition"
-        aria-label="Ouvrir le menu"
-      >
-        {/* Logo burger SVG */}
-        <svg viewBox="0 0 20 20" fill="none" className="w-8 h-8">
-          <rect y="4" width="20" height="2" rx="1" fill="#5B8C51" />
-          <rect y="9" width="20" height="2" rx="1" fill="#5B8C51" />
-          <rect y="14" width="20" height="2" rx="1" fill="#5B8C51" />
-        </svg>
-      </button>
-
-      {/* Drawer menu mobile */}
-      <div
-        className={`fixed top-0 right-0 h-full w-64 bg-light border-l z-50 transform transition-transform duration-300 ease-in-out ${
-          open ? "translate-x-0" : "translate-x-full"
-        } md:hidden`}
-      >
-        <div className="flex flex-col h-full p-6">
-          <div className="flex items-center justify-between mb-8">
-            <div className="mt-4">
-              <NavbarUserButton
-                user={user}
-                onLogout={onLogout}
-                isMobile
-                onAfterClick={() => setOpen(false)}
-              />
-            </div>
-            <button
-              className="p-2 cursor-pointer rounded hover:bg-primary/10"
-              aria-label="Fermer le menu"
-              onClick={() => setOpen(false)}
-            >
-              <svg viewBox="0 0 20 20" fill="none" className="w-6 h-6">
-                <line
-                  x1="4"
-                  y1="4"
-                  x2="16"
-                  y2="16"
-                  stroke="#5B8C51"
-                  strokeWidth="2"
-                />
-                <line
-                  x1="16"
-                  y1="4"
-                  x2="4"
-                  y2="16"
-                  stroke="#5B8C51"
-                  strokeWidth="2"
-                />
-              </svg>
-            </button>
-          </div>
-          <NavbarLinks
-            onNavigate={() => setOpen(false)}
-            className="flex flex-col gap-6"
-          />
-        </div>
-      </div>
-
-      {/* Overlay mobile */}
-      {open && (
-        <div
-          className="fixed inset-0 bg-black/30 z-40 md:hidden"
-          onClick={() => setOpen(false)}
-          aria-hidden
-        />
-      )}
-    </nav>
+      {/* Espace sous header fixe */}
+      <div className="h-16 md:h-[68px]" />
+    </>
   );
 }
