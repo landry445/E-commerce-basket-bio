@@ -27,7 +27,7 @@ type PickupLocation = {
   actif: boolean;
 };
 
-type BulkResponse = { ids: string[] };
+type BulkResponse = { groupId: string };
 
 const API_BASE: string =
   process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3001";
@@ -282,8 +282,10 @@ export default function ReservationForm(): JSX.Element {
     }
 
     const data = (await res.json()) as BulkResponse;
-    const firstId: string | undefined =
-      Array.isArray(data.ids) && data.ids.length > 0 ? data.ids[0] : undefined;
+    // const firstId: string | undefined =
+    //   Array.isArray(data.groupId) && data.groupId.length > 0
+    //     ? data.groupId[0]
+    //     : undefined;
 
     setToast({
       type: "ok",
@@ -292,14 +294,7 @@ export default function ReservationForm(): JSX.Element {
       )}.`,
     });
 
-    // courte latence pour laisser apparaître le toast
-    setTimeout(() => {
-      if (firstId) {
-        router.push(`/reserver/confirmee/${firstId}`);
-      } else {
-        router.push("/mon-compte");
-      }
-    }, 500);
+    router.replace(`/reserver/confirmee/${data.groupId}`);
   }
 
   const allowedDate = useMemo(() => allowedPickupDate(new Date()), []);

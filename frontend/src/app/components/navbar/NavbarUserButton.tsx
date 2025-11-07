@@ -83,7 +83,7 @@ export default function NavbarUserButton({
           Compte et Réservations
         </MenuLink>
         {user.isAdmin && (
-          <MenuLink href="/admin/paniers" onAfterClick={onAfterClick}>
+          <MenuLink href="/admin/reservations" onAfterClick={onAfterClick}>
             Espace admin
           </MenuLink>
         )}

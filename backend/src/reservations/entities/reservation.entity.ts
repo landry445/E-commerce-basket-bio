@@ -5,6 +5,7 @@ import {
   CreateDateColumn,
   ManyToOne,
   JoinColumn,
+  Index,
 } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
 import { Basket } from '../../baskets/entities/basket.entity';
@@ -71,4 +72,8 @@ export class Reservation {
 
   @Column({ type: 'text', default: '' })
   customer_note!: string;
+
+  @Index() // + index utile pour la page de confirmation
+  @Column('uuid', { nullable: true }) // + nouvelle colonne
+  group_id?: string;
 }
