@@ -46,7 +46,10 @@ export default function UserDetailPanel({
             {user.firstname} {user.lastname}
           </div>
           <div className="text-sm text-gray-500">
-            Membre depuis le {user.date_creation}
+            Membre depuis le{" "}
+            {typeof user.date_creation === "string"
+              ? user.date_creation.slice(0, 10)
+              : new Date(user.date_creation).toISOString().slice(0, 10)}
           </div>
           <div className="text-xs text-gray-600 mt-2">
             {user.email} • {user.phone}

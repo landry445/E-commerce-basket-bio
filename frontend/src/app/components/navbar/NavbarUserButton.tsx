@@ -50,7 +50,7 @@ export default function NavbarUserButton({
         className={[
           "list-none cursor-pointer select-none",
           "inline-flex items-center justify-center ",
-          "bg-[var(--color-light)] text-[var(--color-dark)]",
+          " text-[var(--color-dark)]",
           circleBase,
           ,
           "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60",
