@@ -77,11 +77,10 @@ export default async function Page(props: { params: { groupId: string } }) {
       </p>
 
       <div className="mx-auto mt-6 max-w-xl rounded-2xl bg-white p-6 shadow-xl">
-        {/* En-tête retrait */}
         <div className="mb-1 flex items-center justify-between text-sm">
-          <span className="text-neutral-600">Retrait</span>
+          <span className="text-neutral-600">Lieu et date de retrait :</span>
           <span className="font-medium">
-            {ymd(data.pickupDateISO)} • {data.pickupLocationName}
+            Gare de Savenay • {ymd(data.pickupDateISO)}
           </span>
         </div>
 

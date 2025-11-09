@@ -201,11 +201,56 @@ export default function ReservationForm(): JSX.Element {
     e.preventDefault();
 
     if (action !== "order") {
+      const payload = {
+        message: message.trim(),
+        // subject: "Message client – réservation", // optionnel si tu ajoutes un champ sujet
+      };
+
+      if (!payload.message || payload.message.length < 3) {
+        setToast({ type: "err", text: "Message trop court." });
+        setTimeout(() => setToast(null), 2600);
+        return;
+      }
+
+      if (!API_BASE) {
+        setToast({
+          type: "err",
+          text: "NEXT_PUBLIC_API_BASE_URL manquant côté frontend.",
+        });
+        setTimeout(() => setToast(null), 2600);
+        return;
+      }
+
+      const res = await fetch(`${API_BASE}/mail/contact`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: message.trim() }),
+      });
+
+      if (res.status === 401) {
+        setToast({ type: "err", text: "Connexion requise." });
+        setTimeout(() => setToast(null), 2600);
+        return;
+      }
+      if (!res.ok) {
+        const body = (await res.json().catch(() => null)) as {
+          message?: string | string[];
+        } | null;
+        const msg = Array.isArray(body?.message)
+          ? body!.message.join(" • ")
+          : body?.message ?? "Échec de l’envoi.";
+        setToast({ type: "err", text: msg });
+        setTimeout(() => setToast(null), 3200);
+        return;
+      }
+
       setToast({
         type: "ok",
-        text: "Message prêt. Un endpoint /contact peut le recevoir.",
+        text: "Merci pour votre message, on revient vers vous au plus vite !",
       });
-      setTimeout(() => setToast(null), 2600);
+      setMessage("");
+      setTimeout(() => setToast(null), 5000);
       return;
     }
 

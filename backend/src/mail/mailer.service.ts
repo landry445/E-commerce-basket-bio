@@ -1,28 +1,18 @@
 import { Inject, Injectable } from '@nestjs/common';
 import type { Transporter } from 'nodemailer';
+import { DataSource } from 'typeorm';
 
-// type MailInput = {
-//   to: string;
-//   subject: string;
-//   html: string;
-//   text?: string;
-// };
+type AdminContactInput = {
+  subject: string;
+  message: string;
+  userId: string;
+};
 
 type SignupTemplateParams = {
   firstname: string;
   verifyUrl: string;
   expiresHours: number;
 };
-
-// type OrderItem = { name: string; quantity: number; unitPriceCents: number };
-
-// type OrderTemplateParams = {
-//   firstname: string;
-//   pickupDateISO: string; // "2025-10-24"
-//   pickupName: string;
-//   items: ReadonlyArray<OrderItem>;
-//   totalCents: number;
-// };
 
 type OrderEmailItem = { name: string; quantity: number; unitPriceCents: number };
 type OrderEmailPayload = {
@@ -45,7 +35,10 @@ function escapeHtml(s: string): string {
 
 @Injectable()
 export class MailerService {
-  constructor(@Inject('MAIL_TRANSPORT') private readonly transporter: Transporter) {}
+  constructor(
+    @Inject('MAIL_TRANSPORT') private readonly transporter: Transporter,
+    private readonly dataSource: DataSource
+  ) {}
 
   public orderConfirmationHTML(p: OrderEmailPayload): string {
     const eur = new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' });
@@ -128,5 +121,54 @@ export class MailerService {
     <p>Ce lien reste valide ${p.expiresHours} heures.</p>
     <p style="margin-top:12px;">À très vite.</p>
   </div>`;
+  }
+
+  public async sendAdminContact(input: AdminContactInput): Promise<void> {
+    const to = process.env.ADMIN_EMAIL!;
+    const safe = (s?: string) => (s ?? '').toString().trim();
+
+    // 1) Récupération des infos utilisateur (schéma: firstname / lastname / email)
+    const row = await this.dataSource.query(
+      `SELECT email, firstname, lastname
+         FROM users
+        WHERE id = $1
+        LIMIT 1`,
+      [input.userId]
+    );
+
+    const email: string | undefined = row?.[0]?.email ?? undefined;
+    const firstname: string | undefined = row?.[0]?.firstname ?? undefined;
+    const lastname: string | undefined = row?.[0]?.lastname ?? undefined;
+    const fullName = [firstname, lastname].filter(Boolean).join(' ').trim() || undefined;
+
+    // 2) Sujet + contenu avec nom et e-mail
+    const subject =
+      safe(input.subject) || `Message client — ${fullName ?? email ?? 'compte connecté'}`;
+
+    const header =
+      `<p style="margin:0 0 8px 0">` +
+      `<strong>De&nbsp;:</strong> ${fullName ? fullName : 'Client'}` +
+      `${email ? ` &lt;${email}&gt;` : ''}` +
+      `</p>`;
+
+    const html =
+      `<div style="font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif">` +
+      `<h3 style="margin:0 0 10px 0">Message client</h3>` +
+      header +
+      `<div style="white-space:pre-wrap">${safe(input.message)}</div>` +
+      `</div>`;
+
+    const textLines = [
+      `De: ${fullName ?? 'Client'}${email ? ` <${email}>` : ''}`,
+      '',
+      safe(input.message),
+    ];
+
+    await this.send({
+      to,
+      subject,
+      html,
+      text: textLines.join('\n'),
+    });
   }
 }
