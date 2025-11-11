@@ -10,6 +10,7 @@ import ActionChoice from "../reservation/ActionChoice";
 import PickupCard from "../reservation/PickupCard";
 import Toast from "../reservation/ReservationToast";
 import { isBookingOpenClient } from "@/app/lib/bookingWindow";
+import Image from "next/image";
 
 type Basket = {
   id: string;
@@ -344,6 +345,8 @@ export default function ReservationForm(): JSX.Element {
 
   const allowedDate = useMemo(() => allowedPickupDate(new Date()), []);
 
+  const hasItems = cartLines.length > 0;
+
   return (
     <main className="bg-[var(--background)] text-[var(--foreground)] font-sans">
       <ReservationHero />
@@ -353,82 +356,202 @@ export default function ReservationForm(): JSX.Element {
         <form
           onSubmit={submit}
           className="max-w-3xl mx-auto bg-white rounded-2xl shadow p-6 space-y-6"
+          style={{ boxShadow: "var(--shadow-soft)" }}
         >
           <ActionChoice value={action} onChange={setAction} />
 
           {action === "order" && (
             <div>
               <h3 className="text-lg font-semibold mb-3">Vos paniers</h3>
-              <div className="divide-y rounded-xl border">
+
+              {/* Liste des paniers */}
+              <div className="divide-y rounded-xl border bg-white">
                 {baskets
                   .filter((b) => b.actif === true)
                   .map((b) => {
                     const q = quantities[b.id] ?? 0;
                     const lineTotal = q * b.price_basket;
+
                     return (
-                      <div
-                        key={b.id}
-                        className="grid grid-cols-12 items-center gap-3 p-3"
-                      >
-                        <div className="col-span-6">
-                          <p className="font-medium">{b.name_basket}</p>
-                          {b.description_basket ? (
-                            <p className="text-xs text-gray-600">
-                              {b.description_basket}
-                            </p>
-                          ) : null}
-                        </div>
-
-                        <div className="col-span-3 text-right">
-                          <p className="tabular-nums">
-                            {eur.format(b.price_basket)}
-                          </p>
-                        </div>
-
-                        <div className="col-span-3 flex items-center justify-end gap-2">
-                          <button
-                            type="button"
-                            onClick={() => setQuantity(b.id, q - 1)}
-                            className="w-8 h-8 rounded-full border-2 text-lg leading-none"
-                            aria-label={`Retirer 1 ${b.name_basket}`}
-                          >
-                            −
-                          </button>
-                          <input
-                            type="number"
-                            min={0}
-                            max={99}
-                            value={q}
-                            onChange={(e) =>
-                              setQuantity(b.id, Number(e.target.value))
-                            }
-                            className="w-14 text-center rounded border-2 px-2 py-1"
-                            aria-label={`Quantité ${b.name_basket}`}
-                          />
-                          <button
-                            type="button"
-                            onClick={() => setQuantity(b.id, q + 1)}
-                            className="w-8 h-8 rounded-full border-2 text-lg leading-none"
-                            aria-label={`Ajouter 1 ${b.name_basket}`}
-                          >
-                            +
-                          </button>
-                        </div>
-
-                        {q > 0 && (
-                          <div className="col-span-12 text-right text-sm text-gray-700">
-                            Sous-total {b.name_basket} :{" "}
-                            <span className="font-semibold">
-                              {eur.format(lineTotal)}
-                            </span>
+                      <div key={b.id} className="p-3 md:p-4">
+                        {/* Grille responsive anti-chevauchement */}
+                        <div
+                          className="
+                            grid items-center gap-3 md:gap-4
+                            grid-cols-[56px_1fr_auto]
+                            md:grid-cols-[56px_minmax(0,1fr)_110px_160px_92px]
+                            max-[600px]:grid-cols-[56px_minmax(0,1fr)]"
+                        >
+                          {/* Image */}
+                          <div className="col-span-1">
+                            <Image
+                              src={`${API_BASE}/baskets/${b.id}/image`}
+                              alt={b.name_basket}
+                              width={56}
+                              height={56}
+                              className="rounded shadow"
+                              unoptimized
+                              crossOrigin="anonymous"
+                              onError={(e) => {
+                                (e.currentTarget as HTMLImageElement).src =
+                                  "/panier-legumes.webp";
+                              }}
+                            />
                           </div>
-                        )}
+
+                          {/* Infos + lien Détails (mobile: en dessous) */}
+                          <div className="min-w-0">
+                            <p className="font-medium truncate">
+                              {b.name_basket}
+                            </p>
+                            {b.description_basket ? (
+                              <p className="text-xs text-gray-600 line-clamp-1">
+                                {b.description_basket}
+                              </p>
+                            ) : null}
+
+                            {/* Détails visible ici en mobile uniquement */}
+                            <div className="mt-2 md:hidden">
+                              <button
+                                type="button"
+                                className="inline-flex items-center gap-1 rounded-full border px-3 py-1 text-sm hover:bg-gray-50"
+                                aria-label={`Détails ${b.name_basket}`}
+                              >
+                                <svg
+                                  width="16"
+                                  height="16"
+                                  viewBox="0 0 24 24"
+                                  aria-hidden
+                                >
+                                  <circle
+                                    cx="12"
+                                    cy="12"
+                                    r="10"
+                                    fill="none"
+                                    stroke="currentColor"
+                                  />
+                                  <rect
+                                    x="11"
+                                    y="10"
+                                    width="2"
+                                    height="7"
+                                    rx="1"
+                                  />
+                                  <rect
+                                    x="11"
+                                    y="7"
+                                    width="2"
+                                    height="2"
+                                    rx="1"
+                                  />
+                                </svg>
+                                Détails
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* Prix */}
+                          <div className="hidden md:block text-right tabular-nums whitespace-nowrap">
+                            {eur.format(b.price_basket)}
+                          </div>
+
+                          {/* Stepper : largeur et espace garantis */}
+                          <div
+                            className="justify-self-end
+                            max-[600px]:col-span-2     
+                            max-[600px]:mt-2           
+                            max-[600px]:justify-self-end"
+                          >
+                            <div className="flex items-center gap-2 md:gap-3">
+                              <button
+                                type="button"
+                                onClick={() => setQuantity(b.id, q - 1)}
+                                aria-label={`Retirer 1 ${b.name_basket}`}
+                                className="inline-flex h-10 w-10 items-center justify-center rounded-full border-2"
+                              >
+                                −
+                              </button>
+
+                              <input
+                                type="number"
+                                min={0}
+                                max={99}
+                                value={q}
+                                onChange={(e) =>
+                                  setQuantity(b.id, Number(e.target.value))
+                                }
+                                className="no-spinner w-16 text-center rounded border-2 px-2 py-2"
+                                aria-label={`Quantité ${b.name_basket}`}
+                                inputMode="numeric"
+                              />
+
+                              <button
+                                type="button"
+                                onClick={() => setQuantity(b.id, q + 1)}
+                                aria-label={`Ajouter 1 ${b.name_basket}`}
+                                className="inline-flex h-10 w-10 items-center justify-center rounded-full border-2"
+                              >
+                                +
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* Détails (≥ md) : zone dédiée à l’extrémité droite */}
+                          <div className="hidden md:block justify-self-end">
+                            <button
+                              type="button"
+                              className="inline-flex items-center gap-1 rounded-full border px-3 py-1 text-sm hover:bg-gray-50"
+                              aria-label={`Détails ${b.name_basket}`}
+                            >
+                              <svg
+                                width="16"
+                                height="16"
+                                viewBox="0 0 24 24"
+                                aria-hidden
+                              >
+                                <circle
+                                  cx="12"
+                                  cy="12"
+                                  r="10"
+                                  fill="none"
+                                  stroke="currentColor"
+                                />
+                                <rect
+                                  x="11"
+                                  y="10"
+                                  width="2"
+                                  height="7"
+                                  rx="1"
+                                />
+                                <rect
+                                  x="11"
+                                  y="7"
+                                  width="2"
+                                  height="2"
+                                  rx="1"
+                                />
+                              </svg>
+                              Détails
+                            </button>
+                          </div>
+
+                          {/* Sous-total si q > 0, toute largeur sous la rangée */}
+                          {q > 0 && (
+                            <div className="col-span-3 md:col-span-5 order-last text-right text-sm text-gray-700">
+                              Sous-total {b.name_basket} :{" "}
+                              <span className="font-semibold">
+                                {eur.format(lineTotal)}
+                              </span>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     );
                   })}
               </div>
 
-              <div className="mt-4 flex items-center justify-between">
+              {/* Total (desktop/tablette) */}
+              <div className="mt-4 hidden sm:flex items-center justify-between">
                 <p className="text-gray-700">Total à régler sur place</p>
                 <p className="text-xl font-semibold">{eur.format(total)}</p>
               </div>
@@ -449,6 +572,7 @@ export default function ReservationForm(): JSX.Element {
             />
           )}
 
+          {/* Message client */}
           <div>
             <label className="block text-sm text-gray-600 mb-1">
               Votre message
@@ -459,19 +583,22 @@ export default function ReservationForm(): JSX.Element {
               onChange={(e) => setMessage(e.target.value)}
               required={action === "contact"}
               placeholder={
-                action === "contact" ? "Écrire le message ici…" : undefined
+                action === "contact"
+                  ? "Besoin d’une précision ?"
+                  : "Exemple : remplacer le fenouil par des carottes"
               }
             />
           </div>
 
-          <div className="pt-4 border-t text-center">
+          {/* CTA principal (desktop/tablette) */}
+          <div className="pt-4 border-t text-center hidden sm:block">
             <button
               type="submit"
               disabled={action === "order" && !open}
               className="cursor-pointer rounded-full px-6 py-2 text-white bg-[var(--color-primary)]
-             shadow hover:brightness-95 active:brightness-90 transition
-             focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/40
-             disabled:opacity-40 disabled:cursor-not-allowed"
+               shadow hover:brightness-95 active:brightness-90 transition
+               focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/40
+               disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {action === "order"
                 ? "Je confirme ma réservation"
@@ -487,6 +614,7 @@ export default function ReservationForm(): JSX.Element {
           </div>
         </form>
 
+        {/* Infos contact inchangées */}
         <div className="mx-auto max-w-xl mt-10 text-center">
           <h2
             className="text-xl mb-2"
@@ -500,6 +628,34 @@ export default function ReservationForm(): JSX.Element {
           <p>TEL : 02 40 21 82 63</p>
         </div>
       </section>
+
+      {/* NEW — barre récap mobile collée en bas */}
+      {action === "order" && hasItems && (
+        <div className="sm:hidden fixed inset-x-0 bottom-0 z-50 bg-white/95 backdrop-blur border-t">
+          <div className="mx-auto max-w-3xl flex items-center justify-between gap-3 px-4 py-3">
+            <div className="text-base">
+              <span className="text-gray-600">Total</span>{" "}
+              <span className="font-semibold">{eur.format(total)}</span>
+            </div>
+            <button
+              type="button"
+              // onClick du formulaire parent via submit programmatique :
+              onClick={() => {
+                const form = document.querySelector("form");
+                form?.dispatchEvent(
+                  new Event("submit", { cancelable: true, bubbles: true })
+                );
+              }}
+              disabled={!open}
+              className="rounded-full px-5 py-2 text-white bg-[var(--color-primary)]
+               shadow hover:brightness-95 active:brightness-90 transition
+               disabled:opacity-40"
+            >
+              Valider
+            </button>
+          </div>
+        </div>
+      )}
 
       {toast ? <Toast type={toast.type} text={toast.text} /> : null}
     </main>

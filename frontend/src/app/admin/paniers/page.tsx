@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import AdminHeader from "@/app/components/adminLayout/AdminHeader";
-import Tablebaskets from "@/app/components/table/TableBaskets";
+import Tablebaskets from "@/app/components/AdminBasket/TableBaskets";
 import Formbasket from "@/app/components/form/FormBasketAdmin";
 import ConfirmModal from "@/app/components/modal/ConfirmModal";
 

@@ -66,7 +66,12 @@ export default function VerificationOkPage(): React.ReactElement {
             </div>
 
             <div className="flex justify-center mt-6">
-              <Image src="/logo-frog.png" alt="Logo" width={48} height={48} />
+              <Image
+                src="/logo-jardins-des-rainettes.jpeg"
+                alt="Logo"
+                width={48}
+                height={48}
+              />
             </div>
           </div>
         </section>

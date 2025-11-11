@@ -12,6 +12,8 @@
 
   --font-sans: "Nunito", Arial, sans-serif;
   --font-pacifico: "Pacifico", cursive;
+
+  --shadow-soft: 0 8px 22px rgba(0,0,0,.06);
 }
 
 /* === THEME TAILWIND (tokens utilisables en utilitaires) === */
@@ -123,3 +125,21 @@ body {
 .rdp-button {
   border-radius: 9999px; /* arrondis */
 }
+/* Classe utilitaire pour enlever les spinners des inputs number */
+input[type="number"].no-spinner::-webkit-outer-spin-button,
+input[type="number"].no-spinner::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+input[type="number"].no-spinner { -moz-appearance: textfield; appearance: textfield; }
+
+/* retire les flèches des input[type=number] (Chrome/Edge/Opera) */
+.no-spinner::-webkit-outer-spin-button,
+.no-spinner::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+/* Firefox */
+.no-spinner[type="number"] { -moz-appearance: textfield; }
+
+/* focus cohérent sur tous les champs cliquables */
+:where(button, [type="button"], [type="submit"], input, select, textarea):focus {
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-primary), white 70%);
+}
+
+.tabular-nums { font-variant-numeric: tabular-nums; }

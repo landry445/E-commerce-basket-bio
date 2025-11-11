@@ -65,7 +65,7 @@ export default function Footer() {
             "
           >
             <Image
-              src="/logo-frog.png"
+              src="/logo-jardins-des-rainettes.jpeg"
               alt="Logo ferme"
               width={110}
               height={110}

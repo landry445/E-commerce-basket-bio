@@ -23,7 +23,7 @@ export default function SidebarAdmin({ userName = "Adri" }: SidebarAdminProps) {
       </span>
       {/* Logo */}
       <Image
-        src="/logo-frog.png"
+        src="/logo-jardins-des-rainettes.jpeg"
         alt="Logo"
         width={64}
         height={64}
