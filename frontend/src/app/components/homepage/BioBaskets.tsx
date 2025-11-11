@@ -30,7 +30,7 @@ export default function BioBaskets({
       >
         <header className="md:col-span-2">
           <h2
-            className="text-3xl md:text-4xl"
+            className="text-2xl md:text-4xl text-center"
             style={{
               color: "var(--color-dark)",
               fontFamily: "var(--font-pacifico), var(--font-sans)",
@@ -69,7 +69,7 @@ export default function BioBaskets({
           </article>
 
           <div className="pt-2 flex justify-center">
-            <ButtonGeneric href="/paniers">
+            <ButtonGeneric href="/paniers" className="text-center">
               NOS PANIERS DE LÉGUMES EN DÉTAIL
             </ButtonGeneric>
           </div>

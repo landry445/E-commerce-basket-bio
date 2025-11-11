@@ -153,7 +153,7 @@ export default function BasketsContent() {
         <div className="space-y-4">
           <div>
             <h3
-              className="text-3xl md:text-3xl mb-2"
+              className="text-3xl md:text-3xl mb-4"
               style={{
                 color: "var(--color-dark)",
                 fontFamily: "var(--font-pacifico)",

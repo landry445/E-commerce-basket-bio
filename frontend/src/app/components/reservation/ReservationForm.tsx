@@ -467,7 +467,7 @@ export default function ReservationForm(): JSX.Element {
                                 type="button"
                                 onClick={() => setQuantity(b.id, q - 1)}
                                 aria-label={`Retirer 1 ${b.name_basket}`}
-                                className="inline-flex h-10 w-10 items-center justify-center rounded-full border-2"
+                                className="inline-flex h-8 w-8 items-center justify-center rounded-full border-2"
                               >
                                 −
                               </button>
@@ -480,7 +480,7 @@ export default function ReservationForm(): JSX.Element {
                                 onChange={(e) =>
                                   setQuantity(b.id, Number(e.target.value))
                                 }
-                                className="no-spinner w-16 text-center rounded border-2 px-2 py-2"
+                                className="no-spinner w-12 text-center rounded border-2 px-2 py-2"
                                 aria-label={`Quantité ${b.name_basket}`}
                                 inputMode="numeric"
                               />
@@ -489,7 +489,7 @@ export default function ReservationForm(): JSX.Element {
                                 type="button"
                                 onClick={() => setQuantity(b.id, q + 1)}
                                 aria-label={`Ajouter 1 ${b.name_basket}`}
-                                className="inline-flex h-10 w-10 items-center justify-center rounded-full border-2"
+                                className="inline-flex h-8 w-8 items-center justify-center rounded-full border-2"
                               >
                                 +
                               </button>

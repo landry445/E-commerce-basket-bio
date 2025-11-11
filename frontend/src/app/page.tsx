@@ -31,7 +31,7 @@ export default function Home() {
         <HeroBanner />
         <div className=" flex items-center justify-center flex-col gap-10 mt-8 mb-8">
           <h1
-            className="text-3xl md:text-5xl text-center "
+            className="text-2xl md:text-5xl text-center "
             style={{
               color: "var(--color-dark)",
               fontFamily: "var(--font-pacifico)",
@@ -40,7 +40,7 @@ export default function Home() {
             SARL : votre exploitation maraîchère bio
           </h1>
           <h2
-            className="text-3xl md:text-3xl text-center"
+            className="text-2xl md:text-3xl text-center"
             style={{
               color: "var(--color-dark)",
               fontFamily: "var(--font-pacifico)",

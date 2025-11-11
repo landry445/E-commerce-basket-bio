@@ -110,7 +110,7 @@ export default function SalesPoints() {
 
       {/* Légende/accroche sous la section */}
       <div className="text-center mt-8">
-        <p className="text-xl font-bold">
+        <p className="text-xl font-bold ml-1 mr-1">
           Retrouvez les différents points de vente
         </p>
         <Image

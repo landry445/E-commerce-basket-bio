@@ -136,7 +136,7 @@ export default function AdminReservationsTable({
 
       // Numéro de page en pied
       didDrawPage: (dataCtx) => {
-        const pageN = doc.internal.getNumberOfPages();
+        const pageN = dataCtx.pageNumber;
         doc.setFontSize(9);
         doc.text(
           `Page ${pageN}`,
