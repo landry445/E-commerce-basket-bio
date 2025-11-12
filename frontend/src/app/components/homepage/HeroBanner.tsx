@@ -8,10 +8,10 @@ export default function HeroBanner() {
     <section className="relative  w-full h-[320px] md:h-[400px] flex items-center justify-center overflow-hidden">
       {/* Image de fond */}
       <Image
-        src="/image-home.png"
+        src="/serre-fleur.jpg"
         alt="Champs maraîcher bio"
         fill
-        className="object-cover brightness-75"
+        className="object-cover"
         priority
         sizes="100vw"
         quality={90}

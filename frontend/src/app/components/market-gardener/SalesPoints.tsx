@@ -64,7 +64,7 @@ export default function SalesPoints() {
           </h2>
 
           <div className="space-y-8">
-            <SalesPointCard
+            {/* <SalesPointCard
               title="Directement à l'exploitation"
               imgSrc="/panier-legumes.webp"
               imgAlt="Directement à l'exploitation"
@@ -74,11 +74,11 @@ export default function SalesPoints() {
                 18h30. Légumes en vrac ou en paniers, produits transformés (jus,
                 confitures, soupes). Œufs issus de poules élevées en plein air.
               </p>
-            </SalesPointCard>
+            </SalesPointCard> */}
 
             <SalesPointCard
               title="Sur les marchés"
-              imgSrc="/market.png"
+              imgSrc="/marché.jpg"
               imgAlt="Sur les marchés"
             >
               <p className="mb-2">
@@ -95,7 +95,7 @@ export default function SalesPoints() {
 
             <SalesPointCard
               title="À la gare de Savigny"
-              imgSrc="/Mask Group.png"
+              imgSrc="/gare.jpg"
               imgAlt="À la gare de Savigny"
             >
               <p>

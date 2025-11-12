@@ -6,10 +6,10 @@ export default function Hero() {
   return (
     <section className="relative h-[400px]">
       <Image
-        src="/header-farmer.png"
+        src="/exploitation-serre.jpg"
         alt="Votre maraîcher"
         fill
-        className="object-cover"
+        className="object-cover brightness-90"
         priority
         sizes="100vw"
       />

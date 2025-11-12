@@ -8,7 +8,7 @@ type BioBasketsProps = {
 };
 
 export default function BioBaskets({
-  imageSrc = "/panier-legumes.webp",
+  imageSrc = "/legume-frog.jpg",
   imageAlt = "Panier de légumes bio",
 }: BioBasketsProps) {
   return (
@@ -77,12 +77,12 @@ export default function BioBaskets({
 
         {/* Colonne image */}
         <div className="md:justify-self-end ">
-          <div className="relative w-full aspect-[4/3] md:w-[360px] md:h-[270px] rounded-xl overflow-hidden">
+          <div className="relative w-full  md:w-[360px] md:h-[270px] rounded-xl overflow-hidden">
             <Image
               src={imageSrc}
               alt={imageAlt}
               fill
-              className="object-cover "
+              className=" "
               sizes="(min-width: 768px) 360px, 100vw"
               priority
             />

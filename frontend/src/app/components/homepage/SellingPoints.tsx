@@ -21,14 +21,14 @@ const defaults: Point[] = [
     title: "Sur les marchés",
     description:
       "Retrouvez nos légumes, fruits certifiés Bio (AB) au marché '...', en matinée de 8h à 13h.",
-    imageSrc: "/champ-bio (1).webp",
+    imageSrc: "/marché.jpg",
     imageAlt: "Tracteur dans un champ vu du ciel",
   },
   {
     title: "Gare de Savenay",
     description:
       "Récupérez vos paniers de légumes bio réservés en ligne. Retrait disponible les mardis et vendredis de 16h30 à 19h, paiement sur place.",
-    imageSrc: "/champ-bio (1).webp",
+    imageSrc: "/gare.jpg",
     imageAlt: "Champ de légumes en culture",
   },
 ];

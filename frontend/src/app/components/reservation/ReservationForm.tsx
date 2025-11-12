@@ -9,6 +9,9 @@ import ReservationIntro from "../reservation/ReservationIntro";
 import ActionChoice from "../reservation/ActionChoice";
 import PickupCard from "../reservation/PickupCard";
 import Toast from "../reservation/ReservationToast";
+import BasketDetailsModal, {
+  BasketForModal,
+} from "../modal/BasketDetailsModal";
 import { isBookingOpenClient } from "@/app/lib/bookingWindow";
 import Image from "next/image";
 
@@ -17,8 +20,8 @@ type Basket = {
   name_basket: string;
   price_basket: number;
   actif: boolean;
-  description_basket?: string | null;
-  composition?: string[] | null;
+  description?: string | null;
+  image_basket?: string | null;
 };
 
 type PickupLocation = {
@@ -110,6 +113,11 @@ export default function ReservationForm(): JSX.Element {
   const router = useRouter();
 
   const [baskets, setBaskets] = useState<Basket[]>([]);
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  const [detailsBasket, setDetailsBasket] = useState<BasketForModal | null>(
+    null
+  );
+
   const [locations, setLocations] = useState<PickupLocation[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -187,6 +195,21 @@ export default function ReservationForm(): JSX.Element {
     () => cartLines.reduce((s, l) => s + l.lineTotal, 0),
     [cartLines]
   );
+
+  function openDetails(b: Basket) {
+    setDetailsBasket({
+      id: b.id,
+      name_basket: b.name_basket,
+      price_basket: b.price_basket,
+      description: b.description ?? null,
+      imageUrl: `${API_BASE}/baskets/${b.id}/image`,
+    });
+    setDetailsOpen(true);
+  }
+  function closeDetails() {
+    setDetailsOpen(false);
+    setDetailsBasket(null);
+  }
 
   function setQuantity(id: string, q: number) {
     setQuantities((prev) => {
@@ -404,9 +427,9 @@ export default function ReservationForm(): JSX.Element {
                             <p className="font-medium truncate">
                               {b.name_basket}
                             </p>
-                            {b.description_basket ? (
+                            {b.description ? (
                               <p className="text-xs text-gray-600 line-clamp-1">
-                                {b.description_basket}
+                                {b.description}
                               </p>
                             ) : null}
 
@@ -414,6 +437,7 @@ export default function ReservationForm(): JSX.Element {
                             <div className="mt-2 md:hidden">
                               <button
                                 type="button"
+                                onClick={() => openDetails(b)}
                                 className="inline-flex items-center gap-1 rounded-full border px-3 py-1 text-sm hover:bg-gray-50"
                                 aria-label={`Détails ${b.name_basket}`}
                               >
@@ -500,6 +524,7 @@ export default function ReservationForm(): JSX.Element {
                           <div className="hidden md:block justify-self-end">
                             <button
                               type="button"
+                              onClick={() => openDetails(b)} // ← ajout
                               className="inline-flex items-center gap-1 rounded-full border px-3 py-1 text-sm hover:bg-gray-50"
                               aria-label={`Détails ${b.name_basket}`}
                             >
@@ -658,6 +683,11 @@ export default function ReservationForm(): JSX.Element {
       )}
 
       {toast ? <Toast type={toast.type} text={toast.text} /> : null}
+      <BasketDetailsModal
+        basket={detailsBasket}
+        open={detailsOpen}
+        onClose={closeDetails}
+      />
     </main>
   );
 }

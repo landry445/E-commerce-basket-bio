@@ -5,7 +5,7 @@ import BasketIcon from "../SVG/BasketIcon";
 import ButtonGeneric from "../button/ButtonGeneric";
 
 /** Assets locaux — modifier uniquement les chemins si besoin */
-const CONTENT_IMAGE_SRC = "/panier-legumes.webp"; // photo réelle existante
+const CONTENT_IMAGE_SRC = "/legume-frog.jpg"; // photo réelle existante
 
 export default function BasketsContent() {
   return (
