@@ -23,12 +23,12 @@ export default function BasketsContent() {
         </h2>
 
         <p className="text-base leading-relaxed">
-          Votre maraîcher propose chaque semaine des paniers de légumes bio
-          composés de légumes de l’exploitation, frais et de saison.
+          Nous vous proposons chaque semaine des paniers de légumes bio composés
+          de légumes de l’exploitation, frais et de saison.
         </p>
 
         <p className="text-base mt-3 leading-relaxed">
-          3 tailles de paniers sont proposées :
+          2 tailles de paniers sont proposées :
         </p>
 
         <ul className="mt-3 space-y-2 text-base">
@@ -37,7 +37,7 @@ export default function BasketsContent() {
               <BasketIcon />
             </span>
             <span>
-              <strong>Le petit panier</strong>, pour 2 personnes,
+              <strong>Le petit panier</strong>, pour 2/3 personnes,
             </span>
           </li>
 
@@ -52,8 +52,7 @@ export default function BasketsContent() {
         </ul>
 
         <p className="text-base mt-3 leading-relaxed">
-          Choix de la taille avec ou sans œufs, retrait à la ferme toutes les
-          semaines. Des œufs peuvent être ajoutés au panier hebdomadaire.
+          Retrait à la Gare de Savenay toutes les semaines.
         </p>
       </section>
 
@@ -76,20 +75,21 @@ export default function BasketsContent() {
 
         <ul className="mt-3 space-y-1.5 text-base">
           <li>
-            <span className="mr-2">🌱</span> en hiver : pommes de terre,
-            carottes, salade, cardes, céleri, choux blanc, oignons,
+            <span className="mr-2">🌱</span> en hiver : pommes de terre, mache,
+            poireaux, céleris, choux, légumes de conservation.
           </li>
           <li>
-            <span className="mr-2">🌷</span> au printemps : pommes de terre,
-            carottes, salade, poireaux, navets, oignons blancs,
+            <span className="mr-2">🌷</span> au printemps : légumes primeur en
+            botte, carottes, radis, petit pois, pommes de terre nouvelle,
+            oignons blancs.
           </li>
           <li>
-            <span className="mr-2">🌞</span> en été : pommes de terre, carottes,
-            salade, tomates, maïs, concombre, poivron, courgettes,
+            <span className="mr-2">🌞</span> en été : légumes ratatouille,
+            tomates, aubergines, courgettes, melons, concombre, haricots vert.
           </li>
           <li>
-            <span className="mr-2">🍂</span> en automne : pommes de terre,
-            carottes, salade, potiron, panais, endives, persil.
+            <span className="mr-2">🍂</span> en automne : courges, patate douce,
+            légumes racine, cresson, épinards.
           </li>
         </ul>
       </section>
@@ -135,19 +135,15 @@ export default function BasketsContent() {
 
         <div className="space-y-4 text-base leading-relaxed">
           <p>
-            L’abonnement aux paniers de légumes bio reste sans engagement.
-            Possibilité d’arrêter les paniers à tout moment. À titre
-            exceptionnel, annulation possible de certains paniers (ex.
-            vacances). Merci d’annuler 24 h à l’avance.
+            La vente de nos paniers de légumes reste sans engagement. À titre
+            exceptionnel, annulation possible de certains paniers. Merci
+            d’annuler dans les meilleurs délais.
           </p>
           <p>
-            Pour les commandes ponctuelles, passage des commandes avant 12 h le
-            lundi ou le jeudi (selon le jour de distribution).
+            Les retraits sont disponible disponible les mardis de 16h30 à 19h et
+            les vendredis de 16h30 à 18h30, paiement sur place.
           </p>
-          <p>
-            Facturation en fin de mois, règlement par chèque ou espèces. Carte
-            bancaire ou autre moyen de paiement envisagé si besoin.
-          </p>
+          <p>Règlement sur place par chèque, espèces ou carte bancaire.</p>
         </div>
 
         <div className="space-y-4">
@@ -167,41 +163,14 @@ export default function BasketsContent() {
                   {" "}
                   <BasketIcon />
                 </span>{" "}
-                Petit panier : <strong>14 €</strong>
+                Petit panier : <strong>10 €</strong>
               </li>
               <li className="flex items-center gap-2">
                 <span>
                   {" "}
                   <BasketIcon />
                 </span>{" "}
-                Panier moyen : <strong>17 €</strong>
-              </li>
-              <li className="flex items-center gap-2">
-                <span>
-                  {" "}
-                  <BasketIcon />
-                </span>{" "}
-                Grand panier : <strong>21 €</strong>
-              </li>
-            </ul>
-          </div>
-
-          <div>
-            <h3
-              className="text-3xl md:text-3xl mb-2"
-              style={{
-                color: "var(--color-dark)",
-                fontFamily: "var(--font-pacifico)",
-              }}
-            >
-              Tarifs des œufs frais
-            </h3>
-            <ul className="text-base space-y-1.5">
-              <li className="flex items-center gap-2">
-                <span>🥚</span> La boîte de 6 œufs : <strong>2,20 €</strong>
-              </li>
-              <li className="flex items-center gap-2">
-                <span>🥚</span> La boîte de 12 œufs : <strong>4,40 €</strong>
+                Grand panier : <strong>15 €</strong>
               </li>
             </ul>
           </div>

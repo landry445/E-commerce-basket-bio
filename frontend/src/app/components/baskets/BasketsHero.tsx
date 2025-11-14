@@ -84,7 +84,12 @@ export default function BasketsHero() {
 
           {/* Label AB en overlay */}
           <div className="absolute bottom-4 right-4 drop-shadow-lg">
-            <Image src="/logo-ab.svg" alt="Label AB" width={60} height={60} />
+            <Image
+              src="/logo-ab-europ-fr.png"
+              alt="Label AB"
+              width={96}
+              height={58}
+            />
           </div>
 
           {/* Bullets (indicateurs cliquables) */}

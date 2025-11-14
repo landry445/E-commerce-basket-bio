@@ -79,8 +79,8 @@ export default function RegisterSuccessPage({
               <Image
                 src="/logo-jardins-des-rainettes.jpeg"
                 alt="Logo"
-                width={48}
-                height={48}
+                width={70}
+                height={100}
               />
             </div>
           </div>

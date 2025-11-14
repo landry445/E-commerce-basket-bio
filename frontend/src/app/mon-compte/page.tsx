@@ -186,7 +186,7 @@ export default function AccountPage() {
       <main className="bg-[var(--background)] text-[var(--foreground)] font-sans min-h-screen">
         <section className="container mx-auto px-4 py-8 max-w-5xl">
           <h1
-            className="text-3xl md:text-4xl mb-6"
+            className="text-3xl md:text-4xl mb-6 mt-3"
             style={{ fontFamily: "var(--font-pacifico)" }}
           >
             Mon compte

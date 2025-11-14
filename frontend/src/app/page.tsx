@@ -8,18 +8,34 @@ import ScrollingBanner from "./components/ScrollingBanner";
 import Navbar from "./components/navbar/Navbar";
 
 const faqItems: FAQItem[] = [
-  { id: "q1", question: "Commande", answer: "Procédure simple sur le site." },
-  { id: "q2", question: "Retrait", answer: "Plusieurs points de retrait." },
-  { id: "q3", question: "Paiement", answer: "Paiement sécurisé en ligne." },
+  {
+    id: "q1",
+    question: "Commande",
+    answer:
+      "Pour les paniers du mardi, vous avez du vendredi soir 18h jusqu'au mardi matin 8h pour vos commandes. Pour les paniers du vendredi, même principe vous pouvez du mardi 18h jusqu'au vendredi matin 8h.",
+  },
+  {
+    id: "q2",
+    question: "Retrait",
+    answer:
+      "Pour le retrait, venez récupéré en main propre directement devant le hall de la gare SNCF de Savenay.",
+  },
+  {
+    id: "q3",
+    question: "Paiement",
+    answer: "Paiement sur place en espèce, chèques ou carte bancaire.",
+  },
   {
     id: "q4",
-    question: "Produits",
-    answer: "Fruits et légumes bio de saison.",
+    question: "Paniers",
+    answer:
+      "Les paniers sont composés de nos légumes qui varient selon les saisons.",
   },
   {
     id: "q5",
     question: "Contact",
-    answer: "Nous contacter par email ou téléphone.",
+    answer:
+      "Vous pouvez nous contacter par email au jardindesrainettes@netcourrier.com",
   },
 ];
 
@@ -37,7 +53,7 @@ export default function Home() {
               fontFamily: "var(--font-pacifico)",
             }}
           >
-            SARL : votre exploitation maraîchère bio
+            Gaec du Jardin Des Rainettes
           </h1>
           <h2
             className="text-2xl md:text-3xl text-center"
@@ -46,7 +62,7 @@ export default function Home() {
               fontFamily: "var(--font-pacifico)",
             }}
           >
-            Fruits et légumes bio à Chaumes en Retz
+            Producteur de Légumes Bio à Plessé
           </h2>
         </div>
         <BioBaskets />

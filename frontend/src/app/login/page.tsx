@@ -106,8 +106,8 @@ export default function LoginPage() {
             <Image
               src="/logo-jardins-des-rainettes.jpeg"
               alt="Logo"
-              width={60}
-              height={60}
+              width={80}
+              height={48}
             />
           </div>
 

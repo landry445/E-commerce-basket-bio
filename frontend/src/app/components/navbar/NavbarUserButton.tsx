@@ -16,7 +16,7 @@ export default function NavbarUserButton({
   isMobile,
   onAfterClick,
 }: NavbarUserButtonProps) {
-  const circleBase = isMobile ? "w-11 h-11" : "w-9 h-9";
+  const circleBase = isMobile ? "w-11 h-11" : "w-11 h-11";
   const detailsRef = useRef<HTMLDetailsElement>(null);
 
   if (!user) {

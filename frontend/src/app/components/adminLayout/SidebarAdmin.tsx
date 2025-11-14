@@ -25,8 +25,8 @@ export default function SidebarAdmin({ userName = "Adri" }: SidebarAdminProps) {
       <Image
         src="/logo-jardins-des-rainettes.jpeg"
         alt="Logo"
-        width={64}
-        height={64}
+        width={70}
+        height={100}
         className="mx-auto my-2"
       />
       {/* Bonjour */}

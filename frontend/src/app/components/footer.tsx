@@ -29,11 +29,11 @@ export default function Footer() {
           {/* Adresse */}
           <address className="not-italic text-[0.95rem] md:col-span-2">
             <p>
-              <strong>Joan &amp; Magalie VINCE</strong>
+              <strong>Gaec du Jardin Des Rainettes</strong>
             </p>
-            <p>8&nbsp;Les&nbsp;Escarts – Le Coudray</p>
+            <p>Gare de Savenay</p>
             <p>
-              <strong>44490 PLESSÉ</strong>
+              <strong>44260 Savenay</strong>
             </p>
             <p>Tél.&nbsp;: 06&nbsp;74&nbsp;76&nbsp;79&nbsp;90</p>
           </address>
@@ -67,24 +67,25 @@ export default function Footer() {
             <Image
               src="/logo-jardins-des-rainettes.jpeg"
               alt="Logo ferme"
-              width={110}
-              height={110}
+              width={84}
+              height={120}
               priority
               className="h-[60px] w-auto md:h-[70px]"
             />
             <Image
-              src="/logo-ab.svg"
+              src="/logo-ab-europ-fr.png"
               alt="Label AB"
-              width={60}
-              height={60}
-              className="h-[48px] w-auto md:h-[56px]"
+              width={80}      
+              height={48}     
+              className="w-auto"   
+              priority
             />
           </div>
         </div>
 
         {/* Ligne séparatrice + baseline */}
         <div className="mt-5 border-t border-black/10 pt-3 text-center text-[0.93rem] text-[var(--foreground)]/90">
-          © {year} SARL Les Paniers de Plessé. Tous droits réservés.
+          © {year} Gaec du Jardin Des Rainettes. Tous droits réservés.
         </div>
       </div>
     </footer>

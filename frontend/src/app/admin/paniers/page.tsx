@@ -152,7 +152,7 @@ export default function AdminbasketsPage() {
       {step === "list" && (
         <>
           <button
-            className="self-end mb-4 px-6 py-2 rounded-full bg-accent text-white font-bold shadow hover:brightness-105 transition"
+            className="self-end mb-4 px-6 py-2 rounded-full bg-accent text-white font-bold shadow hover:brightness-105 transition cursor-pointer"
             onClick={() => setStep("create")}
           >
             + Créer panier

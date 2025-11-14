@@ -29,7 +29,7 @@ export default function HeroBanner() {
             fontFamily: "var(--font-pacifico)",
           }}
         >
-          Paniers Bio frais à Chaussée de Plessis
+          Paniers Légumes Bio à Savenay
         </h1>
         <div className="pt-10 md:pt-15 ">
           <ButtonGeneric
