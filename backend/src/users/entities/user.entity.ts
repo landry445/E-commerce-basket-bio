@@ -32,4 +32,18 @@ export class User {
 
   @Column({ type: 'timestamptz', nullable: true })
   email_verified_at!: Date | null;
+
+  @Column({
+    name: 'newsletter_opt_in',
+    type: 'boolean',
+    default: false,
+  })
+  newsletterOptIn!: boolean;
+
+  @Column({
+    name: 'newsletter_opt_in_updated_at',
+    type: 'timestamptz',
+    nullable: true,
+  })
+  newsletterOptInUpdatedAt!: Date | null;
 }

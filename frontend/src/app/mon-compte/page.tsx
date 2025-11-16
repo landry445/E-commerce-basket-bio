@@ -5,12 +5,15 @@ import { useRouter } from "next/navigation";
 import Navbar from "@/app/components/navbar/Navbar";
 import Footer from "@/app/components/Footer";
 
+import { NewsletterBox } from "../components/compte/NewsletterBox";
+
 type UserMe = {
   id: string;
   firstname: string;
   lastname: string;
   email: string;
   phone: string;
+  newsletterOptIn: boolean; // <-- ajout
 };
 
 type ClientOrderCompact = {
@@ -28,7 +31,6 @@ type UserUpdateInput = {
 
 const API_BASE: string =
   process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3001";
-
 
 export default function AccountPage() {
   const router = useRouter();
@@ -162,14 +164,12 @@ export default function AccountPage() {
       setSaveError("Erreur inattendue");
     } finally {
       setSaving(false);
-      // efface le flag de succès après 2 s
       setTimeout(() => setSaveOk(false), 2000);
     }
   }
 
   // --- Formatage date
   function fmtDateYMD(ymd: string): string {
-    // ymd attendu: "YYYY-MM-DD"
     const d = new Date(`${ymd}T00:00:00Z`);
     if (Number.isNaN(d.getTime())) return "-";
     return d.toLocaleDateString("fr-FR", {
@@ -229,6 +229,13 @@ export default function AccountPage() {
                 />
                 <ReadOnlyField label="Email" value={me.email} />
               </div>
+
+              {/* Bloc newsletter */}
+              {!loading && me && (
+                <div className="mb-8">
+                  <NewsletterBox initialNewsletterOptIn={me.newsletterOptIn} />
+                </div>
+              )}
 
               <div className="mt-4 flex items-center gap-3">
                 <button

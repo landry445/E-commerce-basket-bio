@@ -54,6 +54,11 @@ export default function SidebarAdmin({ userName = "Adri" }: SidebarAdminProps) {
           active={isActive("users")}
           onClick={() => router.push("/admin/users")}
         />
+        <SidebarNavButton
+          label="Newsletter"
+          active={isActive("newsletter")}
+          onClick={() => router.push("/admin/newsletter")}
+        />
       </nav>
     </aside>
   );

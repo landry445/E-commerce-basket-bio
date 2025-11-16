@@ -15,6 +15,7 @@ type SignupTemplateParams = {
 };
 
 type OrderEmailItem = { name: string; quantity: number; unitPriceCents: number };
+
 type OrderEmailPayload = {
   firstname: string;
   pickupDateISO: string; // 'YYYY-MM-DD'
@@ -31,6 +32,11 @@ function escapeHtml(s: string): string {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#039;');
+}
+
+export interface NewsletterContent {
+  subject: string;
+  html: string;
 }
 
 @Injectable()
@@ -169,6 +175,22 @@ export class MailerService {
       subject,
       html,
       text: textLines.join('\n'),
+    });
+  }
+
+  async sendNewsletterToMany(recipients: string[], content: NewsletterContent): Promise<void> {
+    if (recipients.length === 0) {
+      return;
+    }
+
+    // envoi en un seul mail ou en plusieurs, tu choisis selon tes limites actuelles
+    const to = recipients.join(',');
+
+    await this.transporter.sendMail({
+      to,
+      subject: content.subject,
+      html: content.html,
+      text: content.html.replace(/<[^>]+>/g, ' '),
     });
   }
 }

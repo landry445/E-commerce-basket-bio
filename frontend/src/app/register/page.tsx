@@ -12,7 +12,9 @@ type RegisterPayload = {
   email: string;
   phone: string;
   password: string;
+  newsletterOptIn: boolean;
 };
+
 type ApiMsg = { message?: string };
 
 export default function RegisterPage() {
@@ -27,6 +29,7 @@ export default function RegisterPage() {
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
+  const [newsletterOptIn, setNewsletterOptIn] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -59,6 +62,7 @@ export default function RegisterPage() {
         email,
         phone,
         password,
+        newsletterOptIn,
       };
 
       const res = await fetch(
@@ -207,7 +211,8 @@ export default function RegisterPage() {
                     required
                   />
                   <p className="text-xs text-gray-500 mt-1">
-                    8 caractères min. Conseillé : chiffres + lettres.
+                    8 caractères min. avec une majuscule, une minuscule, un
+                    chiffre et un caractère spécial.
                   </p>
                 </div>
                 <div>
@@ -224,6 +229,26 @@ export default function RegisterPage() {
                     required
                   />
                 </div>
+              </div>
+
+              {/* Newsletter */}
+              <div className="mt-2 rounded-lg bg-gray-50 px-4 py-3">
+                <p className="mb-2 text-sm font-semibold text-gray-800">
+                  Newsletter
+                </p>
+                <p className="mb-2 text-xs text-gray-600">
+                  Informations ponctuelles sur les paniers, les dates de
+                  réservation et la vie du jardin.
+                </p>
+                <label className="flex items-center gap-2 text-sm text-gray-800">
+                  <input
+                    type="checkbox"
+                    checked={newsletterOptIn}
+                    onChange={(e) => setNewsletterOptIn(e.target.checked)}
+                    className="h-4 w-4 rounded border-gray-300 accent-[var(--color-primary)]"
+                  />
+                  <span>Recevoir la newsletter par e-mail</span>
+                </label>
               </div>
 
               <button

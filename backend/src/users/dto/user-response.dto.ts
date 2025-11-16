@@ -8,4 +8,7 @@ export class UserResponseDto {
   @Expose() email: string;
   @Expose() phone: string;
   @Expose() date_creation: Date;
+
+  @Expose()
+  newsletterOptIn: boolean;
 }
