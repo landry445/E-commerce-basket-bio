@@ -21,7 +21,7 @@ export default function Hero() {
             color: "var(--color-light)",
           }}
         >
-          Votre maraîcher : une exploitation agricole bio
+          Maraîcher bio depuis 2002
         </h1>
       </div>
     </section>

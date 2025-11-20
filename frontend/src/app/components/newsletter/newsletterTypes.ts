@@ -15,6 +15,8 @@ export type NewsletterFormData = {
   pickupDateISO: string;
   basket10Items: BasketItemForm[];
   basket15Items: BasketItemForm[];
+  basket10PriceEuro: string;
+  basket15PriceEuro: string;
 };
 
 export type SendResult = {

@@ -28,14 +28,21 @@ export function formatDateTitle(pickupDateISO: string): string {
   return formatted.toUpperCase();
 }
 
-function buildBasketTable(title: string, items: BasketItemForm[]): string {
+/**
+ * Construit le tableau d’un panier pour le mail.
+ * `priceEuro` provient du formulaire (10, 15, 12, etc.).
+ */
+function buildBasketTable(priceEuro: string, items: BasketItemForm[]): string {
+  const normalizedPrice = priceEuro.toString().trim() || "10";
+  const title = `PANIER À ${normalizedPrice} €`;
+
   const rows = items
     .filter((item) => item.label.trim() && item.price.trim())
     .map(
       (item) =>
         `<tr>
           <td style="padding:2px 4px 2px 0;">- ${item.label}</td>
-          <td style="padding:2px 0 2px 4px; text-align:right;">${item.price}</td>
+          <td style="padding:2px 0 2px 4px; text-align:right;">${item.price}€</td>
         </tr>`
     )
     .join("");
@@ -63,8 +70,15 @@ export function buildNewsletterBody(
   mode: NewsletterRenderMode
 ): string {
   const dateTitle = formatDateTitle(data.pickupDateISO);
-  const left = buildBasketTable("PANIER À 10 EUROS", data.basket10Items);
-  const right = buildBasketTable("PANIER À 15 EUROS", data.basket15Items);
+
+  // Valeurs par défaut si jamais les champs arrivent vides
+  const basket10Price =
+    (data.basket10PriceEuro ?? "10").toString().trim() || "10";
+  const basket15Price =
+    (data.basket15PriceEuro ?? "15").toString().trim() || "15";
+
+  const left = buildBasketTable(basket10Price, data.basket10Items);
+  const right = buildBasketTable(basket15Price, data.basket15Items);
 
   const frogSrc =
     mode === "email" ? "cid:logo-jardins-des-rainettes" : FROG_URL;
@@ -72,17 +86,36 @@ export function buildNewsletterBody(
 
   // images plus contenues
   const frogImg = `<img src="${frogSrc}" alt="Jardin des Rainettes"
-    style="display:block; max-width:220px; height:auto;" />`;
+    style="display:block; max-width:140px; height:auto;" />`;
   const abImg = `<img src="${abSrc}" alt="Agriculture biologique"
     style="display:block; max-width:150px; height:auto; margin-left:auto;" />`;
 
   return `
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
   style="border-collapse:collapse; background-color:${BACKGROUND}; padding:20px 0;">
+   <td style="padding:10px 52px 28px 52px;
+                     font-size:13px; line-height:1.5; text-align:left;">
+            <p style="margin:0 0 6px 0;">
+      Bonjour,
+    </p>
+    <p style="margin:0 0 6px 0;">
+      Voici la composition des paniers pour le ${
+        dateTitle
+          ? `<strong>${dateTitle.toLowerCase()}</strong>`
+          : "la prochaine distribution"
+      }.
+    </p>
+    <p style= "margin:0 0 6px 0;">
+      Retrait dans le hall de la gare de Savenay, de 16h30 à 19h.
+    </p>
+    <p style="margin:0 0 6px 0;">
+      Règlement sur place.
+    </p>
+          </td>
   <tr>
     <td align="center">
       <!-- Carte centrale -->
-      <table role="presentation" width="640" cellpadding="0" cellspacing="0"
+      <table role="presentation" width="800" cellpadding="0" cellspacing="0"
         style="border-collapse:collapse; background-color:#ffffff;
                padding:40px 40px 36px 40px;
                font-family:Nunito, Arial, Helvetica, sans-serif;
@@ -90,7 +123,7 @@ export function buildNewsletterBody(
 
         <!-- Titre date -->
         <tr>
-          <td style="text-align:center; padding:8px 0 32px 0;
+          <td style="text-align:center; padding:30px 0 32px 0;
                      font-size:20px; font-weight:700; letter-spacing:1px;">
             ${dateTitle || ""}
           </td>
@@ -102,10 +135,10 @@ export function buildNewsletterBody(
             <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
               style="border-collapse:collapse;">
               <tr>
-                <td width="50%" valign="top" style="padding-right:32px;">
+                <td width="50%" valign="top" style="padding-left:30px;padding-right:30px;">
                   ${left}
                 </td>
-                <td width="50%" valign="top" style="padding-left:32px;">
+                <td width="50%" valign="top" style="padding-right:30px;padding-left:30px;">
                   ${right}
                 </td>
               </tr>
@@ -155,6 +188,8 @@ export function buildNewsletterHtmlDoc(
       pickupDateISO: data.pickupDateISO,
       basket10Items: data.basket10Items,
       basket15Items: data.basket15Items,
+      basket10PriceEuro: data.basket10PriceEuro,
+      basket15PriceEuro: data.basket15PriceEuro,
     },
     mode
   );

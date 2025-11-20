@@ -32,7 +32,7 @@ export function SubscribersCard(props: SubscribersCardProps) {
             {total} abonné(s) recevront cette newsletter.
           </p>
 
-          <details className="rounded border border-gray-100 bg-gray-50/70">
+          {/* <details className="rounded border border-gray-100 bg-gray-50/70">
             <summary className="cursor-pointer px-3 py-2 text-xs text-gray-700">
               Liste des abonnés
             </summary>
@@ -46,7 +46,7 @@ export function SubscribersCard(props: SubscribersCardProps) {
                 </li>
               ))}
             </ul>
-          </details>
+          </details> */}
         </div>
       )}
     </div>

@@ -18,12 +18,18 @@ export function NewsletterForm(props: NewsletterFormProps) {
 
   const [subject, setSubject] = useState<string>("");
   const [pickupDateISO, setPickupDateISO] = useState<string>("");
+
+  // prix par défaut
+  const [basket10PriceEuro, setBasket10PriceEuro] = useState<string>("10");
+  const [basket15PriceEuro, setBasket15PriceEuro] = useState<string>("15");
+
   const [basket10Items, setBasket10Items] = useState<BasketItemForm[]>([
     { label: "", price: "" },
   ]);
   const [basket15Items, setBasket15Items] = useState<BasketItemForm[]>([
     { label: "", price: "" },
   ]);
+
   const [localError, setLocalError] = useState<string | null>(null);
 
   function handleItemChange(
@@ -97,6 +103,8 @@ export function NewsletterForm(props: NewsletterFormProps) {
       pickupDateISO,
       basket10Items,
       basket15Items,
+      basket10PriceEuro,
+      basket15PriceEuro,
     };
 
     await onSend(formData);
@@ -107,6 +115,8 @@ export function NewsletterForm(props: NewsletterFormProps) {
       pickupDateISO,
       basket10Items,
       basket15Items,
+      basket10PriceEuro,
+      basket15PriceEuro,
     },
     "preview"
   );
@@ -162,8 +172,17 @@ export function NewsletterForm(props: NewsletterFormProps) {
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           {/* Panier 10 € */}
           <div>
-            <h3 className="mb-2 text-sm font-semibold text-gray-800">
-              Panier à 10 euros
+            <h3 className="mb-2 flex items-center gap-1 text-sm font-semibold text-gray-800">
+              <span>Panier à</span>
+              <input
+                type="number"
+                min={0}
+                step="0.5"
+                value={basket10PriceEuro}
+                onChange={(event) => setBasket10PriceEuro(event.target.value)}
+                className="w-16 rounded-md border border-gray-300 px-2 py-0.5 text-right text-sm"
+              />
+              <span>€</span>
             </h3>
             <div className="space-y-2">
               {basket10Items.map((item, index) => (
@@ -211,8 +230,17 @@ export function NewsletterForm(props: NewsletterFormProps) {
 
           {/* Panier 15 € */}
           <div>
-            <h3 className="mb-2 text-sm font-semibold text-gray-800">
-              Panier à 15 euros
+            <h3 className="mb-2 flex items-center gap-1 text-sm font-semibold text-gray-800">
+              <span>Panier à</span>
+              <input
+                type="number"
+                min={0}
+                step="0.5"
+                value={basket15PriceEuro}
+                onChange={(event) => setBasket15PriceEuro(event.target.value)}
+                className="w-16 rounded-md border border-gray-300 px-2 py-0.5 text-right text-sm"
+              />
+              <span>€</span>
             </h3>
             <div className="space-y-2">
               {basket15Items.map((item, index) => (
