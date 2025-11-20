@@ -427,11 +427,6 @@ export default function ReservationForm(): JSX.Element {
                             <p className="font-medium truncate">
                               {b.name_basket}
                             </p>
-                            {b.description ? (
-                              <p className="text-xs text-gray-600 line-clamp-1">
-                                {b.description}
-                              </p>
-                            ) : null}
 
                             {/* Détails visible ici en mobile uniquement */}
                             <div className="mt-2 md:hidden">

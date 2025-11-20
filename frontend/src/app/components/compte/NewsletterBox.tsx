@@ -20,7 +20,6 @@ export function NewsletterBox(props: NewsletterBoxProps) {
     setLoading(true);
     setErrorMsg(null);
     setSuccessMsg(null);
-    // on met à jour l’UI tout de suite
     setValue(next);
 
     try {
@@ -29,9 +28,7 @@ export function NewsletterBox(props: NewsletterBoxProps) {
         {
           method: "PATCH",
           credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ newsletterOptIn: next }),
         }
       );
@@ -45,7 +42,6 @@ export function NewsletterBox(props: NewsletterBoxProps) {
       setSuccessMsg("Préférence enregistrée.");
     } catch {
       setErrorMsg("Mise à jour impossible pour le moment.");
-      // retour à l’ancienne valeur en cas d’erreur
       setValue((prev) => !prev);
     } finally {
       setLoading(false);
@@ -54,23 +50,30 @@ export function NewsletterBox(props: NewsletterBoxProps) {
 
   return (
     <section className="pt-4">
-      <h2 className="mb-2 text-base font-semibold text-[var(--color-dark)]">
-        Newsletter
+      <h2 className="mb-1 text-base font-semibold text-[var(--color-dark)]">
+        Newsletter des paniers
       </h2>
-      <p className="mb-4 text-sm text-gray-600">
-        Informations ponctuelles sur les paniers, les dates de réservation et la
-        vie du jardin.
+
+      <p className="text-xs text-gray-600">
+        Description précise du panier du mardi et du panier du vendredi.
+      </p>
+      <p className="mb-3 text-[11px] text-gray-500">
+        Deux e-mails par semaine au maximum, aucun autre contenu, aucune
+        publicité.
       </p>
 
-      <label className="flex items-center gap-2 text-sm text-gray-800">
+      <label className="flex items-start gap-2 text-sm text-gray-800">
         <input
           type="checkbox"
           checked={value}
           disabled={loading}
           onChange={(event) => handleToggle(event.target.checked)}
-          className="h-4 w-4 rounded border-gray-300 accent-[var(--color-primary)]"
+          className="mt-1 h-4 w-4 rounded border-gray-300 accent-[var(--color-primary)]"
         />
-        <span>Recevoir la newsletter par e-mail</span>
+        <span>
+          Recevoir par e-mail la composition des paniers du mardi et du
+          vendredi.
+        </span>
       </label>
 
       {successMsg && (

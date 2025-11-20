@@ -1,6 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import type { Transporter } from 'nodemailer';
 import { DataSource } from 'typeorm';
+import { join } from 'path';
 
 type AdminContactInput = {
   subject: string;
@@ -178,19 +179,39 @@ export class MailerService {
     });
   }
 
+  private newsletterAttachments(): { filename: string; path: string; cid: string }[] {
+    // Dossier : backend/assets/newsletter/...
+    const baseDir = join(process.cwd(), 'assets', 'newsletter');
+
+    return [
+      {
+        filename: 'logo-jardins-des-rainettes.jpeg',
+        path: join(baseDir, 'logo-jardins-des-rainettes.jpeg'),
+        cid: 'logo-jardins-des-rainettes',
+      },
+      {
+        filename: 'logo-ab-europ-fr.png',
+        path: join(baseDir, 'logo-ab-europ-fr.png'),
+        cid: 'logo-ab-europ-fr',
+      },
+    ];
+  }
+
   async sendNewsletterToMany(recipients: string[], content: NewsletterContent): Promise<void> {
     if (recipients.length === 0) {
       return;
     }
 
-    // envoi en un seul mail ou en plusieurs, tu choisis selon tes limites actuelles
     const to = recipients.join(',');
+
+    const attachments = this.newsletterAttachments();
 
     await this.transporter.sendMail({
       to,
       subject: content.subject,
       html: content.html,
       text: content.html.replace(/<[^>]+>/g, ' '),
+      attachments,
     });
   }
 }

@@ -91,6 +91,9 @@ export default function PickupCard({
             Les reservations sont possibles uniquement:
             <li>Pour Le mardi : du vendredi 18:00 au mardi 8:00.</li>
             <li>Pour vendredi : du mardi 18:00 au vendredi 8:00.</li>
+            <li>
+              Les retraits de panier se fond uniquement à la gare de Savenay.
+            </li>
           </ul>
         </div>
       </div>

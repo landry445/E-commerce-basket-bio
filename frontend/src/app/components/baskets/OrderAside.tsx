@@ -10,7 +10,7 @@ export default function OrderAside() {
       >
         <div
           className="w-full
-          bg-white
+          bg-[url('/aside.jpg')] bg-cover bg-center bg-no-repeat
           rounded-2xl
           shadow
           px-5 sm:px-8 md:px-8
@@ -19,19 +19,19 @@ export default function OrderAside() {
           <h3
             className="text-center text-3xl md:text-3xl mb-4"
             style={{
-              color: "var(--color-dark)",
+              color: "#fff",
               fontFamily: "var(--font-pacifico)",
             }}
           >
             Pour commander
           </h3>
 
-          <p className="text-base leading-relaxed">
+          <p className="text-base text-white leading-relaxed ">
             Merci de passer vos commandes en ligne à l’aide du formulaire.
             Préparation de votre commande et distribution à la Gare de Savenay
           </p>
 
-          <p className="text-base mt-2 leading-relaxed">
+          <p className="text-base text-white mt-2 leading-relaxed">
             Retrouver la composition des paniers de légume dans la Newsletter
             pour chaque mardis et vendredis.
           </p>

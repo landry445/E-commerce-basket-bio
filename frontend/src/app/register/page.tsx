@@ -232,22 +232,39 @@ export default function RegisterPage() {
               </div>
 
               {/* Newsletter */}
-              <div className="mt-2 rounded-lg bg-gray-50 px-4 py-3">
-                <p className="mb-2 text-sm font-semibold text-gray-800">
-                  Newsletter
+              <div className="mt-4 rounded-2xl border border-yellow-300 bg-yellow-50/80 px-4 py-4 shadow-md sm:px-5 sm:py-5">
+                <div className="mb-2 flex items-center gap-2">
+                  <h2 className="text-sm font-semibold text-gray-900">
+                    Newsletter des paniers
+                  </h2>
+
+                  <span className="inline-flex items-center gap-1 rounded-full bg-[var(--color-primary)]/10 px-2.5 py-0.5 text-[11px] font-medium text-[var(--color-primary)]">
+                    <span className="h-2 w-2 rounded-full bg-[var(--color-primary)] animate-pulse" />
+                    2 e-mails par semaine
+                  </span>
+                </div>
+
+                <p className="text-xs text-gray-700 sm:text-sm">
+                  Composition détaillée du panier du mardi et du panier du
+                  vendredi.
                 </p>
-                <p className="mb-2 text-xs text-gray-600">
-                  Informations ponctuelles sur les paniers, les dates de
-                  réservation et la vie du jardin.
+                <p className="mt-1 text-[11px] text-gray-500">
+                  Aucun autre contenu, aucune publicité.
                 </p>
-                <label className="flex items-center gap-2 text-sm text-gray-800">
+
+                <label className="mt-3 flex items-start gap-2 text-sm text-gray-900">
                   <input
                     type="checkbox"
                     checked={newsletterOptIn}
-                    onChange={(e) => setNewsletterOptIn(e.target.checked)}
-                    className="h-4 w-4 rounded border-gray-300 accent-[var(--color-primary)]"
+                    onChange={(event) =>
+                      setNewsletterOptIn(event.target.checked)
+                    }
+                    className="mt-1 h-4 w-4 rounded border-gray-300 accent-[var(--color-primary)] shadow-sm"
                   />
-                  <span>Recevoir la newsletter par e-mail</span>
+                  <span>
+                    Recevoir par e-mail la composition des paniers du mardi et
+                    du vendredi.
+                  </span>
                 </label>
               </div>
 

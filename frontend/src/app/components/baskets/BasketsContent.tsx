@@ -144,6 +144,7 @@ export default function BasketsContent() {
             les vendredis de 16h30 à 18h30, paiement sur place.
           </p>
           <p>Règlement sur place par chèque, espèces ou carte bancaire.</p>
+          <p>Les retraits de panier se fond uniquement à la gare de Savenay.</p>
         </div>
 
         <div className="space-y-4">
