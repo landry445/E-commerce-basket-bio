@@ -1,5 +1,5 @@
 import Image from "next/image";
-import BasketIcon from "../SVG/BasketIcon";
+import BasketIcon from "../SVG/bassketIcon/BasketIcon";
 import ButtonGeneric from "../button/ButtonGeneric";
 
 type BioBasketsProps = {

@@ -82,15 +82,8 @@ export default function SalesPoints() {
               imgAlt="Sur les marchés"
             >
               <p className="mb-2">
-                Présence sur plusieurs marchés de la région&nbsp;:
+                Nous sommes présent sur le marché de Blain les samedi matins.
               </p>
-              <ul className="list-disc pl-5 space-y-1">
-                <li>mardi&nbsp;: Boulevard des Américains (Nantes)</li>
-                <li>mercredi&nbsp;: marché de la Nantaise (Rezé)</li>
-                <li>vendredi&nbsp;: Saint-Étienne-de-Montluc / Talmont</li>
-                <li>samedi&nbsp;: Pornic &amp; Clisson</li>
-                <li>dimanche&nbsp;: Petit Chantilly (Orvault)</li>
-              </ul>
             </SalesPointCard>
 
             <SalesPointCard
@@ -99,9 +92,9 @@ export default function SalesPoints() {
               imgAlt="À la gare de Savigny"
             >
               <p>
-                Point de vente ouvert depuis 2021 à la gare de Savigny-sur-Orge.
-                Produits frais et de saison, paniers hebdomadaires et produits
-                transformés. Horaires étendus en semaine.
+                Distribution de paniers de légumes bio à la gare de Savigny le
+                mardi soir de 16h30 à 19h et le vendredi soir de 16h30 à 18h30.
+                Réservation des paniers en ligne sur notre site web.
               </p>
             </SalesPointCard>
           </div>

@@ -45,10 +45,10 @@ export default function Features() {
 
         <FeatureCard
           title="Des sols fertiles et vivants"
-          imgSrc="/_DSC0972.jpg"
+          imgSrc="/champs-personne.jpg"
           imgAlt="Sols fertiles"
           text="Nous cultivons nos légumes sur 2,5Ha autour de la ferme dont 2000m2 avec autonomie en eau.
-Tous nos plants et graines sont certifié bio, nous faisons nous même une partie des plants dont certains destinée à la vente aux particuliers au printemps (légumes ratatouille)"
+Tous nos plants et graines sont certifiés bio, nous faisons nous même une partie des plants dont certains destinée à la vente aux particuliers au printemps (légumes ratatouille)"
         />
       </div>
     </section>

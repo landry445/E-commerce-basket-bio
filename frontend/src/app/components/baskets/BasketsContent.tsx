@@ -1,8 +1,12 @@
 "use client";
 
 import Image from "next/image";
-import BasketIcon from "../SVG/BasketIcon";
+import BasketIcon from "../SVG/bassketIcon/BasketIcon";
 import ButtonGeneric from "../button/ButtonGeneric";
+import { WinterIcon } from "../SVG/bassketIcon/WinterIcon";
+import { SpringIcon } from "../SVG/bassketIcon/SpringIcon";
+import { SummerIcon } from "../SVG/bassketIcon/SummerIcon";
+import { AutumnIcon } from "../SVG/bassketIcon/AutumnIcon";
 
 /** Assets locaux — modifier uniquement les chemins si besoin */
 const CONTENT_IMAGE_SRC = "/legume-frog.jpg"; // photo réelle existante
@@ -74,22 +78,25 @@ export default function BasketsContent() {
         </p>
 
         <ul className="mt-3 space-y-1.5 text-base">
-          <li>
-            <span className="mr-2">🌱</span> en hiver : pommes de terre, mache,
-            poireaux, céleris, choux, légumes de conservation.
+          <li className="flex items-center gap-2">
+            <WinterIcon />
+            en hiver : pommes de terre, mache, poireaux, céleris, choux, légumes
+            de conservation.
           </li>
-          <li>
-            <span className="mr-2">🌷</span> au printemps : légumes primeur en
-            botte, carottes, radis, petit pois, pommes de terre nouvelle,
-            oignons blancs.
+          <li className="flex items-center gap-2">
+            <SpringIcon />
+            au printemps : légumes primeur en botte, carottes, radis, petit
+            pois, pommes de terre nouvelle, oignons blancs.
           </li>
-          <li>
-            <span className="mr-2">🌞</span> en été : légumes ratatouille,
-            tomates, aubergines, courgettes, melons, concombre, haricots vert.
+          <li className="flex items-center gap-2">
+            <SummerIcon />
+            en été : légumes ratatouille, tomates, aubergines, courgettes,
+            melons, concombre, haricots vert.
           </li>
-          <li>
-            <span className="mr-2">🍂</span> en automne : courges, patate douce,
-            légumes racine, cresson, épinards.
+          <li className="flex items-center gap-2">
+            <AutumnIcon />
+            en automne : courges, patate douce, légumes racine, cresson,
+            épinards.
           </li>
         </ul>
       </section>
@@ -108,10 +115,9 @@ export default function BasketsContent() {
         </div>
 
         <p className="text-xs leading-relaxed text-[var(--color-dark)]">
-          La distribution des paniers de légumes s’effectue tous les lundis ou
-          jeudis de 17h à 18h30, directement à l’exploitation. Sur place,
-          possibilité d’ajouter des œufs ou des fruits, et d’échanger un légume
-          si besoin.
+          La distribution des paniers de légumes s’effectue tous les mardis de
+          16h30 à 19h ou vendredis de 16h30 à 18h30, directement à la gare de
+          Savenay.
         </p>
 
         <div>
@@ -140,8 +146,8 @@ export default function BasketsContent() {
             d’annuler dans les meilleurs délais.
           </p>
           <p>
-            Les retraits sont disponible disponible les mardis de 16h30 à 19h et
-            les vendredis de 16h30 à 18h30, paiement sur place.
+            Les retraits sont disponible les mardis de 16h30 à 19h et les
+            vendredis de 16h30 à 18h30, paiement sur place.
           </p>
           <p>Règlement sur place par chèque, espèces ou carte bancaire.</p>
           <p>Les retraits de panier se fond uniquement à la gare de Savenay.</p>

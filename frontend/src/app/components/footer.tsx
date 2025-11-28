@@ -31,11 +31,11 @@ export default function Footer() {
             <p>
               <strong>Gaec du Jardin Des Rainettes</strong>
             </p>
-            <p>Gare de Savenay</p>
+            9, tresnard
             <p>
-              <strong>44260 Savenay</strong>
+              <strong>44630 PLESSE</strong>
             </p>
-            <p>Tél.&nbsp;: 06&nbsp;74&nbsp;76&nbsp;79&nbsp;90</p>
+            <p>Tél.&nbsp;: 07&nbsp;88&nbsp;27&nbsp;94&nbsp;07</p>
           </address>
 
           {/* Liens légaux — centrés en mobile, espacés ; colonne dédiée en desktop */}

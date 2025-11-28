@@ -633,20 +633,6 @@ export default function ReservationForm(): JSX.Element {
             ) : null}
           </div>
         </form>
-
-        {/* Infos contact inchangées */}
-        <div className="mx-auto max-w-xl mt-10 text-center">
-          <h2
-            className="text-xl mb-2"
-            style={{ fontFamily: "var(--font-pacifico)" }}
-          >
-            Pour vous rendre à l’exploitation
-          </h2>
-          <p>EARL Dureau</p>
-          <p>203 rue des Fontenelles</p>
-          <p>44320 CHAUMES-EN-RETZ</p>
-          <p>TEL : 02 40 21 82 63</p>
-        </div>
       </section>
 
       {/* NEW — barre récap mobile collée en bas */}
