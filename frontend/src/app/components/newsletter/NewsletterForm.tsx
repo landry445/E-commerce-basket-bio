@@ -17,6 +17,7 @@ export function NewsletterForm(props: NewsletterFormProps) {
     props;
 
   const [subject, setSubject] = useState<string>("");
+  const [complement, setcomplement] = useState<string>("");
   const [pickupDateISO, setPickupDateISO] = useState<string>("");
 
   // prix par défaut
@@ -105,6 +106,7 @@ export function NewsletterForm(props: NewsletterFormProps) {
       basket15Items,
       basket10PriceEuro,
       basket15PriceEuro,
+      complement: complement.trim() || undefined,
     };
 
     await onSend(formData);
@@ -117,6 +119,7 @@ export function NewsletterForm(props: NewsletterFormProps) {
       basket15Items,
       basket10PriceEuro,
       basket15PriceEuro,
+      complement: complement.trim() || "",
     },
     "preview"
   );
@@ -147,6 +150,19 @@ export function NewsletterForm(props: NewsletterFormProps) {
             onChange={(event) => setSubject(event.target.value)}
             className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/40"
             placeholder="Paniers du vendredi 18 novembre"
+          />
+        </div>
+
+        <div>
+          <label className="mb-1 block text-sm font-medium text-gray-700">
+            Message complémentaire (optionnel)
+          </label>
+          <input
+            type="text"
+            value={complement}
+            onChange={(event) => setcomplement(event.target.value)}
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/40"
+            placeholder="tu peux dire ce que tu veux ^^"
           />
         </div>
 

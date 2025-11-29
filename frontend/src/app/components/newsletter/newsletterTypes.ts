@@ -17,6 +17,7 @@ export type NewsletterFormData = {
   basket15Items: BasketItemForm[];
   basket10PriceEuro: string;
   basket15PriceEuro: string;
+  complement?: string;
 };
 
 export type SendResult = {

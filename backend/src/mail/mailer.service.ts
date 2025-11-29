@@ -190,8 +190,8 @@ export class MailerService {
         cid: 'logo-jardins-des-rainettes',
       },
       {
-        filename: 'logo-ab-europ-fr.png',
-        path: join(baseDir, 'logo-ab-europ-fr.png'),
+        filename: 'logo-ab-eurofeuille.webp',
+        path: join(baseDir, 'logo-ab-eurofeuille.webp'),
         cid: 'logo-ab-europ-fr',
       },
     ];

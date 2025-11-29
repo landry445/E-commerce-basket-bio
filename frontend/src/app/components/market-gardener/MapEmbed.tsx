@@ -25,7 +25,7 @@ export default function MapEmbed() {
           </h3>
           <iframe
             title="Marché de Blain"
-            src="https://www.google.com/maps?q=47.476,-1.764&z=17&output=embed"
+            src="https://www.google.com/maps?q=47.4779014587,-1.7661999464&z=17&output=embed"
             width="100%"
             height="300"
             style={{ border: 0 }}

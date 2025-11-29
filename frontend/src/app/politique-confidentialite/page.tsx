@@ -71,8 +71,9 @@ export default function PolitiqueConfidentialitePage() {
                 Qui a accès à vos données
               </h2>
               <p>
-                Seuls les administrateurs de <strong>[Nom du site]</strong> ont
-                accès à vos informations. Elles ne sont jamais revendues.
+                Seuls les administrateurs de{" "}
+                <strong>DU JARDIN DES RAINETTES</strong> ont accès à vos
+                informations. Elles ne sont jamais revendues.
               </p>
             </section>
 
@@ -87,7 +88,10 @@ export default function PolitiqueConfidentialitePage() {
               <p>
                 Vous pouvez demander à consulter, modifier ou supprimer vos
                 données. Pour cela, contactez-nous à{" "}
-                <a href="mailto:[ton-email]">[ton-email]</a>.
+                <a href="mailto:gaecdesrainettes@mailo.com">
+                  gaecdesrainettes@mailo.com
+                </a>
+                .
               </p>
             </section>
 

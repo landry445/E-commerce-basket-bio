@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Paniers Bio – Chaussée de Plessis",
-  description: "Réservation de paniers de légumes bio, locaux et de saison.",
+  title: "Gaec du Jardin Des Rainettes - Votre Maraîcher Bio",
+  description:
+    "Réservation de paniers de légumes bio, locaux et de saison à la gare de Savenay.",
 };
 
 export default function RootLayout({

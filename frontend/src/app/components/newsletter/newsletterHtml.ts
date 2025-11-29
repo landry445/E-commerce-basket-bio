@@ -4,18 +4,24 @@ import {
   NewsletterRenderMode,
 } from "./newsletterTypes";
 
-/* Couleurs proches de ton site */
-const BACKGROUND = "#F8F7F0"; // fond beige
-const FOREGROUND = "#171717"; // texte principal
+const BACKGROUND = "#F8F7F0";
+const FOREGROUND = "#171717";
 
-/* Chemins publics pour la prévisualisation */
 const DEFAULT_FROG_PATH = "/logo-jardins-des-rainettes.jpeg";
-const DEFAULT_AB_PATH = "/logo-ab-europ-fr.png";
+const DEFAULT_AB_PATH = "/logo-ab-eurofeuille.webp";
 
-/* Permet une éventuelle surcharge par variables d’environnement */
 const FROG_URL =
   process.env.NEXT_PUBLIC_NEWSLETTER_FROG_URL ?? DEFAULT_FROG_PATH;
 const AB_URL = process.env.NEXT_PUBLIC_NEWSLETTER_AB_URL ?? DEFAULT_AB_PATH;
+
+function escapeHtml(input: string): string {
+  return input
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
 
 export function formatDateTitle(pickupDateISO: string): string {
   if (!pickupDateISO) return "";
@@ -71,7 +77,6 @@ export function buildNewsletterBody(
 ): string {
   const dateTitle = formatDateTitle(data.pickupDateISO);
 
-  // Valeurs par défaut si jamais les champs arrivent vides
   const basket10Price =
     (data.basket10PriceEuro ?? "10").toString().trim() || "10";
   const basket15Price =
@@ -84,34 +89,50 @@ export function buildNewsletterBody(
     mode === "email" ? "cid:logo-jardins-des-rainettes" : FROG_URL;
   const abSrc = mode === "email" ? "cid:logo-ab-europ-fr" : AB_URL;
 
-  // images plus contenues
   const frogImg = `<img src="${frogSrc}" alt="Jardin des Rainettes"
     style="display:block; max-width:140px; height:auto;" />`;
   const abImg = `<img src="${abSrc}" alt="Agriculture biologique"
     style="display:block; max-width:150px; height:auto; margin-left:auto;" />`;
 
+  const rawComplement = (data.complement ?? "").toString().trim();
+  const complementBlock = rawComplement
+    ? `<div style="margin-top:10px;padding:8px 10px;border-radius:8px;
+                   border-left:4px solid #5B8C51;background-color:#f8faf7;
+                   font-size:13px;line-height:1.4;">
+         <div style="font-weight:600;margin-bottom:4px;">
+           Message complémentaire
+         </div>
+         <div style="white-space:pre-wrap;">
+           ${escapeHtml(rawComplement)}
+         </div>
+       </div>`
+    : "";
+
   return `
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
   style="border-collapse:collapse; background-color:${BACKGROUND}; padding:20px 0;">
-   <td style="padding:10px 52px 28px 52px;
-                     font-size:13px; line-height:1.5; text-align:left;">
-            <p style="margin:0 0 6px 0;">
-      Bonjour,
-    </p>
-    <p style="margin:0 0 6px 0;">
-      Voici la composition des paniers pour le ${
-        dateTitle
-          ? `<strong>${dateTitle.toLowerCase()}</strong>`
-          : "la prochaine distribution"
-      }.
-    </p>
-    <p style= "margin:0 0 6px 0;">
-      Retrait dans le hall de la gare de Savenay, de 16h30 à 19h.
-    </p>
-    <p style="margin:0 0 6px 0;">
-      Règlement sur place.
-    </p>
-          </td>
+  <tr>
+    <td style="padding:10px 52px 28px 52px;
+               font-size:13px; line-height:1.5; text-align:left;">
+      <p style="margin:0 0 6px 0;">
+        Bonjour,
+      </p>
+      <p style="margin:0 0 6px 0;">
+        Voici la composition des paniers pour le ${
+          dateTitle
+            ? `<strong>${dateTitle.toLowerCase()}</strong>`
+            : "la prochaine distribution"
+        }.
+      </p>
+      <p style="margin:0 0 6px 0;">
+        Retrait dans le hall de la gare de Savenay, de 16h30 à 19h.
+      </p>
+      <p style="margin:0 0 6px 0;">
+        Règlement sur place.
+      </p>
+      ${complementBlock}
+    </td>
+  </tr>
   <tr>
     <td align="center">
       <!-- Carte centrale -->
@@ -190,6 +211,7 @@ export function buildNewsletterHtmlDoc(
       basket15Items: data.basket15Items,
       basket10PriceEuro: data.basket10PriceEuro,
       basket15PriceEuro: data.basket15PriceEuro,
+      complement: data.complement ?? "",
     },
     mode
   );

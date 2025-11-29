@@ -73,7 +73,7 @@ export default function Footer() {
               className="h-[60px] w-auto md:h-[70px]"
             />
             <Image
-              src="/logo-ab-europ-fr.png"
+              src="/logo-ab-eurofeuille.webp"
               alt="Label AB"
               width={80}      
               height={48}     

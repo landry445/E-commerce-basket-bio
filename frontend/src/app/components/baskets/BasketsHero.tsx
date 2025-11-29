@@ -12,7 +12,7 @@ type Slide = {
 const SLIDES: ReadonlyArray<Slide> = [
   { src: "/legume-frog.jpg", alt: "Serre de tomates" },
   { src: "/celeri-rave.jpg", alt: "Céléri rave" },
-  { src: "/panier-legumes.webp", alt: "Panier de légumes de saison" },
+  { src: "/_DSC0817.jpg", alt: "Panier de légumes de saison" },
 ];
 
 const AUTOPLAY_MS = 5000;
@@ -85,7 +85,7 @@ export default function BasketsHero() {
           {/* Label AB en overlay */}
           <div className="absolute bottom-4 right-4 drop-shadow-lg">
             <Image
-              src="/logo-ab-europ-fr.png"
+              src="/logo-ab-eurofeuille.webp"
               alt="Label AB"
               width={96}
               height={58}
