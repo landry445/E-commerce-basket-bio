@@ -8,7 +8,7 @@ type Props = {
   value: string;
   onChange: (v: string) => void;
   allowedDate: string; // YYYY-MM-DD
-  maxDate: string; // non utilisé ici pour le verrou strict, conservé pour compat éventuelle
+  maxDate: string;
   disabled?: boolean;
 };
 
@@ -28,7 +28,6 @@ export default function DayPickerField({
   value,
   onChange,
   allowedDate,
-  maxDate, // eslint-disable-line @typescript-eslint/no-unused-vars
   disabled,
 }: Props) {
   const selected = strToDate(value);
@@ -36,9 +35,15 @@ export default function DayPickerField({
 
   return (
     <div
-      className={`rounded-xl border border-gray-200 bg-white p-2 ${
-        disabled ? "opacity-60 pointer-events-none" : ""
-      }`}
+      className={[
+        "rounded-xl border border-gray-200 bg-white",
+        "p-3 max-[600px]:p-2", // padding mobile
+        "w-full max-w-full overflow-hidden", // largeur bornée
+        "rdp", // scope des variables CSS DayPicker
+        "max-[600px]:[--rdp-cell-size:36px] max-[600px]:[--rdp-nav-button-size:36px] max-[600px]:text-[14px]",
+        "max-[360px]:[--rdp-cell-size:34px] max-[360px]:[--rdp-nav-button-size:34px] max-[360px]:text-[13px]",
+        disabled ? "opacity-60 pointer-events-none" : "",
+      ].join(" ")}
     >
       <DayPicker
         mode="single"
@@ -46,7 +51,7 @@ export default function DayPickerField({
         selected={selected ?? only}
         onSelect={(d) => onChange(dateToStr(d || only))}
         fromDate={only}
-        toDate={only} // bloque toute navigation et tout autre jour
+        toDate={only} // verrouillage sur la date autorisée
         locale={fr}
         showOutsideDays={false}
       />

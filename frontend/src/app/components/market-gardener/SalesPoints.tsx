@@ -64,7 +64,7 @@ export default function SalesPoints() {
           </h2>
 
           <div className="space-y-8">
-            <SalesPointCard
+            {/* <SalesPointCard
               title="Directement à l'exploitation"
               imgSrc="/panier-legumes.webp"
               imgAlt="Directement à l'exploitation"
@@ -74,34 +74,27 @@ export default function SalesPoints() {
                 18h30. Légumes en vrac ou en paniers, produits transformés (jus,
                 confitures, soupes). Œufs issus de poules élevées en plein air.
               </p>
-            </SalesPointCard>
+            </SalesPointCard> */}
 
             <SalesPointCard
               title="Sur les marchés"
-              imgSrc="/market.png"
+              imgSrc="/marché.jpg"
               imgAlt="Sur les marchés"
             >
               <p className="mb-2">
-                Présence sur plusieurs marchés de la région&nbsp;:
+                Nous sommes présent sur le marché de Blain les samedi matins.
               </p>
-              <ul className="list-disc pl-5 space-y-1">
-                <li>mardi&nbsp;: Boulevard des Américains (Nantes)</li>
-                <li>mercredi&nbsp;: marché de la Nantaise (Rezé)</li>
-                <li>vendredi&nbsp;: Saint-Étienne-de-Montluc / Talmont</li>
-                <li>samedi&nbsp;: Pornic &amp; Clisson</li>
-                <li>dimanche&nbsp;: Petit Chantilly (Orvault)</li>
-              </ul>
             </SalesPointCard>
 
             <SalesPointCard
               title="À la gare de Savigny"
-              imgSrc="/Mask Group.png"
+              imgSrc="/gare.jpg"
               imgAlt="À la gare de Savigny"
             >
               <p>
-                Point de vente ouvert depuis 2021 à la gare de Savigny-sur-Orge.
-                Produits frais et de saison, paniers hebdomadaires et produits
-                transformés. Horaires étendus en semaine.
+                Distribution de paniers de légumes bio à la gare de Savigny le
+                mardi soir de 16h30 à 19h et le vendredi soir de 16h30 à 18h30.
+                Réservation des paniers en ligne sur notre site web.
               </p>
             </SalesPointCard>
           </div>
@@ -110,7 +103,7 @@ export default function SalesPoints() {
 
       {/* Légende/accroche sous la section */}
       <div className="text-center mt-8">
-        <p className="text-xl font-bold">
+        <p className="text-xl font-bold ml-1 mr-1">
           Retrouvez les différents points de vente
         </p>
         <Image

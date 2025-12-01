@@ -21,10 +21,15 @@ export class UsersService {
 
   async create(dto: CreateUserDto): Promise<UserResponseDto> {
     const hash = await bcrypt.hash(dto.password, 10);
+
+    const newsletterOptIn: boolean = dto.newsletterOptIn === true;
+
     const user = this.userRepo.create({
       ...dto,
-      email: normEmail(dto.email), // <-- email normalisé
+      email: normEmail(dto.email),
       password_hash: hash,
+      newsletterOptIn,
+      newsletterOptInUpdatedAt: new Date(),
     });
 
     try {
@@ -118,5 +123,30 @@ export class UsersService {
 
   async comparePassword(plain: string, hash: string): Promise<boolean> {
     return bcrypt.compare(plain, hash);
+  }
+
+  async updateNewsletterPreference(
+    userId: string,
+    newsletterOptIn: boolean
+  ): Promise<UserResponseDto> {
+    const user = await this.userRepo.findOne({ where: { id: userId } });
+    if (!user) {
+      throw new NotFoundException('Utilisateur non trouvé');
+    }
+
+    user.newsletterOptIn = newsletterOptIn;
+    user.newsletterOptInUpdatedAt = new Date();
+
+    const saved = await this.userRepo.save(user);
+    return this.toResponse(saved);
+  }
+
+  async findNewsletterSubscribers(): Promise<UserResponseDto[]> {
+    const users = await this.userRepo.find({
+      where: { newsletterOptIn: true },
+      order: { email: 'ASC' },
+    });
+
+    return users.map((user) => this.toResponse(user));
   }
 }

@@ -8,10 +8,10 @@ export default function HeroBanner() {
     <section className="relative  w-full h-[320px] md:h-[400px] flex items-center justify-center overflow-hidden">
       {/* Image de fond */}
       <Image
-        src="/image-home.png"
+        src="/serre-fleur.jpg"
         alt="Champs maraîcher bio"
         fill
-        className="object-cover brightness-75"
+        className="object-cover"
         priority
         sizes="100vw"
         quality={90}
@@ -23,13 +23,13 @@ export default function HeroBanner() {
       {/* Contenu slogan */}
       <div className="relative z-10 text-center px-4 font-sans">
         <h1
-          className=" text-5xl md:text-6xl text-center px-4 leading-snug"
+          className=" text-4xl md:text-6xl text-center px-4 leading-snug"
           style={{
             color: "var(--color-light)",
             fontFamily: "var(--font-pacifico)",
           }}
         >
-          Paniers Bio frais à Chaussée de Plessis
+          Paniers Légumes Bio à Savenay
         </h1>
         <div className="pt-10 md:pt-15 ">
           <ButtonGeneric

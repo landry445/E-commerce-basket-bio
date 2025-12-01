@@ -23,7 +23,7 @@ import { AdminReservationListDto } from './dto/admin-reservation-list.dto';
 import { RolesGuard } from 'src/auth/roles.guard';
 import { Roles } from 'src/auth/roles.decorator';
 import { Role } from 'src/auth/role.enum';
-// import { CheckoutDto } from './dto/checkout.dto';
+import { ConfirmReservationDto } from './dto/confirm-reservation.dto';
 
 type ReqWithUser = { user: { id: string } };
 
@@ -47,11 +47,42 @@ export class ReservationsController {
     return this.reservationsService.findMineCompact(req.user.id, limit);
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Get('view/:id')
+  async viewOneForOwner(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Req() req: { user: { id: string } }
+  ) {
+    return this.reservationsService.findOneForView(id, req.user.id);
+  }
+
   /* ─────────── création accessible au client ─────────── */
   @UseGuards(JwtAuthGuard)
   @Post()
   create(@Body() dto: CreateReservationDto, @Req() req) {
     return this.reservationsService.create(dto, req.user.id);
+  }
+
+  @Post('bulk')
+  @UseGuards(JwtAuthGuard)
+  async createBulk(
+    @Req() req: ReqWithUser,
+    @Body()
+    body: {
+      location_id: string;
+      pickup_date: string;
+      items: { basket_id: string; quantity: number }[];
+      customer_note?: string;
+    }
+  ): Promise<{ groupId: string }> {
+    return this.reservationsService.createBulk(body, req.user.id);
+  }
+
+  /** Récap pour la page “confirmee/[groupId]” (toutes les lignes du passage) */
+  @UseGuards(JwtAuthGuard)
+  @Get('confirm/:groupId')
+  async confirmView(@Param('groupId') groupId: string): Promise<ConfirmReservationDto> {
+    return this.reservationsService.getSummaryByGroupId(groupId);
   }
 
   /* ─────────── opérations admin uniquement ─────────── */
@@ -60,7 +91,6 @@ export class ReservationsController {
   @Roles(Role.Admin)
   @Get('admin-list')
   listAdmin(@Query('status') status?: 'active' | 'archived'): Promise<AdminReservationListDto[]> {
-    // ← retour typé
     return this.reservationsService.findAdminList({ status });
   }
 
@@ -98,28 +128,5 @@ export class ReservationsController {
   @Delete(':id')
   removeAsAdmin(@Param('id', ParseUUIDPipe) id: string) {
     return this.reservationsService.removeAsAdmin(id);
-  }
-
-  @Post('bulk')
-  @UseGuards(JwtAuthGuard)
-  async createBulk(
-    @Req() req: ReqWithUser,
-    @Body()
-    body: {
-      location_id: string;
-      pickup_date: string;
-      items: { basket_id: string; quantity: number }[];
-    }
-  ) {
-    return this.reservationsService.createBulk(body, req.user.id);
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @Get('view/:id')
-  async viewOneForOwner(
-    @Param('id', ParseUUIDPipe) id: string,
-    @Req() req: { user: { id: string } }
-  ) {
-    return this.reservationsService.findOneForView(id, req.user.id);
   }
 }

@@ -91,10 +91,10 @@ export default function MobileDrawer({
 
             <Link href="/" aria-label="Aller à l’accueil" className="shrink-0">
               <Image
-                src="/logo-frog.png"
+                src="/logo-jardins-des-rainettes.jpeg"
                 alt="Logo"
-                width={40}
-                height={40}
+                width={70}
+                height={100}
                 priority
               />
             </Link>

@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import AdminHeader from "@/app/components/adminLayout/AdminHeader";
-import Tablebaskets from "@/app/components/table/TableBaskets";
+import Tablebaskets from "@/app/components/AdminBasket/TableBaskets";
 import Formbasket from "@/app/components/form/FormBasketAdmin";
 import ConfirmModal from "@/app/components/modal/ConfirmModal";
 
@@ -152,7 +152,7 @@ export default function AdminbasketsPage() {
       {step === "list" && (
         <>
           <button
-            className="self-end mb-4 px-6 py-2 rounded-full bg-accent text-white font-bold shadow hover:brightness-105 transition"
+            className="self-end mb-4 px-6 py-2 rounded-full bg-accent text-white font-bold shadow hover:brightness-105 transition cursor-pointer"
             onClick={() => setStep("create")}
           >
             + Créer panier

@@ -103,7 +103,12 @@ export default function LoginPage() {
         {/* Carte de connexion */}
         <div className="max-w-md w-full bg-white rounded-2xl shadow-lg p-8">
           <div className="flex justify-center mb-4">
-            <Image src="/logo-frog.png" alt="Logo" width={60} height={60} />
+            <Image
+              src="/logo-jardins-des-rainettes.jpeg"
+              alt="Logo"
+              width={80}
+              height={48}
+            />
           </div>
 
           <form onSubmit={onSubmit} className="space-y-4">

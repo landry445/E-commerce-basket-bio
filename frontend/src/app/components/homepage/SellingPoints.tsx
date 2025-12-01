@@ -19,16 +19,15 @@ type SellingPointsProps = {
 const defaults: Point[] = [
   {
     title: "Sur les marchés",
-    description:
-      "Retrouvez nos légumes, fruits certifiés Bio (AB) au marché '...', en matinée de 8h à 13h.",
-    imageSrc: "/champ-bio (1).webp",
-    imageAlt: "Tracteur dans un champ vu du ciel",
+    description: "Retrouvez nous les samedis matins au marché de blin (44130).",
+    imageSrc: "/marché.jpg",
+    imageAlt: "maeché",
   },
   {
-    title: "Gare de Savenay",
+    title: "Retrait paniers à la gare de Savenay",
     description:
-      "Récupérez vos paniers de légumes bio réservés en ligne. Retrait disponible les mardis et vendredis de 16h30 à 19h, paiement sur place.",
-    imageSrc: "/champ-bio (1).webp",
+      "Retrait disponible les mardis de 16h30 à 19h et les vendredis de 16h30 à 18h30, paiement sur place.",
+    imageSrc: "/gare.jpg",
     imageAlt: "Champ de légumes en culture",
   },
 ];

@@ -23,10 +23,10 @@ export default function SidebarAdmin({ userName = "Adri" }: SidebarAdminProps) {
       </span>
       {/* Logo */}
       <Image
-        src="/logo-frog.png"
+        src="/logo-jardins-des-rainettes.jpeg"
         alt="Logo"
-        width={64}
-        height={64}
+        width={70}
+        height={100}
         className="mx-auto my-2"
       />
       {/* Bonjour */}
@@ -53,6 +53,11 @@ export default function SidebarAdmin({ userName = "Adri" }: SidebarAdminProps) {
           label="Utilisateur"
           active={isActive("users")}
           onClick={() => router.push("/admin/users")}
+        />
+        <SidebarNavButton
+          label="Newsletter"
+          active={isActive("newsletter")}
+          onClick={() => router.push("/admin/newsletter")}
         />
       </nav>
     </aside>

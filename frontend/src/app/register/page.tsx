@@ -12,7 +12,9 @@ type RegisterPayload = {
   email: string;
   phone: string;
   password: string;
+  newsletterOptIn: boolean;
 };
+
 type ApiMsg = { message?: string };
 
 export default function RegisterPage() {
@@ -27,6 +29,7 @@ export default function RegisterPage() {
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
+  const [newsletterOptIn, setNewsletterOptIn] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -59,6 +62,7 @@ export default function RegisterPage() {
         email,
         phone,
         password,
+        newsletterOptIn,
       };
 
       const res = await fetch(
@@ -110,7 +114,12 @@ export default function RegisterPage() {
           {/* Carte + formulaire */}
           <div className="bg-white rounded-b-xl border border-black/10 shadow-xl px-8 py-8">
             <div className="flex justify-center mb-4">
-              <Image src="/logo-frog.png" alt="Logo" width={60} height={60} />
+              <Image
+                src="/logo-jardins-des-rainettes.jpeg"
+                alt="Logo"
+                width={70}
+                height={100}
+              />
             </div>
 
             {error && (
@@ -202,7 +211,8 @@ export default function RegisterPage() {
                     required
                   />
                   <p className="text-xs text-gray-500 mt-1">
-                    8 caractères min. Conseillé : chiffres + lettres.
+                    8 caractères min. avec une majuscule, une minuscule, un
+                    chiffre et un caractère spécial.
                   </p>
                 </div>
                 <div>
@@ -219,6 +229,43 @@ export default function RegisterPage() {
                     required
                   />
                 </div>
+              </div>
+
+              {/* Newsletter */}
+              <div className="mt-4 rounded-2xl border border-yellow-300 bg-yellow-50/80 px-4 py-4 shadow-md sm:px-5 sm:py-5">
+                <div className="mb-2 flex items-center gap-2">
+                  <h2 className="text-sm font-semibold text-gray-900">
+                    Newsletter des paniers
+                  </h2>
+
+                  <span className="inline-flex items-center gap-1 rounded-full bg-[var(--color-primary)]/10 px-2.5 py-0.5 text-[11px] font-medium text-[var(--color-primary)]">
+                    <span className="h-2 w-2 rounded-full bg-[var(--color-primary)] animate-pulse" />
+                    2 e-mails par semaine
+                  </span>
+                </div>
+
+                <p className="text-xs text-gray-700 sm:text-sm">
+                  Composition détaillée du panier du mardi et du panier du
+                  vendredi.
+                </p>
+                <p className="mt-1 text-[11px] text-gray-500">
+                  Aucun autre contenu, aucune publicité.
+                </p>
+
+                <label className="mt-3 flex items-start gap-2 text-sm text-gray-900">
+                  <input
+                    type="checkbox"
+                    checked={newsletterOptIn}
+                    onChange={(event) =>
+                      setNewsletterOptIn(event.target.checked)
+                    }
+                    className="mt-1 h-4 w-4 rounded border-gray-300 accent-[var(--color-primary)] shadow-sm"
+                  />
+                  <span>
+                    Recevoir par e-mail la composition des paniers du mardi et
+                    du vendredi.
+                  </span>
+                </label>
               </div>
 
               <button

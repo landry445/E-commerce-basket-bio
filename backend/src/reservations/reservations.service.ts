@@ -4,6 +4,7 @@ import {
   BadRequestException,
   ForbiddenException,
 } from '@nestjs/common';
+import { randomUUID } from 'node:crypto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
 import { DateTime } from 'luxon';
@@ -18,6 +19,8 @@ import { PickupLocation } from '../pickup/entities/pickup-location.entity';
 import { AdminReservationListDto } from './dto/admin-reservation-list.dto';
 import { MailerService } from '../mail/mailer.service';
 import { isBookingWindowOpen, PickupKind } from './utils/booking-window';
+
+import type { ConfirmReservationDto } from './dto/confirm-reservation.dto';
 
 type RawRow = {
   id: string;
@@ -180,10 +183,12 @@ export class ReservationsService {
    * crée PLUSIEURS réservations en une fois (un enregistrement par panier)
    * puis envoie UN SEUL e-mail récapitulatif ("bon de commande").
    */
-  async createBulk(payload: BulkPayload, userId: string): Promise<{ ids: string[] }> {
+  async createBulk(payload: BulkPayload, userId: string): Promise<{ groupId: string }> {
     if (!payload.items || payload.items.length === 0) {
       throw new BadRequestException('Aucun panier sélectionné.');
     }
+
+    const groupId = randomUUID();
 
     const loc = await this.pickupRepo.findOne({ where: { id: payload.location_id } });
     if (!loc) throw new BadRequestException('Lieu introuvable');
@@ -221,16 +226,18 @@ export class ReservationsService {
     try {
       for (const it of payload.items) {
         const b = map.get(it.basket_id)!;
-        const price = b.price_basket * it.quantity;
+        const unitPriceCents = Math.round(Number(b.price_basket) * 100);
+        const priceCents = unitPriceCents * it.quantity;
 
         const entity = this.reservationRepo.create({
           user: { id: userId },
           basket: { id: it.basket_id },
           location: { id: payload.location_id },
           pickup_date: payload.pickup_date,
-          quantity: it.quantity,
-          price_reservation: price,
+          quantity: Math.trunc(Number(it.quantity)),
+          price_reservation: priceCents,
           customer_note: note,
+          group_id: groupId,
         });
 
         const saved = await qr.manager.save(Reservation, entity);
@@ -301,7 +308,7 @@ export class ReservationsService {
       console.error('MAIL_SEND_ERROR', e);
     }
 
-    return { ids: createdIds };
+    return { groupId };
   }
 
   /** mise à jour (recalcule aussi le prix) */
@@ -470,6 +477,49 @@ export class ReservationsService {
       pickup_label: `${new Date(r.pickup_date ?? '')?.toISOString().slice(0, 10)} • ${r.location?.name_pickup ?? ''}`,
       items: [item],
       total: item.price * item.qty,
+    };
+  }
+
+  // + ajouter dans la classe ReservationsService
+  async getSummaryByGroupId(groupId: string): Promise<ConfirmReservationDto> {
+    // récupère toutes les lignes du groupe avec libellés et prix unitaires
+    const rows = await this.ds.query(
+      `
+    SELECT
+      r.pickup_date                                   AS pickup_date,
+      pl.name_pickup                                  AS pickup_location_name,
+      b.id                                            AS basket_id,
+      b.name_basket                                   AS basket_name,
+      (b.price_basket * 100)::int                     AS unit_price_cents,
+      r.quantity                                      AS quantity,
+      ((b.price_basket * 100)::int * r.quantity)      AS subtotal_cents
+    FROM reservations r
+    JOIN baskets b           ON b.id = r.basket_id
+    JOIN pickup_locations pl ON pl.id = r.location_id
+    WHERE r.group_id = $1
+    ORDER BY b.name_basket ASC
+    `,
+      [groupId]
+    );
+
+    if (!rows || rows.length === 0) {
+      throw new NotFoundException('Réservation introuvable');
+    }
+
+    const totalCents = rows.reduce((s: number, r: any) => s + Number(r.subtotal_cents || 0), 0);
+
+    return {
+      groupId,
+      pickupDateISO: new Date(rows[0].pickup_date).toISOString(),
+      pickupLocationName: rows[0].pickup_location_name,
+      totalCents,
+      items: rows.map((r: any) => ({
+        basketId: r.basket_id,
+        basketName: r.basket_name,
+        unitPriceCents: Number(r.unit_price_cents),
+        quantity: Number(r.quantity),
+        subtotalCents: Number(r.subtotal_cents),
+      })),
     };
   }
 }

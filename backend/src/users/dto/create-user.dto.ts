@@ -1,5 +1,5 @@
 import { Transform } from 'class-transformer';
-import { IsEmail, IsString, Matches, MaxLength } from 'class-validator';
+import { IsBoolean, IsEmail, IsOptional, IsString, Matches, MaxLength } from 'class-validator';
 
 export class CreateUserDto {
   @IsString()
@@ -23,4 +23,8 @@ export class CreateUserDto {
   })
   @MaxLength(72)
   password: string;
+
+  @IsOptional()
+  @IsBoolean()
+  newsletterOptIn?: boolean;
 }

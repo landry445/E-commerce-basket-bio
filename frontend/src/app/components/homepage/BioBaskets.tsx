@@ -1,5 +1,5 @@
 import Image from "next/image";
-import BasketIcon from "../SVG/BasketIcon";
+import BasketIcon from "../SVG/bassketIcon/BasketIcon";
 import ButtonGeneric from "../button/ButtonGeneric";
 
 type BioBasketsProps = {
@@ -8,7 +8,7 @@ type BioBasketsProps = {
 };
 
 export default function BioBaskets({
-  imageSrc = "/panier-legumes.webp",
+  imageSrc = "/legume-frog.jpg",
   imageAlt = "Panier de légumes bio",
 }: BioBasketsProps) {
   return (
@@ -30,7 +30,7 @@ export default function BioBaskets({
       >
         <header className="md:col-span-2">
           <h2
-            className="text-3xl md:text-4xl"
+            className="text-2xl md:text-4xl text-center"
             style={{
               color: "var(--color-dark)",
               fontFamily: "var(--font-pacifico), var(--font-sans)",
@@ -48,8 +48,8 @@ export default function BioBaskets({
                 Panier de légumes à 10&nbsp;€
               </h3>
               <p className="mt-1 text-sm md:text-base text-[var(--foreground)]/80">
-                Chaque semaine, retrait du panier directement à l’exploitation.
-                Le petit panier à 14&nbsp;€, idéal pour 2&nbsp;personnes.
+                Composé de 5 à 6 légumes de saison, le petit panier idéale pour
+                2 personnes.
               </p>
             </div>
           </article>
@@ -61,15 +61,14 @@ export default function BioBaskets({
                 Panier de légumes à 15&nbsp;€
               </h3>
               <p className="mt-1 text-sm md:text-base text-[var(--foreground)]/80">
-                La distribution des paniers de légumes s’effectue tous les
-                lundis ou jeudis de 16h30 à 18h30. Une famille de 3/4 personnes
-                peut utiliser nos paniers moyens.
+                Dans le paniers à 15&nbsp;€, vous trouverez 6 à 7 légumes.
+                Parfait pour une famille de 3 à 4 personnes.
               </p>
             </div>
           </article>
 
           <div className="pt-2 flex justify-center">
-            <ButtonGeneric href="/paniers">
+            <ButtonGeneric href="/paniers" className="text-center">
               NOS PANIERS DE LÉGUMES EN DÉTAIL
             </ButtonGeneric>
           </div>
@@ -77,12 +76,12 @@ export default function BioBaskets({
 
         {/* Colonne image */}
         <div className="md:justify-self-end ">
-          <div className="relative w-full aspect-[4/3] md:w-[360px] md:h-[270px] rounded-xl overflow-hidden">
+          <div className="relative w-full  md:w-[360px] md:h-[270px] rounded-xl overflow-hidden">
             <Image
               src={imageSrc}
               alt={imageAlt}
               fill
-              className="object-cover "
+              className=" "
               sizes="(min-width: 768px) 360px, 100vw"
               priority
             />

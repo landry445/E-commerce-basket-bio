@@ -16,7 +16,7 @@ export default function NavbarUserButton({
   isMobile,
   onAfterClick,
 }: NavbarUserButtonProps) {
-  const circleBase = isMobile ? "w-11 h-11" : "w-9 h-9";
+  const circleBase = isMobile ? "w-11 h-11" : "w-11 h-11";
   const detailsRef = useRef<HTMLDetailsElement>(null);
 
   if (!user) {
@@ -50,7 +50,7 @@ export default function NavbarUserButton({
         className={[
           "list-none cursor-pointer select-none",
           "inline-flex items-center justify-center ",
-          "bg-[var(--color-light)] text-[var(--color-dark)]",
+          " text-[var(--color-dark)]",
           circleBase,
           ,
           "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60",
@@ -83,7 +83,7 @@ export default function NavbarUserButton({
           Compte et Réservations
         </MenuLink>
         {user.isAdmin && (
-          <MenuLink href="/admin/paniers" onAfterClick={onAfterClick}>
+          <MenuLink href="/admin/reservations" onAfterClick={onAfterClick}>
             Espace admin
           </MenuLink>
         )}

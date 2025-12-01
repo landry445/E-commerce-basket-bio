@@ -81,7 +81,7 @@ export default function AdminReservationsPage() {
     () =>
       status === "archived"
         ? "Réservations  Archives"
-        : "Réservations  Actives",
+        : "Réservations  en cours",
     [status]
   );
 
@@ -115,7 +115,7 @@ export default function AdminReservationsPage() {
     setSelected(null);
   };
 
-  // --- Suppression multiple (optimiste)
+  // --- Suppression multiple
   const deleteMany = async (ids: string[]): Promise<void> => {
     if (ids.length === 0) return;
     // appels parallèles ; l’API actuelle supprime déjà via ?id=...
@@ -146,7 +146,7 @@ export default function AdminReservationsPage() {
                 : "bg-white border-accent",
             ].join(" ")}
           >
-            Actives
+            en cours
           </button>
           <button
             type="button"
