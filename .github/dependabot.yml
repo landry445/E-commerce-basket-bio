@@ -1,0 +1,40 @@
+version: 2
+updates:
+  # Backend NestJS (Node / npm)
+  - package-ecosystem: "npm"
+    directory: "/backend"
+    schedule:
+      interval: "weekly"        # vérification chaque semaine
+    allow:
+      - dependency-type: "direct"
+    open-pull-requests-limit: 5
+    groups:
+      nest-core:
+        patterns:
+          - "@nestjs/*"
+      testing-stack:
+        patterns:
+          - "jest"
+          - "ts-jest"
+          - "supertest"
+
+  # Frontend Next.js (Node / npm)
+  - package-ecosystem: "npm"
+    directory: "/frontend"
+    schedule:
+      interval: "weekly"
+    allow:
+      - dependency-type: "direct"
+    open-pull-requests-limit: 5
+    groups:
+      next-and-react:
+        patterns:
+          - "next"
+          - "react"
+          - "react-dom"
+
+  # GitHub Actions éventuelles (CI)
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
