@@ -4,7 +4,9 @@ updates:
   - package-ecosystem: "npm"
     directory: "/backend"
     schedule:
-      interval: "weekly"        # vérification chaque semaine
+      interval: "weekly"  
+    target-branch: "dev"
+      # vérification chaque semaine
     allow:
       - dependency-type: "direct"
     open-pull-requests-limit: 5
@@ -23,6 +25,7 @@ updates:
     directory: "/frontend"
     schedule:
       interval: "weekly"
+    target-branch: "dev"
     allow:
       - dependency-type: "direct"
     open-pull-requests-limit: 5
