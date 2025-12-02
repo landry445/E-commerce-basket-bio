@@ -1,0 +1,14 @@
+import { Module } from '@nestjs/common';
+import { MailerService } from './mailer.service';
+import { MailerController } from './mailer.controller';
+import { createGmailAppPasswordTransport } from './mailer.provider';
+
+@Module({
+  controllers: [MailerController],
+  providers: [
+    { provide: 'MAIL_TRANSPORT', useFactory: createGmailAppPasswordTransport },
+    MailerService,
+  ],
+  exports: [MailerService],
+})
+export class MailModule {}

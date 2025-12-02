@@ -1,9 +1,6 @@
 import forms from '@tailwindcss/forms';
 
-const tailwindConfig = {
-  content: ['./src/**/*.{js,ts,jsx,tsx,mdx}'],
+export default {
+  content: ["./src/app/**/*.{ts,tsx,js,jsx}"],
   plugins: [forms],
-};
-
-export default tailwindConfig;
-
+}

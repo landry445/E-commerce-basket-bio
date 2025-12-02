@@ -1,26 +1,145 @@
+/* === FONTS === */
+@import url('https://fonts.googleapis.com/css?family=Nunito:400,700&display=swap');
+@import url('https://fonts.googleapis.com/css?family=Pacifico&display=swap');
+
+/* === TAILWIND === */
 @import "tailwindcss";
 
+/* === VARIABLES ROOT (couleurs + polices) === */
 :root {
-  --background: #ffffff;
+  --background: #F8F7F0;
   --foreground: #171717;
+
+  --font-sans: "Nunito", Arial, sans-serif;
+  --font-pacifico: "Pacifico", cursive;
+
+  --shadow-soft: 0 8px 22px rgba(0,0,0,.06);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* === THEME TAILWIND (tokens utilisables en utilitaires) === */
+@theme {
+  /* Couleurs */
+  --color-primary:  #5B8C51;  /* vert principal */
+  --color-dark:     #404A3D;  /* vert foncé */
+  --color-accent:   #0D920D;  /* vert vif */
+  --color-yellow:   #EDDD5E;  /* jaune clair */
+  --color-light:    #F8F7F0;  /* beige clair */
+
+  /* Polices */
+  --font-sans: var(--font-sans);
+  --font-pacifico: var(--font-pacifico);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* === BASE === */
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+html, body {
+  height: 100%;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
+
+::selection {
+  background: var(--color-yellow);
+  color: var(--foreground);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* === MARQUEE === */
+.marquee {
+  --marquee-duration: 24s;     /* slow: 36s, normal: 24s, fast: 16s */
+  --marquee-gap: 2.5rem;
+  --marquee-direction: normal; /* normal | reverse */
+  overflow: hidden;
+  mask-image: linear-gradient(to right, transparent, #000 8%, #000 92%, transparent);
+}
+
+.marquee__track {
+  display: flex;
+  gap: var(--marquee-gap);
+  width: max-content;
+  will-change: transform;
+  animation: marquee var(--marquee-duration) linear infinite;
+  animation-direction: var(--marquee-direction);
+}
+
+.marquee--pause:hover .marquee__track {
+  animation-play-state: paused;
+}
+
+/* Texte contour + remplissage façon maquette (titres) */
+.marquee-text {
+  font-family: var(--font-pacifico), var(--font-sans);
+  color: var(--background);
+  -webkit-text-stroke: 2px var(--color-primary);
+  paint-order: stroke fill;
+  text-shadow: none;
+}
+
+/* Densité élevée : trait un peu plus fin */
+@media (min-resolution: 2dppx) {
+  .marquee-text { -webkit-text-stroke-width: 1.6px; }
+}
+
+/* Fallback Firefox (pas de -webkit-text-stroke) */
+@supports not (-webkit-text-stroke: 1px black) {
+  .marquee-text {
+    color: var(--background);
+    text-shadow:
+      1px 0   0 var(--color-primary),
+     -1px 0   0 var(--color-primary),
+      0   1px 0 var(--color-primary),
+      0  -1px 0 var(--color-primary);
+  }
+}
+
+@keyframes marquee {
+  to { transform: translateX(-50%); } /* -50% si contenu dupliqué */
+}
+
+@layer base {
+  input[type="number"] {
+    appearance: textfield;     /* standard */
+    -moz-appearance: textfield; /* Firefox */
+  }
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+}
+/* Un petit ajustement pour les boutons de navigation du calendrier */
+.rdp-button {
+  border-radius: 9999px; /* arrondis */
+}
+/* Classe utilitaire pour enlever les spinners des inputs number */
+input[type="number"].no-spinner::-webkit-outer-spin-button,
+input[type="number"].no-spinner::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+input[type="number"].no-spinner { -moz-appearance: textfield; appearance: textfield; }
+
+/* retire les flèches des input[type=number] (Chrome/Edge/Opera) */
+.no-spinner::-webkit-outer-spin-button,
+.no-spinner::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+/* Firefox */
+.no-spinner[type="number"] { -moz-appearance: textfield; }
+
+/* focus cohérent sur tous les champs cliquables */
+:where(button, [type="button"], [type="submit"], input, select, textarea):focus {
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-primary), white 70%);
+}
+
+.tabular-nums { font-variant-numeric: tabular-nums; }
