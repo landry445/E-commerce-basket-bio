@@ -45,9 +45,7 @@ describe('Baskets E2E', () => {
   });
 
   it('GET /baskets → liste tous les paniers', async () => {
-    const response = await request(app.getHttpServer())
-      .get('/baskets')
-      .expect(200);
+    const response = await request(app.getHttpServer()).get('/baskets').expect(200);
 
     expect(Array.isArray(response.body)).toBe(true);
     // On attend au moins un panier (celui créé juste avant)

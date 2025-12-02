@@ -8,7 +8,7 @@ import { CreatePickupDto } from './dto/create-pickup.dto';
 export class PickupService {
   constructor(
     @InjectRepository(PickupLocation)
-    private readonly pickupRepo: Repository<PickupLocation>
+    private readonly pickupRepo: Repository<PickupLocation>,
   ) {}
 
   findAll(): Promise<PickupLocation[]> {

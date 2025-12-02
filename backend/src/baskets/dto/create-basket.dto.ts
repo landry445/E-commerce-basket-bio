@@ -1,5 +1,5 @@
 import { Transform } from 'class-transformer';
-import { IsString, IsInt, IsOptional, IsBoolean, Min, IsNumber } from 'class-validator';
+import { IsString, IsOptional, IsBoolean, Min, IsNumber } from 'class-validator';
 
 function normalizeEuro(input: unknown): number {
   if (typeof input === 'number') return Number.isFinite(input) ? input : NaN;

@@ -48,7 +48,7 @@ export class ReservationsService {
     private readonly basketRepo: Repository<Basket>,
     @InjectRepository(PickupLocation)
     private readonly pickupRepo: Repository<PickupLocation>,
-    private readonly mailer: MailerService
+    private readonly mailer: MailerService,
   ) {}
 
   private static readonly JOURS: ReadonlyArray<string> = [
@@ -78,7 +78,7 @@ export class ReservationsService {
     if (!locDays.includes(dow)) {
       const lisible = locDays.map((n) => ReservationsService.JOURS[n] ?? `${n}`).join(' ou ');
       throw new BadRequestException(
-        `Date incompatible avec le jour de retrait du lieu : ${lisible}.`
+        `Date incompatible avec le jour de retrait du lieu : ${lisible}.`,
       );
     }
   }
@@ -261,7 +261,7 @@ export class ReservationsService {
     FROM users 
     WHERE id = $1 
     LIMIT 1`,
-        [userId]
+        [userId],
       );
 
       const to: string | undefined = userRow?.[0]?.email;
@@ -391,7 +391,7 @@ export class ReservationsService {
 
     const rows = await qb.getRawMany();
     return rows.map((r) =>
-      plainToInstance(AdminReservationListDto, r, { excludeExtraneousValues: true })
+      plainToInstance(AdminReservationListDto, r, { excludeExtraneousValues: true }),
     );
   }
 
@@ -431,8 +431,8 @@ export class ReservationsService {
           basket_id: r.basket?.id,
           location_id: r.location?.id,
         },
-        { excludeExtraneousValues: true }
-      )
+        { excludeExtraneousValues: true },
+      ),
     );
   }
 
@@ -499,7 +499,7 @@ export class ReservationsService {
     WHERE r.group_id = $1
     ORDER BY b.name_basket ASC
     `,
-      [groupId]
+      [groupId],
     );
 
     if (!rows || rows.length === 0) {

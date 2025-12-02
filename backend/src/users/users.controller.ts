@@ -25,7 +25,7 @@ export class UsersController {
   @Patch('me/newsletter')
   async updateNewsletter(
     @Req() req,
-    @Body() dto: UpdateNewsletterPreferenceDto
+    @Body() dto: UpdateNewsletterPreferenceDto,
   ): Promise<{ newsletterOptIn: boolean }> {
     const userId = req.user.sub ?? req.user.id;
 

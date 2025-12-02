@@ -16,7 +16,7 @@ function normEmail(input: string): string {
 export class UsersService {
   constructor(
     @InjectRepository(User)
-    private userRepo: Repository<User>
+    private userRepo: Repository<User>,
   ) {}
 
   async create(dto: CreateUserDto): Promise<UserResponseDto> {
@@ -95,7 +95,7 @@ export class UsersService {
   async findAllAdmin(): Promise<AdminUserResponseDto[]> {
     const users = await this.userRepo.find();
     return users.map((u) =>
-      plainToInstance(AdminUserResponseDto, u, { excludeExtraneousValues: true })
+      plainToInstance(AdminUserResponseDto, u, { excludeExtraneousValues: true }),
     );
   }
 
@@ -127,7 +127,7 @@ export class UsersService {
 
   async updateNewsletterPreference(
     userId: string,
-    newsletterOptIn: boolean
+    newsletterOptIn: boolean,
   ): Promise<UserResponseDto> {
     const user = await this.userRepo.findOne({ where: { id: userId } });
     if (!user) {
