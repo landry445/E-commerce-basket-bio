@@ -25,7 +25,7 @@ export class MailerController {
   @UseGuards(JwtAuthGuard)
   @Post('contact')
   async contact(@Body() dto: AdminMessageDto, @Req() req: RequestWithUser) {
-    const userId = req.user?.id!; // présent grâce au guard
+    const userId = req.user?.id ?? '';
     await this.mailer.sendAdminContact({
       subject: dto.subject ?? 'Message client – formulaire',
       message: dto.message,

@@ -11,7 +11,7 @@ export class ReservationsArchiver {
 
   constructor(
     @InjectRepository(Reservation)
-    private readonly repo: Repository<Reservation>
+    private readonly repo: Repository<Reservation>,
   ) {}
 
   // Tous les jours à 00:10 Europe/Paris

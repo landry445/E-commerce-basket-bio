@@ -44,7 +44,7 @@ export class PickupController {
   @Put(':id')
   update(
     @Param('id', ParseUUIDPipe) id: string,
-    @Body() dto: CreatePickupDto
+    @Body() dto: CreatePickupDto,
   ): Promise<PickupLocation> {
     return this.pickupService.update(id, dto);
   }

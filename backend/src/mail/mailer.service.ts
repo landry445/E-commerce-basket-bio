@@ -44,7 +44,7 @@ export interface NewsletterContent {
 export class MailerService {
   constructor(
     @Inject('MAIL_TRANSPORT') private readonly transporter: Transporter,
-    private readonly dataSource: DataSource
+    private readonly dataSource: DataSource,
   ) {}
 
   public orderConfirmationHTML(p: OrderEmailPayload): string {
@@ -140,7 +140,7 @@ export class MailerService {
          FROM users
         WHERE id = $1
         LIMIT 1`,
-      [input.userId]
+      [input.userId],
     );
 
     const email: string | undefined = row?.[0]?.email ?? undefined;

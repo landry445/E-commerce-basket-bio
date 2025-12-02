@@ -25,7 +25,7 @@ async function bootstrap() {
       // désactivation COEP pour éviter les erreurs avec Next en dev
       crossOriginEmbedderPolicy: false,
     }),
-    cookieParser()
+    cookieParser(),
   );
 
   // Validation
@@ -34,7 +34,7 @@ async function bootstrap() {
       whitelist: true,
       forbidNonWhitelisted: true,
       transform: true,
-    })
+    }),
   );
 
   // CORS pour Next.js + cookies
