@@ -21,7 +21,7 @@ export class AuthService {
     private readonly mailService: MailerService,
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
-    private readonly emailVerify: EmailVerificationService
+    private readonly emailVerify: EmailVerificationService,
   ) {}
 
   async validateUser(email: string, password: string) {
@@ -43,7 +43,7 @@ export class AuthService {
         this.logger.warn(`Renvoi du mail de vérification en échec: ${String(e)}`);
       }
       throw new UnauthorizedException(
-        'Adresse e-mail non vérifiée. Un nouveau lien vient d’être envoyé.'
+        'Adresse e-mail non vérifiée. Un nouveau lien vient d’être envoyé.',
       );
     }
 

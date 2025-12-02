@@ -18,7 +18,7 @@ export class EmailVerificationService {
     private readonly tokenRepo: Repository<EmailVerificationToken>,
     @InjectRepository(User)
     private readonly userRepo: Repository<User>,
-    private readonly mailer: MailerService
+    private readonly mailer: MailerService,
   ) {}
 
   private hash(raw: string): Buffer {

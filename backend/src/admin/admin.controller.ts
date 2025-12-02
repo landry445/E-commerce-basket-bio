@@ -41,7 +41,7 @@ export class AdminController {
 export class AdminNewsletterController {
   constructor(
     private readonly usersService: UsersService,
-    private readonly mailService: MailerService
+    private readonly mailService: MailerService,
   ) {}
 
   @Get('subscribers')

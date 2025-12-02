@@ -19,7 +19,7 @@ export function orderConfirmationHtml(p: Payload): string {
         <td style="padding:8px;border-bottom:1px solid #eee;text-align:right">${eur.format(l.unit)}</td>
         <td style="padding:8px;border-bottom:1px solid #eee;text-align:right">${l.qty}</td>
         <td style="padding:8px;border-bottom:1px solid #eee;text-align:right">${eur.format(l.total)}</td>
-      </tr>`
+      </tr>`,
     )
     .join('');
 

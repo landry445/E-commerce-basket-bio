@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import * as request from 'supertest';
-import * as cookieParser from 'cookie-parser';      // ← ajouté
+import * as cookieParser from 'cookie-parser'; // ← ajouté
 import { AppModule } from '../src/app.module';
 
 describe('E2E', () => {
@@ -14,21 +14,19 @@ describe('E2E', () => {
     }).compile();
 
     app = moduleFixture.createNestApplication();
-    app.use(cookieParser());                        // ← ajouté
+    app.use(cookieParser()); // ← ajouté
     app.useGlobalPipes(new ValidationPipe());
     await app.init();
   });
 
   it('Register – POST /auth/register', async () => {
-    const res = await request(app.getHttpServer())
-      .post('/auth/register')
-      .send({
-        firstname: 'Alice',
-        lastname: 'Test',
-        email: 'alice@example.com',
-        phone: '0606060607',
-        password: 'Test@1234',
-      });
+    const res = await request(app.getHttpServer()).post('/auth/register').send({
+      firstname: 'Alice',
+      lastname: 'Test',
+      email: 'alice@example.com',
+      phone: '0606060607',
+      password: 'Test@1234',
+    });
     expect(res.status).toBe(201);
     expect(res.body).toHaveProperty('email', 'alice@example.com');
     expect(res.body).not.toHaveProperty('password_hash');
@@ -70,7 +68,7 @@ describe('E2E', () => {
     const res = await request(app.getHttpServer())
       .get('/admin/users')
       .set('Cookie', [`jwt=${jwt}`]);
-    expect(res.status).toBe(403);                   // refusé car client
+    expect(res.status).toBe(403); // refusé car client
   });
 
   afterAll(async () => {

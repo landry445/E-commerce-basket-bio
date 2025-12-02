@@ -7,7 +7,7 @@ import { Basket } from './entities/basket.entity';
 export class BasketsService {
   constructor(
     @InjectRepository(Basket)
-    private readonly basketRepo: Repository<Basket>
+    private readonly basketRepo: Repository<Basket>,
   ) {}
 
   findAll(): Promise<Basket[]> {
