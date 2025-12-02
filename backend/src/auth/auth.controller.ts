@@ -34,7 +34,7 @@ class ResendDto {
 export class AuthController {
   constructor(
     private authService: AuthService,
-    private readonly emailVerify: EmailVerificationService
+    private readonly emailVerify: EmailVerificationService,
   ) {}
 
   private cookieBase(): CookieOptions {

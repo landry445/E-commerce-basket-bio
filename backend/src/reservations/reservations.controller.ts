@@ -42,7 +42,7 @@ export class ReservationsController {
   @Get('me/compact')
   async mineCompact(
     @Req() req: ReqWithUser,
-    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number
+    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
   ) {
     return this.reservationsService.findMineCompact(req.user.id, limit);
   }
@@ -51,7 +51,7 @@ export class ReservationsController {
   @Get('view/:id')
   async viewOneForOwner(
     @Param('id', ParseUUIDPipe) id: string,
-    @Req() req: { user: { id: string } }
+    @Req() req: { user: { id: string } },
   ) {
     return this.reservationsService.findOneForView(id, req.user.id);
   }
@@ -73,7 +73,7 @@ export class ReservationsController {
       pickup_date: string;
       items: { basket_id: string; quantity: number }[];
       customer_note?: string;
-    }
+    },
   ): Promise<{ groupId: string }> {
     return this.reservationsService.createBulk(body, req.user.id);
   }
@@ -107,7 +107,7 @@ export class ReservationsController {
   update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: CreateReservationDto,
-    @Req() req: ReqWithUser
+    @Req() req: ReqWithUser,
   ) {
     return this.reservationsService.update(id, dto, req.user.id);
   }
@@ -117,7 +117,7 @@ export class ReservationsController {
   @Patch(':id/non-venu')
   async markNonVenu(
     @Param('id', ParseUUIDPipe) id: string,
-    @Body('non_venu') nonVenu: boolean
+    @Body('non_venu') nonVenu: boolean,
   ): Promise<{ updated: boolean }> {
     await this.reservationsService.setNonVenu(id, nonVenu);
     return { updated: true };
