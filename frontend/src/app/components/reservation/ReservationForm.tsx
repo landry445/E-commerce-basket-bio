@@ -417,7 +417,7 @@ export default function ReservationForm(): JSX.Element {
                               crossOrigin="anonymous"
                               onError={(e) => {
                                 (e.currentTarget as HTMLImageElement).src =
-                                  "/panier-legumes.webp";
+                                  "/legume-frog.jpg";
                               }}
                             />
                           </div>
