@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Navbar from "@/app/components/navbar/Navbar";
-import Footer from "@/app/components/Footer";
+import Footer from "../components/footer";
 
 import { NewsletterBox } from "../components/compte/NewsletterBox";
 
