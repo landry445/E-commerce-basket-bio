@@ -29,8 +29,12 @@ function ymd(iso: string): string {
   return iso.slice(0, 10);
 }
 
-export default async function Page(props: { params: { groupId: string } }) {
-  const { groupId } = props.params;
+export default async function Page({
+  params,
+}: {
+  params: Promise<{ groupId: string }>;
+}) {
+  const { groupId } = await params;
 
   const cookieStore = await cookies();
   const cookieStr = cookieStore.toString();
