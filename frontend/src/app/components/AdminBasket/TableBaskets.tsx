@@ -65,7 +65,7 @@ export default function TableBaskets({
                     style={{ width: "40px", height: "40px" }}
                     onError={(e) => {
                       (e.currentTarget as HTMLImageElement).src =
-                        "/panier-legumes.webp";
+                        "/legume-frog.jpg";
                     }}
                   />
                 </td>

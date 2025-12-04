@@ -66,7 +66,7 @@ export default function SalesPoints() {
           <div className="space-y-8">
             {/* <SalesPointCard
               title="Directement à l'exploitation"
-              imgSrc="/panier-legumes.webp"
+              imgSrc="/legume-frog.jpg"
               imgAlt="Directement à l'exploitation"
             >
               <p>
