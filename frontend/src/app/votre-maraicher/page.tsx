@@ -1,5 +1,5 @@
 import Navbar from "../components/navbar/Navbar";
-import Footer from "../components/Footer";
+import Footer from "../components/footer";
 import ScrollingBanner from "../components/ScrollingBanner";
 
 import Hero from "../components/market-gardener/Hero";
