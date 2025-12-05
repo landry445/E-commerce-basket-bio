@@ -1,12 +1,9 @@
-import Navbar from "@/app/components/navbar/Navbar";
-import Footer from "@/app/components/footer";
+import Footer from "../../components/footer";
 import { AdminNewsletterScreen } from "../../components/newsletter/AdminNewsletterScreen";
 
 export default function AdminNewsletterPage() {
   return (
     <>
-      <Navbar />
-
       <main className="bg-[var(--background)] text-[var(--foreground)] min-h-screen">
         <section className="container mx-auto max-w-5xl px-4 py-8">
           <h1
