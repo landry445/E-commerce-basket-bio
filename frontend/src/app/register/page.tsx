@@ -114,12 +114,7 @@ export default function RegisterPage() {
           {/* Carte + formulaire */}
           <div className="bg-white rounded-b-xl border border-black/10 shadow-xl px-8 py-8">
             <div className="flex justify-center mb-4">
-              <Image
-                src="/logo-jardins-des-rainettes.jpeg"
-                alt="Logo"
-                width={70}
-                height={100}
-              />
+              <Image src="/logo-frog.png" alt="Logo" width={70} height={100} />
             </div>
 
             {error && (

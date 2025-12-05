@@ -30,10 +30,10 @@ export default function DesktopBar({
       <div className="max-w-[1440px] mx-auto flex items-center justify-between px-4 py-3 gap-4">
         <Link href="/" aria-label="Aller à l’accueil" className="shrink-0">
           <Image
-            src="/logo-jardins-des-rainettes.jpeg"
+            src="/logo-frog.png"
             alt="Logo"
-            width={56}
-            height={80}
+            width={90}
+            height={90}
             priority
           />
         </Link>
