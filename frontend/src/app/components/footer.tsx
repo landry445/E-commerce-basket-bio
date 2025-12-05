@@ -65,19 +65,18 @@ export default function Footer() {
             "
           >
             <Image
-              src="/logo-jardins-des-rainettes.jpeg"
+              src="/logo-frog.png"
               alt="Logo ferme"
-              width={84}
-              height={120}
+              width={100}
+              height={100}
               priority
-              className="h-[60px] w-auto md:h-[70px]"
             />
             <Image
               src="/logo-ab-eurofeuille.webp"
               alt="Label AB"
-              width={80}      
-              height={48}     
-              className="w-auto"   
+              width={80}
+              height={48}
+              className="w-auto"
               priority
             />
           </div>
