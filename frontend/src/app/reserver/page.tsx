@@ -1,6 +1,6 @@
 import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
-import Footer from "../components/Footer";
+import Footer from "../components/footer";
 import ReservationForm from "../components/reservation/ReservationForm";
 import Navbar from "../components/navbar/Navbar";
 
