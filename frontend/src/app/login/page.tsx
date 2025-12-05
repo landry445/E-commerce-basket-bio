@@ -3,7 +3,7 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, FormEvent } from "react";
 import Image from "next/image";
-import Footer from "../components/Footer";
+import Footer from "../components/footer";
 import Navbar from "../components/navbar/Navbar";
 
 type MeResponse = {

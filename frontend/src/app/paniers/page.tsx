@@ -1,6 +1,6 @@
 import BasketsHero from "../components/baskets/BasketsHero";
 import Navbar from "../components/navbar/Navbar";
-import Footer from "../components/Footer";
+import Footer from "../components/footer";
 import BasketsContent from "../components/baskets/BasketsContent";
 import OrderAside from "../components/baskets/OrderAside";
 

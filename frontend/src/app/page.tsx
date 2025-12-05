@@ -3,7 +3,7 @@ import BioBaskets from "./components/homepage/BioBaskets";
 import SellingPoints from "./components/homepage/SellingPoints";
 import type { FAQItem } from "./components/homepage/FAQ";
 import FAQ from "./components/homepage/FAQ";
-import Footer from "./components/Footer";
+import Footer from "./components/footer";
 import ScrollingBanner from "./components/ScrollingBanner";
 import Navbar from "./components/navbar/Navbar";
 

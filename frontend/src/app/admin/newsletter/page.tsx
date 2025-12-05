@@ -1,5 +1,5 @@
 import Navbar from "@/app/components/navbar/Navbar";
-import Footer from "@/app/components/Footer";
+import Footer from "@/app/components/footer";
 import { AdminNewsletterScreen } from "../../components/newsletter/AdminNewsletterScreen";
 
 export default function AdminNewsletterPage() {
