@@ -76,7 +76,12 @@ export default function RegisterSuccessPage({
             </div>
 
             <div className="flex justify-center mt-6">
-              <Image src="/logo-frog.png" alt="Logo" width={80} height={110} />
+              <Image
+                src="/logo-frog-jdr.png"
+                alt="Logo"
+                width={80}
+                height={110}
+              />
             </div>
           </div>
         </section>

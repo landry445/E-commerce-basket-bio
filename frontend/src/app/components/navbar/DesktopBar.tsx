@@ -27,13 +27,13 @@ export default function DesktopBar({
 }: DesktopBarProps) {
   return (
     <header className={className}>
-      <div className="max-w-[1440px] mx-auto flex items-center justify-between px-4 py-3 gap-4">
-        <Link href="/" aria-label="Aller à l’accueil" className="shrink-0">
+      <div className="max-w-[1440px] mx-auto flex flex-wrap items-center justify-between px-4 py-3 gap-4">
+        <Link href="/" aria-label="Aller à l’accueil">
           <Image
-            src="/logo-frog.png"
+            src="/logo-frog-jdr.png"
             alt="Logo"
-            width={90}
-            height={90}
+            width={80}
+            height={80}
             priority
           />
         </Link>
