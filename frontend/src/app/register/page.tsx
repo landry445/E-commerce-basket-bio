@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, FormEvent } from "react";
+import { useState, FormEvent, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -17,7 +17,7 @@ type RegisterPayload = {
 
 type ApiMsg = { message?: string };
 
-export default function RegisterPage() {
+function RegisterPageInner() {
   const router = useRouter();
   const params = useSearchParams();
   // permet de revenir directement là où l’utilisateur allait (ex: /reserver)
@@ -114,7 +114,12 @@ export default function RegisterPage() {
           {/* Carte + formulaire */}
           <div className="bg-white rounded-b-xl border border-black/10 shadow-xl px-8 py-8">
             <div className="flex justify-center mb-4">
-              <Image src="/logo-frog.png" alt="Logo" width={70} height={100} />
+              <Image
+                src="/logo-frog-jdr.png"
+                alt="Logo"
+                width={70}
+                height={100}
+              />
             </div>
 
             {error && (
@@ -285,5 +290,24 @@ export default function RegisterPage() {
         </section>
       </main>
     </>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense
+      fallback={
+        <>
+          <Navbar />
+          <main className="py-30 bg-[var(--color-light)] flex items-center justify-center px-4">
+            <p className="text-gray-700">
+              Chargement de la page d’inscription...
+            </p>
+          </main>
+        </>
+      }
+    >
+      <RegisterPageInner />
+    </Suspense>
   );
 }

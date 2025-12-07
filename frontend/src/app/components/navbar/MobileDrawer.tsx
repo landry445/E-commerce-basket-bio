@@ -91,7 +91,7 @@ export default function MobileDrawer({
 
             <Link href="/" aria-label="Aller à l’accueil" className="shrink-0">
               <Image
-                src="/logo-frog.png"
+                src="/logo-frog-jdr.png"
                 alt="Logo"
                 width={100}
                 height={100}

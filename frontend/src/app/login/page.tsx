@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState, FormEvent } from "react";
+import { useState, FormEvent, Suspense } from "react";
 import Image from "next/image";
 import Footer from "../components/footer";
 import Navbar from "../components/navbar/Navbar";
@@ -12,7 +12,7 @@ type MeResponse = {
   is_admin: boolean;
 };
 
-export default function LoginPage() {
+function LoginPageInner() {
   const router = useRouter();
   const params = useSearchParams();
 
@@ -103,7 +103,7 @@ export default function LoginPage() {
         {/* Carte de connexion */}
         <div className="max-w-md w-full bg-white rounded-2xl shadow-lg p-8">
           <div className="flex justify-center mb-4">
-            <Image src="/logo-frog.png" alt="Logo" width={80} height={48} />
+            <Image src="/logo-frog-jdr.png" alt="Logo" width={80} height={48} />
           </div>
 
           <form onSubmit={onSubmit} className="space-y-4">
@@ -161,5 +161,26 @@ export default function LoginPage() {
       </main>
       <Footer />
     </>
+  );
+}
+
+// Composant de page exporté, avec Suspense autour de l’usage de useSearchParams
+export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <>
+          <Navbar />
+          <main className="px-4 py-50 flex flex-col items-center justify-center bg-[var(--color-light)]">
+            <p className="text-gray-700">
+              Chargement de la page de connexion...
+            </p>
+          </main>
+          <Footer />
+        </>
+      }
+    >
+      <LoginPageInner />
+    </Suspense>
   );
 }

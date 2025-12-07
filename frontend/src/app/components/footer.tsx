@@ -65,7 +65,7 @@ export default function Footer() {
             "
           >
             <Image
-              src="/logo-frog.png"
+              src="/logo-frog-jdr.png"
               alt="Logo ferme"
               width={100}
               height={100}

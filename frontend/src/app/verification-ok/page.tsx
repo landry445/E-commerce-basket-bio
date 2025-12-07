@@ -4,8 +4,9 @@ import Link from "next/link";
 import Image from "next/image";
 import Navbar from "@/app/components/navbar/Navbar";
 import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 
-export default function VerificationOkPage(): React.ReactElement {
+function VerificationOkPageInner() {
   const sp = useSearchParams();
 
   // Valeur "next" éventuelle depuis l'URL
@@ -66,11 +67,30 @@ export default function VerificationOkPage(): React.ReactElement {
             </div>
 
             <div className="flex justify-center mt-6">
-              <Image src="/logo-frog.png" alt="Logo" width={80} height={110} />
+              <Image src="/" alt="Logo" width={80} height={110} />
             </div>
           </div>
         </section>
       </main>
     </>
+  );
+}
+
+export default function VerificationOkPage() {
+  return (
+    <Suspense
+      fallback={
+        <>
+          <Navbar />
+          <main className="py-30 bg-[var(--color-light)] flex items-center justify-center px-4">
+            <p className="text-gray-700">
+              Chargement de la page de confirmation...
+            </p>
+          </main>
+        </>
+      }
+    >
+      <VerificationOkPageInner />
+    </Suspense>
   );
 }
