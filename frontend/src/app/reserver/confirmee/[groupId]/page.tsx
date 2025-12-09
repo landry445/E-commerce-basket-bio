@@ -1,4 +1,3 @@
-// frontend/src/app/reserver/confirmee/[groupId]/page.tsx
 import Link from "next/link";
 import { cookies } from "next/headers";
 
