@@ -1,4 +1,3 @@
-// middleware.ts
 import { NextResponse, NextRequest } from "next/server";
 
 const CLIENT_PROTECTED = ["/reserver", "/mes-reservations", "/mon-compte"];
