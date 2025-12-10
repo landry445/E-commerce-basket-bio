@@ -9,7 +9,7 @@ type FeatureCardProps = {
 
 function FeatureCard({ imgSrc, imgAlt, text }: FeatureCardProps) {
   return (
-    <div className="bg-white text-[var(--foreground)] p-6 rounded-2xl shadow flex flex-col md:flex-row items-center gap-6 m-7">
+    <div className="bg-white text-(--foreground) p-6 rounded-2xl shadow flex flex-col md:flex-row items-center gap-6 m-7">
       {/* Image à gauche */}
       <Image
         src={imgSrc}
@@ -48,7 +48,7 @@ export default function Features() {
           imgSrc="/champs-personne.jpg"
           imgAlt="Sols fertiles"
           text="Nous cultivons nos légumes sur 2,5Ha autour de la ferme dont 2000m2 avec autonomie en eau.
-Tous nos plants et graines sont certifiés bio, nous faisons nous même une partie des plants dont certains destinée à la vente aux particuliers au printemps (légumes ratatouille)"
+Toutes nos plants et nos graines sont certifiés bio, nous faisons nous même une partie des plants dont certains destinée à la vente aux particuliers au printemps (légumes ratatouille)"
         />
       </div>
     </section>
