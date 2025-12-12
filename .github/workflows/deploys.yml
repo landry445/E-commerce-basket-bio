@@ -1,0 +1,65 @@
+name: Deploy to AlwaysData
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      # Backend : install + build
+      - name: Backend - Install deps
+        working-directory: backend
+        run: npm ci
+
+      - name: Backend - Build
+        working-directory: backend
+        run: npm run build
+
+      # Frontend : install + build
+      - name: Frontend - Install deps
+        working-directory: frontend
+        run: npm ci
+
+      - name: Frontend - Build
+        working-directory: frontend
+        env:
+          NEXT_PUBLIC_API_BASE_URL: https://api.lejardindesrainettes.fr
+        run: npm run build
+
+      # Déploiement sur AlwaysData via rsync
+      - name: Setup SSH
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.ALWAYSDATA_SSH_KEY }}
+          ALWAYSDATA_HOST: ${{ secrets.ALWAYSDATA_HOST }}
+        run: |
+          mkdir -p ~/.ssh
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan "$ALWAYSDATA_HOST" >> ~/.ssh/known_hosts
+
+      - name: Rsync backend & frontend to AlwaysData
+        env:
+          ALWAYSDATA_HOST: ${{ secrets.ALWAYSDATA_HOST }}
+          ALWAYSDATA_USER: ${{ secrets.ALWAYSDATA_USER }}
+        run: |
+          rsync -az --delete \
+            --exclude '.git' \
+            --exclude '.env*' \
+            backend/ "$ALWAYSDATA_USER@$ALWAYSDATA_HOST:backend/"
+
+          rsync -az --delete \
+            --exclude '.git' \
+            --exclude '.env*' \
+            frontend/ "$ALWAYSDATA_USER@$ALWAYSDATA_HOST:frontend/"
