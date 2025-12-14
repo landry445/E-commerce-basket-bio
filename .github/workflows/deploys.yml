@@ -54,11 +54,14 @@ jobs:
           ALWAYSDATA_HOST: ${{ secrets.ALWAYSDATA_HOST }}
           ALWAYSDATA_USER: ${{ secrets.ALWAYSDATA_USER }}
         run: |
+          # Backend : sans node_modules
           rsync -az --delete \
             --exclude '.git' \
             --exclude '.env*' \
+            --exclude 'node_modules' \
             backend/ "$ALWAYSDATA_USER@$ALWAYSDATA_HOST:backend/"
 
+          # Frontend : avec node_modules (build déjà fait ici)
           rsync -az --delete \
             --exclude '.git' \
             --exclude '.env*' \
