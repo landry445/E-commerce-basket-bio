@@ -12,20 +12,30 @@ type MeResponse = {
   is_admin: boolean;
 };
 
-function LoginPageInner() {
+function safeInternalNext(value: string | null): string {
+  if (!value) return "/reserver";
+  if (value.startsWith("/")) return value;
+  return "/reserver";
+}
+
+function LoginPageInner(): React.ReactElement {
   const router = useRouter();
   const params = useSearchParams();
 
-  const next = params.get("next") ?? "/reserver";
+  const next = safeInternalNext(params.get("next"));
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState<boolean>(false);
 
   async function fetchMe(): Promise<MeResponse | null> {
     try {
-      const meRes = await fetch("/api/auth/me", { credentials: "include" });
+      const meRes = await fetch("/api/auth/me", {
+        method: "GET",
+        credentials: "include",
+        cache: "no-store",
+      });
       if (!meRes.ok) return null;
       return (await meRes.json()) as MeResponse;
     } catch {
@@ -33,7 +43,7 @@ function LoginPageInner() {
     }
   }
 
-  async function onSubmit(e: FormEvent) {
+  async function onSubmit(e: FormEvent<HTMLFormElement>): Promise<void> {
     e.preventDefault();
     setError(null);
     setLoading(true);
@@ -51,13 +61,16 @@ function LoginPageInner() {
           message?: string;
         } | null;
         setError(body?.message ?? "Identifiants incorrects");
-        setLoading(false);
         return;
       }
 
       const me = await fetchMe();
+      if (!me) {
+        setError("Session non disponible");
+        return;
+      }
 
-      if (me?.is_admin) {
+      if (me.is_admin) {
         const target =
           next.startsWith("/admin/reservations") &&
           next !== "/admin/reservations"
@@ -71,6 +84,7 @@ function LoginPageInner() {
       router.replace(target);
     } catch {
       setError("Impossible de contacter le serveur");
+    } finally {
       setLoading(false);
     }
   }
@@ -128,12 +142,12 @@ function LoginPageInner() {
               />
             </div>
 
-            {error && <p className="text-sm text-red-600">{error}</p>}
+            {error ? <p className="text-sm text-red-600">{error}</p> : null}
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-primary text-white py-2 rounded-full shadow hover:opacity-90 transition"
+              className="w-full bg-primary text-white py-2 rounded-full shadow hover:opacity-90 transition disabled:opacity-60"
             >
               {loading ? "Connexion..." : "Se connecter"}
             </button>
@@ -155,7 +169,7 @@ function LoginPageInner() {
   );
 }
 
-export default function LoginPage() {
+export default function LoginPage(): React.ReactElement {
   return (
     <Suspense
       fallback={
