@@ -3,9 +3,16 @@ import { NextRequest, NextResponse } from "next/server";
 const API_BASE =
   process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3001";
 
-export async function GET(req: NextRequest) {
-  const upstream = await fetch(`${API_BASE}/auth/me`, {
-    headers: { cookie: req.headers.get("cookie") ?? "" },
+export async function PATCH(req: NextRequest) {
+  const body = await req.text();
+
+  const upstream = await fetch(`${API_BASE}/users/me/newsletter`, {
+    method: "PATCH",
+    headers: {
+      cookie: req.headers.get("cookie") ?? "",
+      "Content-Type": "application/json",
+    },
+    body,
     cache: "no-store",
   });
 

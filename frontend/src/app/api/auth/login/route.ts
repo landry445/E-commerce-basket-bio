@@ -1,55 +1,37 @@
 import { NextRequest, NextResponse } from "next/server";
 
-type LoginBody = { email: string; password: string };
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3001";
 
-function isLoginBody(value: unknown): value is LoginBody {
-  if (!value || typeof value !== "object") return false;
-  const v = value as Record<string, unknown>;
-  return typeof v.email === "string" && typeof v.password === "string";
+function forwardSetCookie(upstream: Response, res: NextResponse) {
+  const h = upstream.headers as unknown as { getSetCookie?: () => string[] };
+  const cookies = h.getSetCookie?.();
+  if (cookies?.length) {
+    for (const c of cookies) res.headers.append("set-cookie", c);
+    return;
+  }
+  const single = upstream.headers.get("set-cookie");
+  if (single) res.headers.set("set-cookie", single);
 }
 
-type HeadersWithSetCookie = Headers & { getSetCookie?: () => string[] };
+export async function POST(req: NextRequest) {
+  const body = await req.text();
 
-function readSetCookies(headers: Headers): string[] {
-  const h = headers as HeadersWithSetCookie;
-  const list = h.getSetCookie?.();
-  if (Array.isArray(list) && list.length > 0) return list;
-
-  const single = headers.get("set-cookie");
-  if (!single) return [];
-  return [single];
-}
-
-export async function POST(req: NextRequest): Promise<NextResponse> {
-  const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL;
-  if (!apiBase) {
-    return NextResponse.json(
-      { message: "NEXT_PUBLIC_API_BASE_URL manquante" },
-      { status: 500 }
-    );
-  }
-
-  const bodyUnknown: unknown = await req.json().catch(() => null);
-  if (!isLoginBody(bodyUnknown)) {
-    return NextResponse.json({ message: "Payload invalide" }, { status: 400 });
-  }
-
-  const upstream = await fetch(`${apiBase}/auth/login`, {
+  const upstream = await fetch(`${API_BASE}/auth/login`, {
     method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify(bodyUnknown),
-    cache: "no-store",
+    headers: { "Content-Type": "application/json" },
+    body,
   });
 
-  const contentType =
-    upstream.headers.get("content-type") ?? "application/json";
-  const payloadText = await upstream.text();
+  const text = await upstream.text();
+  const res = new NextResponse(text, {
+    status: upstream.status,
+    headers: {
+      "Content-Type":
+        upstream.headers.get("content-type") ?? "application/json",
+    },
+  });
 
-  const res = new NextResponse(payloadText, { status: upstream.status });
-  res.headers.set("content-type", contentType);
-
-  const setCookies = readSetCookies(upstream.headers);
-  for (const c of setCookies) res.headers.append("set-cookie", c);
-
+  forwardSetCookie(upstream, res);
   return res;
 }

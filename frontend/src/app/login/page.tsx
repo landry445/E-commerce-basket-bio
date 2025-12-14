@@ -12,42 +12,28 @@ type MeResponse = {
   is_admin: boolean;
 };
 
-function safeInternalNext(value: string | null): string {
-  if (!value) return "/reserver";
-  if (value.startsWith("/")) return value;
-  return "/reserver";
-}
-
-function LoginPageInner(): React.ReactElement {
+function LoginPageInner() {
   const router = useRouter();
   const params = useSearchParams();
 
-  const nextParam = params.get("next");
-  const nextPath = safeInternalNext(nextParam);
+  const next = params.get("next") ?? "/reserver";
 
-  const [email, setEmail] = useState<string>("");
-  const [password, setPassword] = useState<string>("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState(false);
 
   async function fetchMe(): Promise<MeResponse | null> {
     try {
-      const meRes = await fetch("/api/auth/me", {
-        method: "GET",
-        credentials: "include",
-        cache: "no-store",
-      });
-
+      const meRes = await fetch("/api/auth/me", { credentials: "include" });
       if (!meRes.ok) return null;
-
-      const me: MeResponse = (await meRes.json()) as MeResponse;
-      return me;
+      return (await meRes.json()) as MeResponse;
     } catch {
       return null;
     }
   }
 
-  async function onSubmit(e: FormEvent<HTMLFormElement>): Promise<void> {
+  async function onSubmit(e: FormEvent) {
     e.preventDefault();
     setError(null);
     setLoading(true);
@@ -56,40 +42,35 @@ function LoginPageInner(): React.ReactElement {
       const res = await fetch("/api/auth/login", {
         method: "POST",
         credentials: "include",
-        headers: { "content-type": "application/json" },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
 
       if (!res.ok) {
-        const body: { message?: string } | null = await res
-          .json()
-          .catch(() => null);
+        const body = (await res.json().catch(() => null)) as {
+          message?: string;
+        } | null;
         setError(body?.message ?? "Identifiants incorrects");
         setLoading(false);
         return;
       }
 
       const me = await fetchMe();
-      if (!me) {
-        setError("Session non disponible");
-        setLoading(false);
-        return;
-      }
 
-      if (me.is_admin) {
+      if (me?.is_admin) {
         const target =
-          nextPath.startsWith("/admin/reservations") &&
-          nextPath !== "/admin/reservations"
-            ? nextPath
+          next.startsWith("/admin/reservations") &&
+          next !== "/admin/reservations"
+            ? next
             : "/admin/reservations";
         router.replace(target);
         return;
       }
 
-      const target = nextPath.startsWith("/admin") ? "/reserver" : nextPath;
+      const target = next.startsWith("/admin") ? "/reserver" : next;
       router.replace(target);
     } catch {
-      setError("Serveur non joignable");
+      setError("Impossible de contacter le serveur");
       setLoading(false);
     }
   }
@@ -123,10 +104,10 @@ function LoginPageInner(): React.ReactElement {
                 type="email"
                 required
                 value={email}
-                onChange={(ev) => setEmail(ev.target.value)}
+                onChange={(e) => setEmail(e.target.value)}
                 autoComplete="email"
-                className="w-full mt-1 rounded-full border border-gray-300 bg-white
-                  px-4 py-2 text-dark placeholder-gray-500
+                className="w-full mt-1 rounded-full border border-gray-300 bg-white px-4 py-2
+                  text-dark placeholder-gray-500
                   focus:outline-none focus:ring-2 focus:ring-primary/30
                   focus:border-primary"
               />
@@ -138,21 +119,21 @@ function LoginPageInner(): React.ReactElement {
                 type="password"
                 required
                 value={password}
-                onChange={(ev) => setPassword(ev.target.value)}
+                onChange={(e) => setPassword(e.target.value)}
                 autoComplete="current-password"
-                className="w-full mt-1 rounded-full border border-gray-300 bg-white
-                  px-4 py-2 text-dark placeholder-gray-500
+                className="w-full mt-1 rounded-full border border-gray-300 bg-white px-4 py-2
+                  text-dark placeholder-gray-500
                   focus:outline-none focus:ring-2 focus:ring-primary/30
                   focus:border-primary"
               />
             </div>
 
-            {error ? <p className="text-sm text-red-600">{error}</p> : null}
+            {error && <p className="text-sm text-red-600">{error}</p>}
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-primary text-white py-2 rounded-full shadow hover:opacity-90 transition disabled:opacity-60"
+              className="w-full bg-primary text-white py-2 rounded-full shadow hover:opacity-90 transition"
             >
               {loading ? "Connexion..." : "Se connecter"}
             </button>
@@ -174,7 +155,7 @@ function LoginPageInner(): React.ReactElement {
   );
 }
 
-export default function LoginPage(): React.ReactElement {
+export default function LoginPage() {
   return (
     <Suspense
       fallback={

@@ -4,7 +4,10 @@ const API_BASE =
   process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3001";
 
 export async function GET(req: NextRequest) {
-  const upstream = await fetch(`${API_BASE}/auth/me`, {
+  const url = new URL(`${API_BASE}/reservations/me/compact`);
+  url.search = req.nextUrl.search;
+
+  const upstream = await fetch(url.toString(), {
     headers: { cookie: req.headers.get("cookie") ?? "" },
     cache: "no-store",
   });
