@@ -9,11 +9,13 @@ function isUuidV4(value: string): boolean {
   return uuidV4.test(value);
 }
 
+type ParamsPromise = Promise<{ id: string }>;
+
 export async function DELETE(
   req: NextRequest,
-  ctx: { params: { id: string } }
-): Promise<NextResponse> {
-  const id = ctx.params.id;
+  context: { params: ParamsPromise }
+): Promise<Response> {
+  const { id } = await context.params;
 
   if (!isUuidV4(id)) {
     return NextResponse.json({ error: "id invalide" }, { status: 400 });
@@ -29,11 +31,15 @@ export async function DELETE(
   });
 
   if (upstream.status === 204) {
-    return new NextResponse(null, { status: 204 });
+    return new Response(null, { status: 204 });
   }
 
-  return new NextResponse(upstream.body, {
+  const contentType =
+    upstream.headers.get("content-type") ?? "application/json";
+  const bodyText = await upstream.text();
+
+  return new Response(bodyText, {
     status: upstream.status,
-    headers: { "content-type": "application/json" },
+    headers: { "content-type": contentType },
   });
 }
