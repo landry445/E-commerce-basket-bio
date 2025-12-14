@@ -12,7 +12,7 @@ export default function Footer() {
       <div
         className="
           w-[90%]
-          bg-[var(--color-yellow)]
+          bg-yellow
           mx-auto
           px-4 sm:px-8 md:px-12 lg:px-24
           py-6
@@ -41,7 +41,7 @@ export default function Footer() {
           {/* Liens légaux — centrés en mobile, espacés ; colonne dédiée en desktop */}
           <nav
             className="
-              flex flex-col items-center gap-1 text-sm text-[var(--foreground)]
+              flex flex-col items-center gap-1 text-sm text-foreground
               md:items-start md:col-span-1
             "
             aria-label="Liens légaux"
@@ -83,7 +83,7 @@ export default function Footer() {
         </div>
 
         {/* Ligne séparatrice + baseline */}
-        <div className="mt-5 border-t border-black/10 pt-3 text-center text-[0.93rem] text-[var(--foreground)]/90">
+        <div className="mt-5 border-t border-black/10 pt-3 text-center text-[0.93rem] text-foreground/90">
           © {year} Gaec du Jardin Des Rainettes. Tous droits réservés.
         </div>
       </div>

@@ -10,7 +10,7 @@ export default function OrderAside() {
       >
         <div
           className="w-full
-          bg-[url('/aside.jpg')] bg-cover bg-center bg-no-repeat
+          bg-[url('/Aside.jpg')] bg-cover bg-center bg-no-repeat
           rounded-2xl
           shadow
           px-5 sm:px-8 md:px-8

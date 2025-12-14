@@ -25,7 +25,7 @@ async function bootstrap() {
       // désactivation COEP pour éviter les erreurs avec Next en dev
       crossOriginEmbedderPolicy: false,
     }),
-    cookieParser(),
+    cookieParser()
   );
 
   // Validation
@@ -34,14 +34,16 @@ async function bootstrap() {
       whitelist: true,
       forbidNonWhitelisted: true,
       transform: true,
-    }),
+    })
   );
 
   // CORS pour Next.js + cookies
-  const FRONTEND = process.env.FRONTEND_URL || 'http://localhost:3000';
+  const FRONTEND =
+    process.env.CORS_ORIGIN || process.env.FRONTEND_URL || 'https://www.lejardindesrainettes.fr';
+
   app.enableCors({
-    origin: FRONTEND, // origine exacte (pas '*')
-    credentials: true, // cookie httpOnly autorisé
+    origin: FRONTEND,
+    credentials: true,
     methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
   });
