@@ -12,72 +12,84 @@ type MeResponse = {
   is_admin: boolean;
 };
 
-function LoginPageInner() {
+function safeInternalNext(value: string | null): string {
+  if (!value) return "/reserver";
+  if (value.startsWith("/")) return value;
+  return "/reserver";
+}
+
+function LoginPageInner(): React.ReactElement {
   const router = useRouter();
   const params = useSearchParams();
 
-  // Si aucun "next" n'est fourni, cible par défaut = page réserver
-  const next = params.get("next") ?? "/reserver";
+  const nextParam = params.get("next");
+  const nextPath = safeInternalNext(nextParam);
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState<boolean>(false);
 
   async function fetchMe(): Promise<MeResponse | null> {
     try {
-      const meRes = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/me`,
-        { credentials: "include" }
-      );
+      const meRes = await fetch("/api/auth/me", {
+        method: "GET",
+        credentials: "include",
+        cache: "no-store",
+      });
+
       if (!meRes.ok) return null;
-      const me: MeResponse = await meRes.json();
+
+      const me: MeResponse = (await meRes.json()) as MeResponse;
       return me;
     } catch {
       return null;
     }
   }
 
-  async function onSubmit(e: FormEvent) {
+  async function onSubmit(e: FormEvent<HTMLFormElement>): Promise<void> {
     e.preventDefault();
     setError(null);
     setLoading(true);
+
     try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/login`,
-        {
-          method: "POST",
-          credentials: "include",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, password }),
-        }
-      );
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        credentials: "include",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
 
       if (!res.ok) {
-        const body = await res.json().catch(() => null);
+        const body: { message?: string } | null = await res
+          .json()
+          .catch(() => null);
         setError(body?.message ?? "Identifiants incorrects");
         setLoading(false);
         return;
       }
 
-      // À ce stade, le cookie httpOnly est posé par le backend.
       const me = await fetchMe();
+      if (!me) {
+        setError("Session non disponible");
+        setLoading(false);
+        return;
+      }
 
-      if (me?.is_admin) {
-        // Admin: priorité à l’admin. Si un "next" admin est présent, on le respecte.
+      if (me.is_admin) {
         const target =
-          next.startsWith("/admin/reservations") &&
-          next !== "/admin/reservations"
-            ? next
+          nextPath.startsWith("/admin/reservations") &&
+          nextPath !== "/admin/reservations"
+            ? nextPath
             : "/admin/reservations";
         router.replace(target);
-      } else {
-        // Client: jamais redirigé vers l’admin, même si "next" pointe vers /admin
-        const target = next.startsWith("/admin") ? "/reserver" : next;
-        router.replace(target);
+        return;
       }
+
+      const target = nextPath.startsWith("/admin") ? "/reserver" : nextPath;
+      router.replace(target);
     } catch {
-      setError("Impossible de contacter le serveur");
+      setError("Serveur non joignable");
       setLoading(false);
     }
   }
@@ -85,8 +97,7 @@ function LoginPageInner() {
   return (
     <>
       <Navbar />
-      <main className="px-4 py-50 flex flex-col items-center justify-center bg-[var(--color-light)]">
-        {/* Bannière UX */}
+      <main className="px-4 py-50 flex flex-col items-center justify-center bg-light">
         <div className="max-w-md w-full text-center mb-8">
           <h1
             className="text-3xl font-bold"
@@ -100,7 +111,6 @@ function LoginPageInner() {
           </p>
         </div>
 
-        {/* Carte de connexion */}
         <div className="max-w-md w-full bg-white rounded-2xl shadow-lg p-8">
           <div className="flex justify-center mb-4">
             <Image src="/logo-frog-jdr.png" alt="Logo" width={80} height={48} />
@@ -113,12 +123,12 @@ function LoginPageInner() {
                 type="email"
                 required
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(ev) => setEmail(ev.target.value)}
                 autoComplete="email"
                 className="w-full mt-1 rounded-full border border-gray-300 bg-white
-             px-4 py-2 text-[var(--color-dark)] placeholder-gray-500
-             focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/30
-             focus:border-[var(--color-primary)]"
+                  px-4 py-2 text-dark placeholder-gray-500
+                  focus:outline-none focus:ring-2 focus:ring-primary/30
+                  focus:border-primary"
               />
             </div>
 
@@ -128,21 +138,21 @@ function LoginPageInner() {
                 type="password"
                 required
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(ev) => setPassword(ev.target.value)}
                 autoComplete="current-password"
                 className="w-full mt-1 rounded-full border border-gray-300 bg-white
-             px-4 py-2 text-[var(--color-dark)] placeholder-gray-500
-             focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/30
-             focus:border-[var(--color-primary)]"
+                  px-4 py-2 text-dark placeholder-gray-500
+                  focus:outline-none focus:ring-2 focus:ring-primary/30
+                  focus:border-primary"
               />
             </div>
 
-            {error && <p className="text-sm text-red-600">{error}</p>}
+            {error ? <p className="text-sm text-red-600">{error}</p> : null}
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-[var(--color-primary)] text-white py-2 rounded-full shadow hover:opacity-90 transition"
+              className="w-full bg-primary text-white py-2 rounded-full shadow hover:opacity-90 transition disabled:opacity-60"
             >
               {loading ? "Connexion..." : "Se connecter"}
             </button>
@@ -152,7 +162,7 @@ function LoginPageInner() {
             Nouveau client ?{" "}
             <a
               href="/register"
-              className="text-[var(--color-accent)] font-medium hover:underline"
+              className="text-accent font-medium hover:underline"
             >
               Créez un compte
             </a>
@@ -164,14 +174,13 @@ function LoginPageInner() {
   );
 }
 
-// Composant de page exporté, avec Suspense autour de l’usage de useSearchParams
-export default function LoginPage() {
+export default function LoginPage(): React.ReactElement {
   return (
     <Suspense
       fallback={
         <>
           <Navbar />
-          <main className="px-4 py-50 flex flex-col items-center justify-center bg-[var(--color-light)]">
+          <main className="px-4 py-50 flex flex-col items-center justify-center bg-light">
             <p className="text-gray-700">
               Chargement de la page de connexion...
             </p>
