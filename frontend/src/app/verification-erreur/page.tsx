@@ -27,7 +27,7 @@ export default function VerificationErreurPage(): React.ReactElement {
   return (
     <>
       <Navbar />
-      <main className="py-30 bg-[var(--color-light)] flex items-center justify-center px-4">
+      <main className="py-30 bg-light flex items-center justify-center px-4">
         <section className="w-full max-w-xl">
           <div className="text-center mb-6">
             <h1
@@ -59,12 +59,12 @@ export default function VerificationErreurPage(): React.ReactElement {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="ton.email@exemple.com"
-                  className="w-full rounded-md border border-black/10 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
+                  className="w-full rounded-md border border-black/10 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
                 />
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full bg-[var(--color-primary)] text-white font-semibold rounded-full px-6 py-2 hover:opacity-90 transition disabled:opacity-60"
+                  className="w-full bg-primary text-white font-semibold rounded-full px-6 py-2 hover:opacity-90 transition disabled:opacity-60"
                 >
                   {loading ? "Envoi…" : "Recevoir un nouveau lien"}
                 </button>
