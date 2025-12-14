@@ -1,71 +1,102 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse, NextRequest } from "next/server";
 
-type AuthDecision = {
-  allowed: boolean;
-  redirectTo: string | null;
-};
+const CLIENT_PROTECTED = ["/reserver", "/mes-reservations", "/mon-compte"];
+const AUTH_PAGES = ["/login", "/register"];
 
-function buildLoginRedirect(req: NextRequest): NextResponse {
-  const nextPath = req.nextUrl.pathname + req.nextUrl.search;
-  const url = req.nextUrl.clone();
-  url.pathname = "/login";
-  url.searchParams.set("next", nextPath);
-  return NextResponse.redirect(url);
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3001";
+const COOKIE_NAME = process.env.COOKIE_NAME ?? "auth_token";
+
+type Me = { id: string; email: string; is_admin: boolean };
+
+async function fetchMe(req: NextRequest): Promise<Me | null> {
+  try {
+    const res = await fetch(`${API_BASE}/auth/me`, {
+      headers: { cookie: req.headers.get("cookie") ?? "" },
+      cache: "no-store",
+    });
+    if (!res.ok) return null;
+    return (await res.json()) as Me;
+  } catch {
+    return null;
+  }
 }
 
-function readAuthToken(req: NextRequest): string | null {
-  const cookieName = process.env.COOKIE_NAME ?? "auth_token";
-  const cookie = req.cookies.get(cookieName);
-  return cookie?.value ?? null;
-}
+export async function middleware(req: NextRequest) {
+  const { pathname, search } = req.nextUrl;
+  const hasToken = Boolean(req.cookies.get(COOKIE_NAME)?.value);
 
-function decide(req: NextRequest, token: string | null): AuthDecision {
-  const path = req.nextUrl.pathname;
+  // Pages d'auth
+  if (AUTH_PAGES.some((p) => pathname.startsWith(p))) {
+    if (!hasToken) return NextResponse.next();
 
-  const isAdmin = path.startsWith("/admin");
-  const isClientArea = path.startsWith("/espace-client");
-  const isReserve = path.startsWith("/reserver");
-  const isAuthPage = path === "/login" || path === "/register";
+    const me = await fetchMe(req);
+    if (!me) return NextResponse.next();
 
-  const isPublic =
-    path.startsWith("/verification-ok") ||
-    path.startsWith("/verification-erreur") ||
-    path.startsWith("/auth/verify-email");
-
-  if (isPublic) return { allowed: true, redirectTo: null };
-
-  if (isAuthPage) {
-    if (token) return { allowed: false, redirectTo: "/espace-client" };
-    return { allowed: true, redirectTo: null };
+    const target = me.is_admin ? "/admin/reservations" : "/reserver";
+    const url = req.nextUrl.clone();
+    url.pathname = target;
+    url.search = "";
+    return NextResponse.redirect(url);
   }
 
-  if (isAdmin || isClientArea || isReserve) {
-    if (!token) return { allowed: false, redirectTo: "/login" };
-    return { allowed: true, redirectTo: null };
+  // Admin
+  if (pathname.startsWith("/admin")) {
+    if (!hasToken) {
+      const url = req.nextUrl.clone();
+      url.pathname = "/login";
+      url.search = `?next=${encodeURIComponent(pathname + search)}`;
+      return NextResponse.redirect(url);
+    }
+
+    const me = await fetchMe(req);
+    if (!me?.is_admin) {
+      const url = req.nextUrl.clone();
+      url.pathname = "/reserver";
+      url.search = "";
+      return NextResponse.redirect(url);
+    }
+
+    return NextResponse.next();
   }
 
-  return { allowed: true, redirectTo: null };
-}
+  // Client protégé
+  if (CLIENT_PROTECTED.some((p) => pathname.startsWith(p))) {
+    if (!hasToken) {
+      const url = req.nextUrl.clone();
+      url.pathname = "/login";
+      url.search = `?next=${encodeURIComponent(pathname + search)}`;
+      return NextResponse.redirect(url);
+    }
 
-export function middleware(req: NextRequest): NextResponse {
-  const token = readAuthToken(req);
-  const decision = decide(req, token);
+    const me = await fetchMe(req);
+    if (!me) {
+      const url = req.nextUrl.clone();
+      url.pathname = "/login";
+      url.search = `?next=${encodeURIComponent(pathname + search)}`;
+      return NextResponse.redirect(url);
+    }
 
-  if (decision.allowed) return NextResponse.next();
+    if (me.is_admin) {
+      const url = req.nextUrl.clone();
+      url.pathname = "/admin/reservations";
+      url.search = "";
+      return NextResponse.redirect(url);
+    }
 
-  if (decision.redirectTo === "/login") return buildLoginRedirect(req);
+    return NextResponse.next();
+  }
 
-  const url = req.nextUrl.clone();
-  url.pathname = decision.redirectTo ?? "/login";
-  return NextResponse.redirect(url);
+  return NextResponse.next();
 }
 
 export const config = {
   matcher: [
-    "/admin/:path*",
-    "/espace-client/:path*",
-    "/reserver/:path*",
     "/login",
     "/register",
+    "/reserver",
+    "/mes-reservations",
+    "/mon-compte",
+    "/admin/:path*",
   ],
 };
