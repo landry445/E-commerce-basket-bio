@@ -1,37 +1,37 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
+import { Request } from 'express';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { User } from '../../users/entities/user.entity';
 
-type JwtPayload = { sub: string; email: string; is_admin: boolean };
-
-function cookieExtractor(req: any): string | null {
-  if (!req?.cookies) return null;
-
-  const cookieName = process.env.COOKIE_NAME ?? 'jwt';
-  const token = req.cookies[cookieName];
-
-  if (typeof token !== 'string' || token.length === 0) return null;
-  return token;
-}
+type JwtPayload = { sub: string };
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-  constructor() {
+  constructor(@InjectRepository(User) private readonly userRepo: Repository<User>) {
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([
-        cookieExtractor,
-        ExtractJwt.fromAuthHeaderAsBearerToken(),
+        (req: Request) => req?.cookies?.[process.env.COOKIE_NAME ?? 'jwt'] ?? null,
       ]),
-      ignoreExpiration: false,
       secretOrKey: process.env.JWT_SECRET,
     });
   }
 
   async validate(payload: JwtPayload) {
+    const user = await this.userRepo.findOne({
+      where: { id: payload.sub },
+      select: { id: true, email: true, firstname: true, is_admin: true },
+    });
+
+    if (!user) throw new UnauthorizedException();
+
     return {
-      id: payload.sub,
-      email: payload.email ?? null,
-      is_admin: !!payload.is_admin,
+      id: user.id,
+      email: user.email,
+      firstname: user.firstname ?? '',
+      is_admin: !!user.is_admin,
     };
   }
 }
