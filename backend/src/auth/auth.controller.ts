@@ -10,12 +10,12 @@ import {
   Req,
   Query,
 } from '@nestjs/common';
+import { CookieOptions, Response } from 'express';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
-import { CookieOptions, Response } from 'express';
+import { JwtAuthGuard } from './strategies/jwt-auth.guard';
 import { CreateUserDto } from '../users/dto/create-user.dto';
 import { UserResponseDto } from '../users/dto/user-response.dto';
-import { JwtAuthGuard } from './strategies/jwt-auth.guard';
 import { EmailVerificationService } from './email-verification.service';
 import { IsEmail, MaxLength } from 'class-validator';
 import { Transform } from 'class-transformer';
@@ -27,67 +27,65 @@ class ResendDto {
   email!: string;
 }
 
-type SameSiteValue = 'lax' | 'strict' | 'none';
-
 @Controller('auth')
 export class AuthController {
   constructor(
-    private authService: AuthService,
+    private readonly authService: AuthService,
     private readonly emailVerify: EmailVerificationService
   ) {}
 
   private cookieName(): string {
-    return process.env.COOKIE_NAME ?? 'jwt';
-  }
-
-  private parseBool(v: string | undefined, fallback: boolean): boolean {
-    if (!v) return fallback;
-    const s = v.trim().toLowerCase();
-    if (s === 'true' || s === '1' || s === 'yes') return true;
-    if (s === 'false' || s === '0' || s === 'no') return false;
-    return fallback;
-  }
-
-  private parseSameSite(v: string | undefined, fallback: SameSiteValue): SameSiteValue {
-    if (!v) return fallback;
-    const s = v.trim().toLowerCase();
-    if (s === 'strict') return 'strict';
-    if (s === 'none') return 'none';
-    return 'lax';
+    return process.env.COOKIE_NAME?.trim() || 'jwt';
   }
 
   private cookieBase(): CookieOptions {
-    const domain = process.env.COOKIE_DOMAIN;
+    const domain = process.env.COOKIE_DOMAIN?.trim() || undefined;
+
     const secure =
-      (process.env.COOKIE_SECURE ?? '').toLowerCase() === 'true' ||
-      process.env.NODE_ENV === 'production';
+      typeof process.env.COOKIE_SECURE === 'string'
+        ? process.env.COOKIE_SECURE.toLowerCase() === 'true'
+        : process.env.NODE_ENV === 'production';
 
-    const raw = (process.env.COOKIE_SAMESITE ?? (secure ? 'none' : 'lax')).toLowerCase();
+    const rawSameSite = (process.env.COOKIE_SAMESITE || '').toLowerCase();
     const sameSite: CookieOptions['sameSite'] =
-      raw === 'none' ? 'none' : raw === 'strict' ? 'strict' : 'lax';
+      rawSameSite === 'none' ? 'none' : rawSameSite === 'strict' ? 'strict' : 'lax';
 
-    const base: CookieOptions = { httpOnly: true, secure, sameSite, path: '/' };
+    const base: CookieOptions = {
+      httpOnly: true,
+      secure,
+      sameSite,
+      path: '/',
+    };
+
     if (domain) base.domain = domain;
     return base;
   }
 
   @Post('login')
   @HttpCode(200)
-  async login(@Body() dto: LoginDto, @Res({ passthrough: true }) res: Response) {
-    const user = await this.authService.validateUser(dto.email, dto.password);
+  async login(@Body() loginDto: LoginDto, @Res({ passthrough: true }) res: Response) {
+    const user = await this.authService.validateUser(loginDto.email, loginDto.password);
     if (!user) throw new UnauthorizedException('Identifiants invalides');
 
     const token = await this.authService.login(user);
-    res.cookie(this.cookieName(), token, { ...this.cookieBase(), maxAge: 7 * 24 * 60 * 60 * 1000 });
+
+    res.cookie(this.cookieName(), token, {
+      ...this.cookieBase(),
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
     return { message: 'Connexion réussie' };
   }
 
   @Post('logout')
   @HttpCode(200)
   logout(@Res({ passthrough: true }) res: Response) {
+    const name = this.cookieName();
     const base = this.cookieBase();
-    res.clearCookie(this.cookieName(), base);
-    res.cookie(this.cookieName(), '', { ...base, maxAge: 0 });
+
+    res.clearCookie(name, base);
+    res.cookie(name, '', { ...base, maxAge: 0 });
+
     return { message: 'Déconnexion réussie' };
   }
 
@@ -98,18 +96,8 @@ export class AuthController {
 
   @UseGuards(JwtAuthGuard)
   @Get('me')
-  me(
-    @Req()
-    req: {
-      user: { id: string; email: string | null; firstname?: string; is_admin: boolean };
-    }
-  ) {
-    return {
-      id: req.user.id,
-      email: req.user.email,
-      firstname: req.user.firstname ?? '',
-      is_admin: !!req.user.is_admin,
-    };
+  me(@Req() req: { user: { id: string; email: string | null; is_admin: boolean } }) {
+    return { id: req.user.id, email: req.user.email, is_admin: !!req.user.is_admin };
   }
 
   @Get('verify-email')
