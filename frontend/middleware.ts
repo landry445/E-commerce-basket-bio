@@ -1,6 +1,7 @@
+// frontend/middleware.ts
 import { NextRequest, NextResponse } from "next/server";
 
-const COOKIE_NAME = process.env.COOKIE_NAME ?? "auth_token";
+const COOKIE_NAME = process.env.COOKIE_NAME ?? "jwt";
 
 function buildLoginRedirect(req: NextRequest): NextResponse {
   const nextPath = req.nextUrl.pathname + req.nextUrl.search;
@@ -23,7 +24,6 @@ export function middleware(req: NextRequest): NextResponse {
     path.startsWith("/admin");
 
   if (!needsAuth) return NextResponse.next();
-
   if (!token) return buildLoginRedirect(req);
 
   return NextResponse.next();
