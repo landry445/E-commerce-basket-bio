@@ -23,15 +23,12 @@ export function NewsletterBox(props: NewsletterBoxProps) {
     setValue(next);
 
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/users/me/newsletter`,
-        {
-          method: "PATCH",
-          credentials: "include",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ newsletterOptIn: next }),
-        }
-      );
+      const response = await fetch("/api/users/me/newsletter", {
+        method: "PATCH",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ newsletterOptIn: next }),
+      });
 
       if (!response.ok) {
         throw new Error("HTTP error");

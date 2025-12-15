@@ -37,7 +37,7 @@ export class AuthController {
   ) {}
 
   private cookieName(): string {
-    return process.env.COOKIE_NAME?.trim() || 'jwt';
+    return process.env.COOKIE_NAME ?? 'jwt';
   }
 
   private parseBool(v: string | undefined, fallback: boolean): boolean {
@@ -57,54 +57,37 @@ export class AuthController {
   }
 
   private cookieBase(): CookieOptions {
-    const domainRaw = process.env.COOKIE_DOMAIN?.trim();
-    const domain = domainRaw && domainRaw.length > 0 ? domainRaw : undefined;
+    const domain = process.env.COOKIE_DOMAIN;
+    const secure =
+      (process.env.COOKIE_SECURE ?? '').toLowerCase() === 'true' ||
+      process.env.NODE_ENV === 'production';
 
-    const sameSite = this.parseSameSite(process.env.COOKIE_SAMESITE, 'lax');
-    const secureFromEnv = this.parseBool(process.env.COOKIE_SECURE, false);
+    const raw = (process.env.COOKIE_SAMESITE ?? (secure ? 'none' : 'lax')).toLowerCase();
+    const sameSite: CookieOptions['sameSite'] =
+      raw === 'none' ? 'none' : raw === 'strict' ? 'strict' : 'lax';
 
-    // MêmeSite=None implique Secure, sinon le cookie se fait refuser par les navigateurs.
-    const secure = sameSite === 'none' ? true : secureFromEnv;
-
-    const base: CookieOptions = {
-      httpOnly: true,
-      sameSite,
-      secure,
-      path: '/',
-      ...(domain ? { domain } : {}),
-    };
-
+    const base: CookieOptions = { httpOnly: true, secure, sameSite, path: '/' };
+    if (domain) base.domain = domain;
     return base;
   }
 
   @Post('login')
   @HttpCode(200)
-  async login(
-    @Body() loginDto: LoginDto,
-    @Res({ passthrough: true }) res: Response
-  ): Promise<{ message: string }> {
-    const user = await this.authService.validateUser(loginDto.email, loginDto.password);
+  async login(@Body() dto: LoginDto, @Res({ passthrough: true }) res: Response) {
+    const user = await this.authService.validateUser(dto.email, dto.password);
     if (!user) throw new UnauthorizedException('Identifiants invalides');
 
     const token = await this.authService.login(user);
-
-    res.cookie(this.cookieName(), token, {
-      ...this.cookieBase(),
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
-
+    res.cookie(this.cookieName(), token, { ...this.cookieBase(), maxAge: 7 * 24 * 60 * 60 * 1000 });
     return { message: 'Connexion réussie' };
   }
 
   @Post('logout')
   @HttpCode(200)
-  logout(@Res({ passthrough: true }) res: Response): { message: string } {
-    const name = this.cookieName();
+  logout(@Res({ passthrough: true }) res: Response) {
     const base = this.cookieBase();
-
-    res.clearCookie(name, base);
-    res.cookie(name, '', { ...base, maxAge: 0 });
-
+    res.clearCookie(this.cookieName(), base);
+    res.cookie(this.cookieName(), '', { ...base, maxAge: 0 });
     return { message: 'Déconnexion réussie' };
   }
 
@@ -115,8 +98,18 @@ export class AuthController {
 
   @UseGuards(JwtAuthGuard)
   @Get('me')
-  me(@Req() req: { user: { id: string; email: string | null; is_admin: boolean } }) {
-    return { id: req.user.id, email: req.user.email, is_admin: !!req.user.is_admin };
+  me(
+    @Req()
+    req: {
+      user: { id: string; email: string | null; firstname?: string; is_admin: boolean };
+    }
+  ) {
+    return {
+      id: req.user.id,
+      email: req.user.email,
+      firstname: req.user.firstname ?? '',
+      is_admin: !!req.user.is_admin,
+    };
   }
 
   @Get('verify-email')

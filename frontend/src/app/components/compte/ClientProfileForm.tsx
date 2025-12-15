@@ -61,7 +61,7 @@ export default function ClientProfileForm() {
 
     try {
       const res = await fetch("/api/users/me", {
-        method: "PUT",
+        method: "PATCH",
         credentials: "include",
         headers: {
           "Content-Type": "application/json",
@@ -69,6 +69,7 @@ export default function ClientProfileForm() {
         },
         body: JSON.stringify({ firstname, lastname, phone }),
       });
+
 
       if (!res.ok) {
         const msg: ApiMsg = await res.json().catch(() => ({}));
