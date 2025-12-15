@@ -7,7 +7,7 @@ type JwtPayload = { sub: string; email: string; is_admin: boolean };
 function cookieExtractor(req: any): string | null {
   if (!req?.cookies) return null;
 
-  const cookieName = process.env.COOKIE_NAME ?? 'auth_token';
+  const cookieName = process.env.COOKIE_NAME ?? 'jwt';
   const token = req.cookies[cookieName];
 
   if (typeof token !== 'string' || token.length === 0) return null;
