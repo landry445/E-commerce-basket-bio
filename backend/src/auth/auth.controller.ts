@@ -17,12 +17,9 @@ import { CreateUserDto } from '../users/dto/create-user.dto';
 import { UserResponseDto } from '../users/dto/user-response.dto';
 import { JwtAuthGuard } from './strategies/jwt-auth.guard';
 import { EmailVerificationService } from './email-verification.service';
-import { IsEmail, MaxLength } from 'class-validator'; // +++
-import { Transform } from 'class-transformer'; // +++
+import { IsEmail, MaxLength } from 'class-validator';
+import { Transform } from 'class-transformer';
 
-// type RequestUser = { user: { id: string; email: string | null; is_admin: boolean } };
-
-// +++ DTO validé (compatible ValidationPipe en mode whitelist)
 class ResendDto {
   @IsEmail()
   @MaxLength(254)
@@ -30,34 +27,84 @@ class ResendDto {
   email!: string;
 }
 
+type SameSiteValue = 'lax' | 'strict' | 'none';
+
 @Controller('auth')
 export class AuthController {
   constructor(
     private authService: AuthService,
-    private readonly emailVerify: EmailVerificationService,
+    private readonly emailVerify: EmailVerificationService
   ) {}
 
+  private cookieName(): string {
+    return process.env.COOKIE_NAME?.trim() || 'jwt';
+  }
+
+  private parseBool(v: string | undefined, fallback: boolean): boolean {
+    if (!v) return fallback;
+    const s = v.trim().toLowerCase();
+    if (s === 'true' || s === '1' || s === 'yes') return true;
+    if (s === 'false' || s === '0' || s === 'no') return false;
+    return fallback;
+  }
+
+  private parseSameSite(v: string | undefined, fallback: SameSiteValue): SameSiteValue {
+    if (!v) return fallback;
+    const s = v.trim().toLowerCase();
+    if (s === 'strict') return 'strict';
+    if (s === 'none') return 'none';
+    return 'lax';
+  }
+
   private cookieBase(): CookieOptions {
-    const isProd = process.env.NODE_ENV === 'production';
-    return { httpOnly: true, sameSite: isProd ? 'none' : 'lax', secure: isProd, path: '/' };
+    const domainRaw = process.env.COOKIE_DOMAIN?.trim();
+    const domain = domainRaw && domainRaw.length > 0 ? domainRaw : undefined;
+
+    const sameSite = this.parseSameSite(process.env.COOKIE_SAMESITE, 'lax');
+    const secureFromEnv = this.parseBool(process.env.COOKIE_SECURE, false);
+
+    // MêmeSite=None implique Secure, sinon le cookie se fait refuser par les navigateurs.
+    const secure = sameSite === 'none' ? true : secureFromEnv;
+
+    const base: CookieOptions = {
+      httpOnly: true,
+      sameSite,
+      secure,
+      path: '/',
+      ...(domain ? { domain } : {}),
+    };
+
+    return base;
   }
 
   @Post('login')
   @HttpCode(200)
-  async login(@Body() loginDto: LoginDto, @Res({ passthrough: true }) res: Response) {
+  async login(
+    @Body() loginDto: LoginDto,
+    @Res({ passthrough: true }) res: Response
+  ): Promise<{ message: string }> {
     const user = await this.authService.validateUser(loginDto.email, loginDto.password);
     if (!user) throw new UnauthorizedException('Identifiants invalides');
+
     const token = await this.authService.login(user);
-    res.cookie('jwt', token, { ...this.cookieBase(), maxAge: 7 * 24 * 60 * 60 * 1000 });
+
+    res.cookie(this.cookieName(), token, {
+      ...this.cookieBase(),
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
     return { message: 'Connexion réussie' };
   }
 
   @Post('logout')
   @HttpCode(200)
-  logout(@Res({ passthrough: true }) res: Response) {
+  logout(@Res({ passthrough: true }) res: Response): { message: string } {
+    const name = this.cookieName();
     const base = this.cookieBase();
-    res.clearCookie('jwt', base);
-    res.cookie('jwt', '', { ...base, maxAge: 0 });
+
+    res.clearCookie(name, base);
+    res.cookie(name, '', { ...base, maxAge: 0 });
+
     return { message: 'Déconnexion réussie' };
   }
 
@@ -76,6 +123,7 @@ export class AuthController {
   async verifyEmail(@Query('token') token: string, @Res() res: Response): Promise<void> {
     const ok = process.env.EMAIL_VERIFY_REDIRECT_OK ?? 'http://localhost:3000/verification-ok';
     const ko = process.env.EMAIL_VERIFY_REDIRECT_KO ?? 'http://localhost:3000/verification-erreur';
+
     try {
       await this.emailVerify.verifyToken(token);
       res.redirect(302, ok);
@@ -84,7 +132,6 @@ export class AuthController {
     }
   }
 
-  // +++ Nouveau : renvoi d’un lien de vérification (réponse neutre)
   @Post('resend-verification')
   @HttpCode(200)
   async resend(@Body() dto: ResendDto): Promise<{ ok: true }> {
