@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRef } from "react";
 
 export type NavbarUserButtonProps = {
-  user?: { firstname: string; isAdmin: boolean };
+  user?: { firstname: string; is_admin: boolean };
   onLogout?: () => void;
   isMobile?: boolean;
   onAfterClick?: () => void;
@@ -82,7 +82,7 @@ export default function NavbarUserButton({
         <MenuLink href="/mon-compte" onAfterClick={onAfterClick}>
           Compte et Réservations
         </MenuLink>
-        {user.isAdmin && (
+        {user.is_admin && (
           <MenuLink href="/admin/reservations" onAfterClick={onAfterClick}>
             Espace admin
           </MenuLink>

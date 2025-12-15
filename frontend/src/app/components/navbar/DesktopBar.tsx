@@ -60,7 +60,7 @@ export default function DesktopBar({
           <NavbarUserButton
             user={
               user
-                ? { firstname: user.firstname, isAdmin: user.is_admin }
+                ? { firstname: user.firstname, is_admin: user.is_admin }
                 : undefined
             }
             onLogout={onLogout}
