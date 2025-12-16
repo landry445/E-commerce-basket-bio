@@ -55,13 +55,12 @@ export default function TableBaskets({
                 <td className="py-2 px-4">{p.description}</td>
                 <td className="py-2 px-4">
                   <Image
-                    src={`http://localhost:3001/baskets/${p.id}/image`}
+                    src={`/api/baskets/${p.id}/image`}
                     alt={p.name}
                     width={40}
                     height={40}
                     className="rounded shadow inline-block"
                     unoptimized
-                    crossOrigin="anonymous"
                     style={{ width: "40px", height: "40px" }}
                     onError={(e) => {
                       (e.currentTarget as HTMLImageElement).src =

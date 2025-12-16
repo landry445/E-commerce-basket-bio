@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
 type Basket = {
   id: string;
   name: string;
-  priceEuro: number; // <- number en euros
+  priceEuro: number;
   description: string;
   actif: boolean;
 };
@@ -18,24 +18,76 @@ type Basket = {
 type Backendbasket = {
   id: string;
   name_basket: string;
-  price_basket: number | string; // parfois string selon la sérialisation
+  price_basket: number | string;
   description: string;
   actif: boolean;
 };
+
+type ApiError = { message?: string } | null;
+
+async function readErrorMessage(res: Response): Promise<string> {
+  const ct = res.headers.get("content-type") ?? "";
+  const text = await res.text();
+
+  if (ct.includes("application/json")) {
+    try {
+      const json = JSON.parse(text) as { message?: string };
+      return json.message ?? `HTTP ${res.status}`;
+    } catch {
+      return `HTTP ${res.status}`;
+    }
+  }
+
+  if (text.includes("<!DOCTYPE")) return `HTTP ${res.status} (réponse HTML)`;
+  return text || `HTTP ${res.status}`;
+}
+
+async function readJsonOrText(res: Response): Promise<unknown> {
+  const ct = res.headers.get("content-type") || "";
+  if (ct.includes("application/json")) return res.json();
+  return res.text();
+}
+
+async function requestJson<T>(
+  input: RequestInfo,
+  init?: RequestInit
+): Promise<T> {
+  const res = await fetch(input, init);
+
+  if (!res.ok) {
+    const payload = await readJsonOrText(res);
+    if (typeof payload === "string") {
+      throw new Error(payload || `HTTP ${res.status}`);
+    }
+    const maybe = payload as ApiError;
+    throw new Error(maybe?.message || `HTTP ${res.status}`);
+  }
+
+  const payload = await readJsonOrText(res);
+  return payload as T;
+}
 
 export default function AdminbasketsPage() {
   const [step, setStep] = useState<"list" | "create" | "edit">("list");
   const [selected, setSelected] = useState<Basket | null>(null);
   const [showConfirm, setShowConfirm] = useState(false);
   const [baskets, setBaskets] = useState<Basket[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchbaskets = async () => {
     const res = await fetch("/api/baskets", { credentials: "include" });
-    const data: Backendbasket[] = await res.json();
+
+    if (!res.ok) {
+      const msg = await readErrorMessage(res);
+      console.error("Erreur fetch baskets:", msg);
+      setBaskets([]);
+      return;
+    }
+
+    const data = (await res.json()) as Backendbasket[];
     const mapped: Basket[] = data.map((b) => ({
       id: b.id,
       name: b.name_basket,
-      // ⬇️ plus de /100 ; conversion robuste si string
       priceEuro: Number(b.price_basket),
       description: b.description,
       actif: b.actif,
@@ -49,52 +101,43 @@ export default function AdminbasketsPage() {
 
   const handleDelete = async () => {
     if (!selected) return;
-    try {
-      await fetch(`/api/baskets/${selected.id}`, {
-        method: "DELETE",
-        credentials: "include",
-      });
-      setBaskets((prev) => prev.filter((p) => p.id !== selected.id));
-    } catch (err) {
-      console.error("Erreur suppression :", err);
+
+    const id = selected.id;
+
+    const res = await fetch(`/api/baskets/${encodeURIComponent(id)}`, {
+      method: "DELETE",
+      credentials: "include",
+    });
+
+    if (!res.ok) {
+      const msg = await readErrorMessage(res);
+      console.error("Erreur suppression panier:", msg);
+      setShowConfirm(false);
+      setSelected(null);
+      return;
     }
+
+    setBaskets((prev) => prev.filter((b) => b.id !== id));
     setShowConfirm(false);
     setSelected(null);
   };
 
   async function toggleActif(id: string, next: boolean) {
-    // Optimiste local
+    setError(null);
+
     setBaskets((prev) =>
       prev.map((b) => (b.id === id ? { ...b, actif: next } : b))
     );
+
     try {
-      // Tentative PATCH partiel
-      const r = await fetch(`/api/baskets/${id}`, {
+      await requestJson<unknown>(`/api/baskets/${id}`, {
         method: "PATCH",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ actif: next }),
       });
-      if (r.ok) return;
-
-      // Plan B: certains backends exigent un PUT complet (FormData)
-      const current = baskets.find((b) => b.id === id);
-      if (!current) return;
-      const fd = new FormData();
-      fd.append("id", current.id);
-      fd.append("name", current.name);
-      fd.append("price", String(current.priceEuro.toFixed(2)));
-      fd.append("description", current.description ?? "");
-      fd.append("actif", String(next));
-      const r2 = await fetch(`/api/baskets/${id}`, {
-        method: "PUT",
-        credentials: "include",
-        body: fd,
-      });
-      if (!r2.ok) throw new Error("PUT non accepté");
     } catch (e) {
-      console.error("Erreur toggle actif:", e);
-      // rollback
+      setError(e instanceof Error ? e.message : "Erreur activation panier");
       setBaskets((prev) =>
         prev.map((b) => (b.id === id ? { ...b, actif: !next } : b))
       );
@@ -103,35 +146,46 @@ export default function AdminbasketsPage() {
 
   const handleCreate = (formData: FormData) => {
     void (async () => {
-      try {
-        await fetch("/api/baskets", {
-          method: "POST",
-          credentials: "include",
-          body: formData,
-        });
-        await fetchbaskets();
-        setStep("list");
-      } catch (err) {
-        console.error("Erreur création :", err);
+      const res = await fetch("/api/baskets", {
+        method: "POST",
+        credentials: "include",
+        body: formData,
+      });
+
+      if (!res.ok) {
+        const msg = await readErrorMessage(res);
+        console.error("Erreur création panier:", msg);
+        return;
       }
+
+      await fetchbaskets();
+      setStep("list");
     })();
   };
 
   const handleUpdate = (formData: FormData) => {
     void (async () => {
-      try {
-        const id = formData.get("id") as string;
-        await fetch(`/api/baskets/${id}`, {
-          method: "PUT",
-          credentials: "include",
-          body: formData,
-        });
-        await fetchbaskets();
-        setStep("list");
-        setSelected(null);
-      } catch (err) {
-        console.error("Erreur modification :", err);
+      const id = String(formData.get("id") ?? "");
+      if (!id) {
+        console.error("Impossible de modifier : id manquant");
+        return;
       }
+
+      const res = await fetch(`/api/baskets/${encodeURIComponent(id)}`, {
+        method: "PUT",
+        credentials: "include",
+        body: formData,
+      });
+
+      if (!res.ok) {
+        const msg = await readErrorMessage(res);
+        console.error("Erreur modification panier:", msg);
+        return;
+      }
+
+      await fetchbaskets();
+      setStep("list");
+      setSelected(null);
     })();
   };
 
@@ -149,6 +203,12 @@ export default function AdminbasketsPage() {
         }
       />
 
+      {error ? (
+        <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+          {error}
+        </div>
+      ) : null}
+
       {step === "list" && (
         <>
           <button
@@ -157,6 +217,7 @@ export default function AdminbasketsPage() {
           >
             + Créer panier
           </button>
+
           <Tablebaskets
             baskets={baskets}
             onEdit={(basket) => {
@@ -167,7 +228,7 @@ export default function AdminbasketsPage() {
               setSelected(basket);
               setShowConfirm(true);
             }}
-            onToggleActif={toggleActif} // <- nouveau
+            onToggleActif={toggleActif}
           />
         </>
       )}
@@ -176,12 +237,7 @@ export default function AdminbasketsPage() {
         <Formbasket
           mode="create"
           onSubmit={handleCreate}
-          initialValues={{
-            name: "",
-            price: "",
-            description: "",
-            actif: true,
-          }}
+          initialValues={{ name: "", price: "", description: "", actif: true }}
         />
       )}
 

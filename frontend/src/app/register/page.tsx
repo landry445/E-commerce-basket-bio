@@ -39,58 +39,32 @@ function RegisterPageInner() {
     "focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/30 " +
     "focus:border-[var(--color-primary)]";
 
-  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    setError(null);
+async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  e.preventDefault();
+  setError(null);
+  setLoading(true);
 
-    if (password !== confirm) {
-      setError("Les mots de passe ne correspondent pas.");
+  try {
+    const res = await fetch("/api/auth/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ firstname, lastname, email, password, phone }),
+    });
+
+    if (!res.ok) {
+      const text = await res.text();
+      setError(text || "Inscription impossible");
       return;
     }
 
-    // simple garde-fou pour le numéro FR (optionnel, serveur fait foi)
-    if (!/^0[1-9]\d{8}$/.test(phone)) {
-      setError("Format de téléphone invalide (ex. 06XXXXXXXX).");
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const payload: RegisterPayload = {
-        firstname,
-        lastname,
-        email,
-        phone,
-        password,
-        newsletterOptIn,
-      };
-
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/register`,
-        {
-          method: "POST",
-          credentials: "include",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        }
-      );
-
-      const data = (await res.json().catch(() => ({}))) as ApiMsg;
-
-      if (!res.ok) {
-        setError(data.message || "Inscription impossible.");
-      } else {
-        router.push(
-          `/register/success?email=${encodeURIComponent(
-            email
-          )}&next=${encodeURIComponent(next)}`
-        );
-      }
-    } catch {
-      setError("Erreur réseau, réessayer.");
-    }
+    const target = `/register/success?email=${encodeURIComponent(email)}`;
+    router.replace(target);
+  } catch {
+    setError("Serveur injoignable");
+  } finally {
     setLoading(false);
   }
+}
 
   return (
     <>
