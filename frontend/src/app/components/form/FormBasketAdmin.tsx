@@ -84,6 +84,9 @@ export default function FormBasket(props: FormBasketProps) {
     onSubmit(formData);
   };
 
+  const API_BASE =
+    process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3001";
+
   return (
     <form onSubmit={handleSubmit} className="flex w-full gap-8 mt-2">
       <div className="flex-1 flex flex-col gap-2">
@@ -152,9 +155,7 @@ export default function FormBasket(props: FormBasketProps) {
 
           {!preview && mode === "edit" && (initial as Basket).id && (
             <Image
-              src={`http://localhost:3001/baskets/${
-                (initial as Basket).id
-              }/image`}
+              src={`${API_BASE}/baskets/${(initial as Basket).id}/image`}
               alt="Image du panier"
               width={120}
               height={80}

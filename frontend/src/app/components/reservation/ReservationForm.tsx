@@ -161,8 +161,11 @@ export default function ReservationForm(): JSX.Element {
         fetch(`${API_BASE}/pickup?actif=true`, { credentials: "include" }),
       ]);
 
-      const bJson = (await bRes.json()) as Basket[];
-      const lJson = (await lRes.json()) as PickupLocation[];
+    if (!bRes.ok) throw new Error(`baskets ${bRes.status}`);
+    if (!lRes.ok) throw new Error(`pickup ${lRes.status}`);
+
+    const bJson = (await bRes.json()) as Basket[];
+    const lJson = (await lRes.json()) as PickupLocation[];
 
       const onlyActiveBaskets = bJson.filter((b) => b.actif === true);
       const onlyActiveLocations = lJson.filter((l) => l.actif === true);
