@@ -8,7 +8,7 @@ function backendUrl(path: string): string {
 }
 
 export async function GET(req: NextRequest): Promise<Response> {
-  const res = await fetch(backendUrl("/users/me"), {
+  const res = await fetch(backendUrl("/auth/me"), {
     method: "GET",
     headers: {
       cookie: req.headers.get("cookie") ?? "",
@@ -26,3 +26,4 @@ export async function GET(req: NextRequest): Promise<Response> {
     },
   });
 }
+
