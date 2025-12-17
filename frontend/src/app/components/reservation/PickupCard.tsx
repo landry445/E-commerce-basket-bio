@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import DayPickerField from "./DayPickerField";
 
 type PickupLocation = {
   id: string;
   name_pickup: string;
-  day_of_week?: number[] | null; // ← tableau
+  day_of_week?: number[] | null;
   actif: boolean;
 };
 
@@ -22,7 +22,7 @@ type Props = {
   maxDate: string; // YYYY-MM-DD
 
   disabled?: boolean;
-  required?: boolean; // pour le select éventuel
+  required?: boolean;
 };
 
 export default function PickupCard({
@@ -36,33 +36,32 @@ export default function PickupCard({
   disabled,
   required,
 }: Props) {
-  // Filtre strict : “Gare” active uniquement
-  const gareList = locations
-    .filter((l) => l.actif)
-    .filter((l) => l.name_pickup.trim().toLowerCase() === "Gare de Savenay");
+  const activeList = useMemo(() => {
+    return locations
+      .filter((l) => l.actif === true)
+      .sort((a, b) => a.name_pickup.localeCompare(b.name_pickup, "fr"));
+  }, [locations]);
 
-  // Auto-sélection si une seule gare
   useEffect(() => {
-    if (gareList.length === 1 && locationId !== gareList[0].id) {
-      onLocation(gareList[0].id);
+    if (activeList.length === 1 && locationId !== activeList[0].id) {
+      onLocation(activeList[0].id);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [gareList.length]);
+  }, [activeList.length]);
 
   return (
     <section className="rounded-2xl border p-4 space-y-4">
       <h3 className="text-lg font-semibold">Sélection du retrait *</h3>
 
-      {/* Point de retrait */}
       <div>
         <label className="block text-sm text-gray-600 mb-1">
           Point de retrait
         </label>
 
-        {gareList.length === 1 ? (
+        {activeList.length === 1 ? (
           <input
             className="w-full rounded border px-3 py-2 bg-gray-50"
-            value={gareList[0].name_pickup}
+            value={activeList[0].name_pickup}
             readOnly
           />
         ) : (
@@ -74,7 +73,7 @@ export default function PickupCard({
             required={required}
           >
             <option value="">Sélection</option>
-            {gareList.map((l) => (
+            {activeList.map((l) => (
               <option key={l.id} value={l.id}>
                 {l.name_pickup}
               </option>
@@ -88,17 +87,13 @@ export default function PickupCard({
           className="mt-1 text-gray-500 text-sm"
         >
           <ul className="list-disc pl-5 text">
-            Les reservations sont possibles uniquement:
-            <li>Pour Le mardi : du vendredi 18:00 au mardi 8:00.</li>
-            <li>Pour vendredi : du mardi 18:00 au vendredi 8:00.</li>
-            <li>
-              Les retraits de panier se fond uniquement à la gare de Savenay.
-            </li>
+            <li>Pour le mardi : du vendredi 18:00 au mardi 8:00.</li>
+            <li>Pour le vendredi : du mardi 18:00 au vendredi 8:00.</li>
+            <li>Retrait à la gare de Savenay.</li>
           </ul>
         </div>
       </div>
 
-      {/* Date de retrait */}
       <div>
         <label className="block text-sm text-gray-600 mb-1">
           Date de retrait
@@ -107,7 +102,6 @@ export default function PickupCard({
         <DayPickerField
           value={pickupDate}
           onChange={(iso) => {
-            // ne conserve que la date autorisée par la fenêtre
             if (iso === allowedDate) onDate(iso);
           }}
           allowedDate={allowedDate}

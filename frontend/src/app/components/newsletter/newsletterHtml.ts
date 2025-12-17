@@ -130,6 +130,25 @@ export function buildNewsletterBody(
       <p style="margin:0 0 6px 0;">
         Règlement sur place.
       </p>
+      <div style="margin:16px 0 8px 0; text-align:center;">
+  <a
+    href="https://www.lejardindesrainettes.fr/reserver"
+    target="_blank"
+    rel="noopener noreferrer"
+    style="
+      display:inline-block;
+      padding:10px 18px;
+      background-color:#5B8C51;
+      color:#ffffff;
+      text-decoration:none;
+      font-size:14px;
+      font-weight:600;
+      border-radius:999px;
+    "
+  >
+    Réservez ici !
+  </a>
+</div>
       ${complementBlock}
     </td>
   </tr>
