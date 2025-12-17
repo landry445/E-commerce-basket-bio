@@ -8,12 +8,9 @@ function backendUrl(path: string): string {
 }
 
 export async function GET(req: NextRequest): Promise<Response> {
-  const res = await fetch(backendUrl("/users/me"), {
+  const res = await fetch(backendUrl("/admin/users"), {
     method: "GET",
-    headers: {
-      cookie: req.headers.get("cookie") ?? "",
-      accept: "application/json",
-    },
+    headers: { cookie: req.headers.get("cookie") ?? "" },
     cache: "no-store",
   });
 
