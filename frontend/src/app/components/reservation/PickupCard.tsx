@@ -39,7 +39,7 @@ export default function PickupCard({
   // Filtre strict : “Gare” active uniquement
   const gareList = locations
     .filter((l) => l.actif)
-    .filter((l) => l.name_pickup.trim().toLowerCase() === "gare");
+    .filter((l) => l.name_pickup.trim().toLowerCase() === "Gare de Savenay");
 
   // Auto-sélection si une seule gare
   useEffect(() => {
