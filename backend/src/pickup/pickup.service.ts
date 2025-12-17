@@ -8,11 +8,17 @@ import { CreatePickupDto } from './dto/create-pickup.dto';
 export class PickupService {
   constructor(
     @InjectRepository(PickupLocation)
-    private readonly pickupRepo: Repository<PickupLocation>,
+    private readonly pickupRepo: Repository<PickupLocation>
   ) {}
 
-  findAll(): Promise<PickupLocation[]> {
-    return this.pickupRepo.find();
+  async findAll(actif?: boolean) {
+    if (actif === undefined) {
+      return this.pickupRepo.find({ order: { name_pickup: 'ASC' } });
+    }
+    return this.pickupRepo.find({
+      where: { actif },
+      order: { name_pickup: 'ASC' },
+    });
   }
 
   async findOne(id: string): Promise<PickupLocation> {

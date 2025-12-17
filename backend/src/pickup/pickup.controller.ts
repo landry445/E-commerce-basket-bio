@@ -8,6 +8,7 @@ import {
   Delete,
   ParseUUIDPipe,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 import { PickupService } from './pickup.service';
 import { CreatePickupDto } from './dto/create-pickup.dto';
@@ -22,8 +23,10 @@ export class PickupController {
   constructor(private readonly pickupService: PickupService) {}
 
   @Get()
-  findAll(): Promise<PickupLocation[]> {
-    return this.pickupService.findAll();
+  findAll(@Query('actif') actif?: string) {
+    const actifBool = actif === undefined ? undefined : actif === 'true' || actif === '1';
+
+    return this.pickupService.findAll(actifBool);
   }
 
   @Get(':id')
@@ -44,7 +47,7 @@ export class PickupController {
   @Put(':id')
   update(
     @Param('id', ParseUUIDPipe) id: string,
-    @Body() dto: CreatePickupDto,
+    @Body() dto: CreatePickupDto
   ): Promise<PickupLocation> {
     return this.pickupService.update(id, dto);
   }

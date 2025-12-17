@@ -131,7 +131,7 @@ export default function AdminbasketsPage() {
 
     try {
       await requestJson<unknown>(`/api/baskets/${id}`, {
-        method: "PATCH",
+        method: "PUT",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ actif: next }),
