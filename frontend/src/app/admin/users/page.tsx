@@ -54,7 +54,10 @@ export default function AdminUsersPage() {
   }, []);
 
   useEffect(() => {
-    fetch("/api/reservations", { credentials: "include" })
+    fetch("/api/admin/reservations", {
+      credentials: "include",
+      cache: "no-store",
+    })
       .then((res) => res.json())
       .then((data: ReservationApiResponse[]) => {
         const mapped = data.map<Reservation>((r) => ({

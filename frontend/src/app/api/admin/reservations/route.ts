@@ -1,29 +1,63 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
-const API_BASE =
-  process.env.NEXT_PUBLIC_API_BASE_URL ?? "https://api.lejardindesrainettes.fr";
+function backendUrl(path: string): string {
+  const base = process.env.APP_BASE_URL;
+  if (!base) throw new Error("APP_BASE_URL manquant");
+  return `${base}${path}`;
+}
 
-const ALLOWED_STATUS = new Set(["active", "archived"]);
+export async function GET(req: NextRequest): Promise<Response> {
+  const url = new URL(req.url);
+  const status = url.searchParams.get("status"); // "active" | "archived" | null
 
-export async function GET(req: NextRequest): Promise<NextResponse> {
-  const status = req.nextUrl.searchParams.get("status") ?? "";
-  const safeStatus = ALLOWED_STATUS.has(status) ? status : "";
+  const target = status
+    ? `/reservations/admin-list?status=${encodeURIComponent(status)}`
+    : "/reservations/admin-list";
 
-  const upstreamUrl = `${API_BASE}/reservations/admin-list${
-    safeStatus ? `?status=${safeStatus}` : ""
-  }`;
-
-  const upstream = await fetch(upstreamUrl, {
+  const res = await fetch(backendUrl(target), {
     method: "GET",
     headers: {
       cookie: req.headers.get("cookie") ?? "",
-      accept: "application/json",
+      Accept: "application/json",
     },
     cache: "no-store",
   });
 
-  return new NextResponse(upstream.body, {
-    status: upstream.status,
-    headers: { "content-type": "application/json" },
+  const text = await res.text();
+  return new NextResponse(text, {
+    status: res.status,
+    headers: {
+      "content-type": res.headers.get("content-type") ?? "application/json",
+    },
+  });
+}
+
+export async function DELETE(req: NextRequest): Promise<Response> {
+  const url = new URL(req.url);
+  const id = url.searchParams.get("id");
+
+  if (!id) {
+    return NextResponse.json({ message: "id manquant" }, { status: 400 });
+  }
+
+  const res = await fetch(
+    backendUrl(`/reservations/${encodeURIComponent(id)}`),
+    {
+      method: "DELETE",
+      headers: {
+        cookie: req.headers.get("cookie") ?? "",
+        Accept: "application/json",
+      },
+      cache: "no-store",
+    }
+  );
+
+  const text = await res.text();
+  return new NextResponse(text || null, {
+    status: res.status,
+    headers: {
+      "content-type": res.headers.get("content-type") ?? "application/json",
+    },
   });
 }
