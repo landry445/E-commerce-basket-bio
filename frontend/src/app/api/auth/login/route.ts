@@ -1,9 +1,13 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
-const API_BASE =
-  process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3001";
+function backendUrl(path: string): string {
+  const base = process.env.APP_BASE_URL;
+  if (!base) throw new Error("APP_BASE_URL manquant");
+  return `${base}${path}`;
+}
 
-function forwardSetCookie(upstream: Response, res: NextResponse) {
+function forwardSetCookie(upstream: Response, res: NextResponse): void {
   const h = upstream.headers as unknown as { getSetCookie?: () => string[] };
   const cookies = h.getSetCookie?.();
   if (cookies?.length) {
@@ -14,20 +18,24 @@ function forwardSetCookie(upstream: Response, res: NextResponse) {
   if (single) res.headers.set("set-cookie", single);
 }
 
-export async function POST(req: NextRequest) {
+export async function POST(req: NextRequest): Promise<Response> {
   const body = await req.text();
 
-  const upstream = await fetch(`${API_BASE}/auth/login`, {
+  const upstream = await fetch(backendUrl("/auth/login"), {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "content-type": req.headers.get("content-type") ?? "application/json",
+    },
     body,
+    cache: "no-store",
   });
 
   const text = await upstream.text();
+
   const res = new NextResponse(text, {
     status: upstream.status,
     headers: {
-      "Content-Type":
+      "content-type":
         upstream.headers.get("content-type") ?? "application/json",
     },
   });
