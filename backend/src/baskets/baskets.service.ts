@@ -7,7 +7,7 @@ import { Basket } from './entities/basket.entity';
 export class BasketsService {
   constructor(
     @InjectRepository(Basket)
-    private readonly basketRepo: Repository<Basket>,
+    private readonly basketRepo: Repository<Basket>
   ) {}
 
   findAll(): Promise<Basket[]> {
@@ -31,6 +31,10 @@ export class BasketsService {
     return this.findOne(id);
   }
 
+  async updateActif(id: string, actif: boolean) {
+    await this.basketRepo.update({ id }, { actif });
+    return { ok: true };
+  }
   async remove(id: string): Promise<void> {
     const basket = await this.findOne(id);
     await this.basketRepo.remove(basket);

@@ -130,8 +130,8 @@ export default function AdminbasketsPage() {
     );
 
     try {
-      await requestJson<unknown>(`/api/baskets/${id}`, {
-        method: "PUT",
+      await requestJson<unknown>(`/api/baskets/${id}/actif`, {
+        method: "PATCH",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ actif: next }),
