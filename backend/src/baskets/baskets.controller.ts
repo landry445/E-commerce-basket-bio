@@ -13,6 +13,8 @@ import {
   Res,
   Options,
   BadRequestException,
+  Patch,
+  Body,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
@@ -24,6 +26,7 @@ import { JwtAuthGuard } from '../auth/strategies/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
 import { Role } from 'src/auth/role.enum';
+import { UpdateBasketActifDto } from './dto/update-basket-actif.dto';
 
 // Multer en RAM, filtre image + limite 2 Mo
 const multerOptions = {
@@ -31,7 +34,7 @@ const multerOptions = {
   fileFilter: (
     _req: Request,
     file: Express.Multer.File,
-    cb: (error: Error | null, acceptFile: boolean) => void,
+    cb: (error: Error | null, acceptFile: boolean) => void
   ) => {
     if (file.mimetype.startsWith('image/')) cb(null, true);
     else cb(new Error('Only images are allowed'), false);
@@ -67,7 +70,7 @@ export class BasketsController {
   optionsImage(@Req() _req: Request, @Res() res: Response) {
     res.setHeader(
       'Access-Control-Allow-Origin',
-      process.env.FRONTEND_URL || 'http://localhost:3000',
+      process.env.FRONTEND_URL || 'http://localhost:3000'
     );
     res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Origin, Content-Type, Accept');
@@ -86,7 +89,7 @@ export class BasketsController {
     // CORS minimal pour affichage cross-origin
     res.setHeader(
       'Access-Control-Allow-Origin',
-      process.env.FRONTEND_URL || 'http://localhost:3000',
+      process.env.FRONTEND_URL || 'http://localhost:3000'
     );
     res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Origin, Content-Type, Accept');
@@ -124,12 +127,19 @@ export class BasketsController {
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.Admin)
+  @Patch(':id/actif')
+  updateActif(@Param('id', new ParseUUIDPipe()) id: string, @Body() dto: UpdateBasketActifDto) {
+    return this.basketsService.updateActif(id, dto.actif);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Admin)
   @Put(':id')
   @UseInterceptors(FileInterceptor('image', multerOptions))
   async update(
     @Param('id', ParseUUIDPipe) id: string,
     @UploadedFile() file: Express.Multer.File,
-    @Req() req: Request,
+    @Req() req: Request
   ): Promise<Basket> {
     const { name, price, description, actif } = req.body as {
       name?: string;
