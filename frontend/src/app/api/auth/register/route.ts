@@ -7,13 +7,16 @@ function backendUrl(path: string): string {
   return `${base}${path}`;
 }
 
-export async function GET(req: NextRequest): Promise<Response> {
-  const res = await fetch(backendUrl("/users/me"), {
-    method: "GET",
+export async function POST(req: NextRequest): Promise<Response> {
+  const body = await req.text();
+
+  const res = await fetch(backendUrl("/auth/register"), {
+    method: "POST",
     headers: {
+      "content-type": req.headers.get("content-type") ?? "application/json",
       cookie: req.headers.get("cookie") ?? "",
-      accept: "application/json",
     },
+    body,
     cache: "no-store",
   });
 
