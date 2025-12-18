@@ -44,7 +44,7 @@ export interface NewsletterContent {
 export class MailerService {
   constructor(
     @Inject('MAIL_TRANSPORT') private readonly transporter: Transporter,
-    private readonly dataSource: DataSource,
+    private readonly dataSource: DataSource
   ) {}
 
   public orderConfirmationHTML(p: OrderEmailPayload): string {
@@ -140,7 +140,7 @@ export class MailerService {
          FROM users
         WHERE id = $1
         LIMIT 1`,
-      [input.userId],
+      [input.userId]
     );
 
     const email: string | undefined = row?.[0]?.email ?? undefined;
@@ -198,20 +198,32 @@ export class MailerService {
   }
 
   async sendNewsletterToMany(recipients: string[], content: NewsletterContent): Promise<void> {
-    if (recipients.length === 0) {
-      return;
-    }
-
-    const to = recipients.join(',');
+    if (recipients.length === 0) return;
 
     const attachments = this.newsletterAttachments();
 
-    await this.transporter.sendMail({
-      to,
-      subject: content.subject,
-      html: content.html,
-      text: content.html.replace(/<[^>]+>/g, ' '),
-      attachments,
-    });
+    const from = process.env.MAIL_FROM ?? process.env.SMTP_USERNAME;
+    const replyTo = process.env.MAIL_REPLY_TO ?? from;
+
+    // Lien de désinscription (idéalement une vraie route chez toi)
+    const listUnsubscribeMail = process.env.NEWSLETTER_UNSUBSCRIBE_EMAIL ?? replyTo;
+
+    for (const email of recipients) {
+      await this.transporter.sendMail({
+        from,
+        replyTo,
+        to: email,
+        subject: content.subject,
+        html: content.html,
+        text: content.html
+          .replace(/<[^>]+>/g, ' ')
+          .replace(/\s+/g, ' ')
+          .trim(),
+        attachments,
+        headers: {
+          'List-Unsubscribe': `<mailto:${listUnsubscribeMail}>`,
+        },
+      });
+    }
   }
 }
