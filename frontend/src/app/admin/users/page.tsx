@@ -78,17 +78,24 @@ export default function AdminUsersPage() {
 
   const handleDeleteUser = (userId: string) => setUserToDelete(userId);
 
-  const confirmDelete = async () => {
-    if (!userToDelete) return;
-    await fetch(`/api/admin/users/${userToDelete}`, {
-      method: "DELETE",
-      credentials: "include",
-    });
-    setUsers((prev) => prev.filter((u) => u.id !== userToDelete));
-    setReservations((prev) => prev.filter((r) => r.user_id !== userToDelete));
+const confirmDelete = async () => {
+  if (!userToDelete) return;
+
+  const res = await fetch(`/api/admin/users/${userToDelete}`, {
+    method: "DELETE",
+    credentials: "include",
+  });
+
+  if (!res.ok) {
     setUserToDelete(null);
-    setSelectedUserId(null);
-  };
+    return;
+  }
+
+  setUsers((prev) => prev.filter((u) => u.id !== userToDelete));
+  setReservations((prev) => prev.filter((r) => r.user_id !== userToDelete));
+  setUserToDelete(null);
+  setSelectedUserId(null);
+};
 
   const handleMarkNonVenu = async (reservationId: string) => {
     await fetch(`/api/reservations/${reservationId}/non-venu`, {
