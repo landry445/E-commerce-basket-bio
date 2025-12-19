@@ -12,7 +12,7 @@ type Slide = {
 const SLIDES: ReadonlyArray<Slide> = [
   { src: "/legume-frog.jpg", alt: "Serre de tomates" },
   { src: "/celeri-rave.jpg", alt: "Céléri rave" },
-  { src: "/_DSC0817.jpg", alt: "Panier de légumes de saison" },
+  { src: "/IMG20251217114318.jpg", alt: "Panier de légumes de saison" },
 ];
 
 const AUTOPLAY_MS = 5000;
