@@ -9,7 +9,7 @@ import { SummerIcon } from "../SVG/bassketIcon/SummerIcon";
 import { AutumnIcon } from "../SVG/bassketIcon/AutumnIcon";
 
 /** Assets locaux — modifier uniquement les chemins si besoin */
-const CONTENT_IMAGE_SRC = "/legume-frog.jpg"; // photo réelle existante
+const CONTENT_IMAGE_SRC = "/IMG20251217114318.jpg"; // photo réelle existante
 
 export default function BasketsContent() {
   return (
