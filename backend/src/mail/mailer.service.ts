@@ -47,6 +47,14 @@ export class MailerService {
     private readonly dataSource: DataSource
   ) {}
 
+  private mailFrom(): string {
+    return process.env.MAIL_FROM ?? 'Paniers Bio <gaecdesrainettes@lejardindesrainettes.fr>';
+  }
+
+  private mailReplyTo(): string {
+    return process.env.MAIL_REPLY_TO ?? 'gaecdesrainettes@lejardindesrainettes.fr';
+  }
+
   public orderConfirmationHTML(p: OrderEmailPayload): string {
     const eur = new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' });
     const note = (p.customerNote ?? '').trim();
@@ -56,6 +64,7 @@ export class MailerService {
        <div style="white-space:pre-wrap">${escapeHtml(note)}</div>
      </div>`
       : '';
+
     const rows = p.items
       .map((it) => {
         const line = it.unitPriceCents * it.quantity;
@@ -99,25 +108,28 @@ export class MailerService {
   </div>`;
   }
 
-  // Envoi générique (alias pratique)
   public async send(opts: {
     to: string;
     subject: string;
     html: string;
     text?: string;
+    headers?: Record<string, string>;
   }): Promise<void> {
     await this.transporter.sendMail({
-      from: process.env.MAIL_FROM ?? process.env.SMTP_USERNAME,
+      from: this.mailFrom(),
+      replyTo: this.mailReplyTo(),
       to: opts.to,
       subject: opts.subject,
       html: opts.html,
       text: opts.text ?? '',
+      headers: opts.headers,
     });
   }
 
   async sendHtml(to: string, subject: string, html: string): Promise<void> {
     await this.send({ to, subject, html });
   }
+
   signupConfirmationHTML(p: SignupTemplateParams): string {
     return `
   <div style="font-family:Arial,Helvetica,sans-serif;line-height:1.4;">
@@ -134,7 +146,6 @@ export class MailerService {
     const to = process.env.ADMIN_EMAIL!;
     const safe = (s?: string) => (s ?? '').toString().trim();
 
-    // 1) Récupération des infos utilisateur (schéma: firstname / lastname / email)
     const row = await this.dataSource.query(
       `SELECT email, firstname, lastname
          FROM users
@@ -148,7 +159,6 @@ export class MailerService {
     const lastname: string | undefined = row?.[0]?.lastname ?? undefined;
     const fullName = [firstname, lastname].filter(Boolean).join(' ').trim() || undefined;
 
-    // 2) Sujet + contenu avec nom et e-mail
     const subject =
       safe(input.subject) || `Message client — ${fullName ?? email ?? 'compte connecté'}`;
 
@@ -180,7 +190,6 @@ export class MailerService {
   }
 
   private newsletterAttachments(): { filename: string; path: string; cid: string }[] {
-    // Dossier : backend/assets/newsletter/...
     const baseDir = join(process.cwd(), 'assets', 'newsletter');
 
     return [
@@ -202,16 +211,16 @@ export class MailerService {
 
     const attachments = this.newsletterAttachments();
 
-    const from = process.env.MAIL_FROM ?? process.env.SMTP_USERNAME;
-    const replyTo = process.env.MAIL_REPLY_TO ?? from;
+    const unsubscribeEmail = process.env.NEWSLETTER_UNSUBSCRIBE_EMAIL ?? this.mailReplyTo();
 
-    // Lien de désinscription (idéalement une vraie route chez toi)
-    const listUnsubscribeMail = process.env.NEWSLETTER_UNSUBSCRIBE_EMAIL ?? replyTo;
+    const headers = {
+      'List-Unsubscribe': `<mailto:${unsubscribeEmail}>`,
+    };
 
     for (const email of recipients) {
       await this.transporter.sendMail({
-        from,
-        replyTo,
+        from: this.mailFrom(),
+        replyTo: this.mailReplyTo(),
         to: email,
         subject: content.subject,
         html: content.html,
@@ -220,9 +229,7 @@ export class MailerService {
           .replace(/\s+/g, ' ')
           .trim(),
         attachments,
-        headers: {
-          'List-Unsubscribe': `<mailto:${listUnsubscribeMail}>`,
-        },
+        headers,
       });
     }
   }
