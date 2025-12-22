@@ -113,16 +113,17 @@ export class MailerService {
     subject: string;
     html: string;
     text?: string;
-    headers?: Record<string, string>;
   }): Promise<void> {
+    const from = process.env.MAIL_FROM ?? 'Paniers Bio <gaecdesrainettes@lejardindesrainettes.fr>';
+    const replyTo = process.env.MAIL_REPLY_TO ?? 'gaecdesrainettes@lejardindesrainettes.fr';
+
     await this.transporter.sendMail({
-      from: this.mailFrom(),
-      replyTo: this.mailReplyTo(),
+      from,
+      replyTo,
       to: opts.to,
       subject: opts.subject,
       html: opts.html,
       text: opts.text ?? '',
-      headers: opts.headers,
     });
   }
 
