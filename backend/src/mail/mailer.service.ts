@@ -115,16 +115,24 @@ export class MailerService {
     text?: string;
   }): Promise<void> {
     const from = process.env.MAIL_FROM ?? 'Paniers Bio <gaecdesrainettes@lejardindesrainettes.fr>';
+
     const replyTo = process.env.MAIL_REPLY_TO ?? 'gaecdesrainettes@lejardindesrainettes.fr';
 
-    await this.transporter.sendMail({
-      from,
-      replyTo,
-      to: opts.to,
-      subject: opts.subject,
-      html: opts.html,
-      text: opts.text ?? '',
-    });
+    try {
+      await this.transporter.sendMail({
+        from,
+        replyTo,
+        to: opts.to,
+        subject: opts.subject,
+        html: opts.html,
+        text: opts.text ?? '',
+      });
+
+      console.log(`[mail] sent to=${opts.to} subject="${opts.subject}"`);
+    } catch (e) {
+      console.error(`[mail] send failed to=${opts.to} subject="${opts.subject}"`, e);
+      throw e;
+    }
   }
 
   async sendHtml(to: string, subject: string, html: string): Promise<void> {
