@@ -7,14 +7,25 @@ function env(k: string): string {
   return v;
 }
 
-export function createGmailAppPasswordTransport(): Transporter {
+function envInt(k: string, fallback: number): number {
+  const raw = process.env[k];
+  if (!raw) return fallback;
+  const n = Number(raw);
+  if (!Number.isFinite(n)) throw new Error(`Invalid number env: ${k}`);
+  return n;
+}
+
+export function createMailjetSmtpTransport(): Transporter {
+  const host = process.env.SMTP_HOST ?? 'in-v3.mailjet.com';
+  const port = envInt('SMTP_PORT', 587);
+
   return nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 465,
-    secure: true,
+    host,
+    port,
+    secure: false, // STARTTLS sur 587
     auth: {
-      user: env('SMTP_USERNAME'),
-      pass: env('SMTP_PASSWORD'),
+      user: env('SMTP_USERNAME'), // API Key
+      pass: env('SMTP_PASSWORD'), // Secret Key
     },
   });
 }

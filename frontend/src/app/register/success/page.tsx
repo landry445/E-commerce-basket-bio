@@ -43,7 +43,8 @@ export default function RegisterSuccessPage({ searchParams }: Props) {
             </div>
 
             <p className="mt-6 text-gray-800">
-              Inscription validée. Un e-mail de confirmation vous est envoyé.
+              Inscription validée. Un e-mail de confirmation vous est envoyé. Si
+              vous ne le voyez pas, pensez à vérifier vos spams.
             </p>
 
             <div className="mt-8">
