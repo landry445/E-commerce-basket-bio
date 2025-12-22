@@ -24,8 +24,8 @@ export function createMailjetSmtpTransport(): Transporter {
     port,
     secure: false, // STARTTLS sur 587
     auth: {
-      user: env('SMTP_USERNAME'), // API Key
-      pass: env('SMTP_PASSWORD'), // Secret Key
+      user: env('SMTP_USERNAME'), // Mailjet API Key
+      pass: env('SMTP_PASSWORD'), // Mailjet Secret Key
     },
   });
 }

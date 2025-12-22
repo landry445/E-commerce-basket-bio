@@ -1,18 +1,11 @@
 import { Module } from '@nestjs/common';
-// import { DataSource } from 'typeorm';
 import { MailerService } from './mailer.service';
+import { MailerController } from './mailer.controller';
 import { createMailjetSmtpTransport } from './mailer.provider';
 
 @Module({
-  providers: [
-    {
-      provide: 'MAIL_TRANSPORT',
-      useFactory: () => {
-        return createMailjetSmtpTransport();
-      },
-    },
-    MailerService,
-  ],
+  controllers: [MailerController],
+  providers: [{ provide: 'MAIL_TRANSPORT', useFactory: createMailjetSmtpTransport }, MailerService],
   exports: [MailerService],
 })
 export class MailModule {}
