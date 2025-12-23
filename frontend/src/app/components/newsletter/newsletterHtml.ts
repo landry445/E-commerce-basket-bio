@@ -14,6 +14,8 @@ const FROG_URL =
   process.env.NEXT_PUBLIC_NEWSLETTER_FROG_URL ?? DEFAULT_FROG_PATH;
 const AB_URL = process.env.NEXT_PUBLIC_NEWSLETTER_AB_URL ?? DEFAULT_AB_PATH;
 
+const ACCOUNT_URL = "https://www.lejardindesrainettes.fr/mon-compte";
+
 function escapeHtml(input: string): string {
   return input
     .replace(/&/g, "&amp;")
@@ -43,8 +45,10 @@ function buildBasketTable(priceEuro: string, items: BasketItemForm[]): string {
     .map(
       (item) =>
         `<tr>
-          <td style="padding:2px 4px 2px 0;">- ${item.label}</td>
-          <td style="padding:2px 0 2px 4px; text-align:right;">${item.price}€</td>
+          <td style="padding:2px 4px 2px 0;">- ${escapeHtml(item.label)}</td>
+          <td style="padding:2px 0 2px 4px; text-align:right;">${escapeHtml(
+            item.price
+          )}€</td>
         </tr>`
     )
     .join("");
@@ -55,7 +59,7 @@ function buildBasketTable(priceEuro: string, items: BasketItemForm[]): string {
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse; margin-bottom:12px;">
   <tr>
     <td colspan="2" style="padding:0 0 6px 0; text-align:center; font-weight:600; text-decoration:underline;">
-      ${title}
+      ${escapeHtml(title)}
     </td>
   </tr>
   ${rows}
@@ -99,21 +103,14 @@ export function buildNewsletterBody(
        </div>`
     : "";
 
-  const unsubscribeEmail =
-    process.env.NEXT_PUBLIC_NEWSLETTER_UNSUBSCRIBE_EMAIL ??
-    "newsletter@lejardindesrainettes.fr";
-  const unsubscribeHref = `mailto:${unsubscribeEmail}?subject=${encodeURIComponent(
-    "Désinscription newsletter"
-  )}`;
-
   const footerUnsubscribe = `
-  <div style="margin-top:14px;font-size:12px;line-height:1.4;color:#444;text-align:left;">
-    <div style="margin-bottom:6px;">Tu reçois cet email car tu es inscrit à la newsletter.</div>
-    <div>
-      Gérer l’abonnement : <a href="${unsubscribeHref}" style="color:#5B8C51;">Mon compte</a>
+    <div style="margin-top:14px;font-size:12px;line-height:1.4;color:#444;text-align:left;">
+      <div style="margin-bottom:6px;">Tu reçois cet email car tu es inscrit à la newsletter.</div>
+      <div>
+        Gérer l’abonnement : <a href="${ACCOUNT_URL}" style="color:#5B8C51;">Mon compte</a>
+      </div>
     </div>
-  </div>
-`;
+  `;
 
   return `
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
@@ -127,7 +124,7 @@ export function buildNewsletterBody(
       <p style="margin:0 0 6px 0;">
         Voici la composition des paniers pour le ${
           dateTitle
-            ? `<strong>${dateTitle.toLowerCase()}</strong>`
+            ? `<strong>${escapeHtml(dateTitle.toLowerCase())}</strong>`
             : "la prochaine distribution"
         }.
       </p>
@@ -171,7 +168,7 @@ export function buildNewsletterBody(
         <tr>
           <td style="text-align:center; padding:30px 0 32px 0;
                      font-size:20px; font-weight:700; letter-spacing:1px;">
-            ${dateTitle || ""}
+            ${escapeHtml(dateTitle || "")}
           </td>
         </tr>
 
@@ -257,8 +254,7 @@ export function buildNewsletterPlainText(data: NewsletterFormData): string {
   }
 
   lines.push("Réserver : https://www.lejardindesrainettes.fr/reserver", "");
-
-  const unsubscribeHref = "https://www.lejardindesrainettes.fr/mon-compte";
+  lines.push(`Gérer l’abonnement : ${ACCOUNT_URL}`, "");
   lines.push(
     "GAEC du Jardin des Rainettes",
     "https://www.lejardindesrainettes.fr"
@@ -296,7 +292,7 @@ export function buildNewsletterHtmlDoc(
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>${data.subject}</title>
+  <title>${escapeHtml(data.subject)}</title>
 </head>
 <body style="margin:0; padding:0; background-color:${BACKGROUND};">
   <div style="display:none; max-height:0; overflow:hidden; opacity:0; color:transparent;">
