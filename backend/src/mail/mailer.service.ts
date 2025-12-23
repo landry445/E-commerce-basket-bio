@@ -38,6 +38,7 @@ function escapeHtml(s: string): string {
 export interface NewsletterContent {
   subject: string;
   html: string;
+  text?: string;
 }
 
 @Injectable()
@@ -224,7 +225,18 @@ export class MailerService {
 
     const headers = {
       'List-Unsubscribe': `<mailto:${unsubscribeEmail}>`,
+      'List-ID': '<newsletter.lejardindesrainettes.fr>',
+      Precedence: 'bulk',
     };
+
+    const fallbackText = content.html
+      .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, ' ')
+      .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, ' ')
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    const text = (content.text ?? '').trim() || fallbackText;
 
     for (const email of recipients) {
       await this.transporter.sendMail({
@@ -233,10 +245,7 @@ export class MailerService {
         to: email,
         subject: content.subject,
         html: content.html,
-        text: content.html
-          .replace(/<[^>]+>/g, ' ')
-          .replace(/\s+/g, ' ')
-          .trim(),
+        text,
         attachments,
         headers,
       });

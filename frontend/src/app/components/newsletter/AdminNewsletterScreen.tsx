@@ -2,7 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { NewsletterFormData, SendResult, Subscriber } from "./newsletterTypes";
-import { buildNewsletterHtmlDoc } from "./newsletterHtml";
+import {
+  buildNewsletterHtmlDoc,
+  buildNewsletterPlainText,
+} from "./newsletterHtml";
 import { SubscribersCard } from "./SubscribersCard";
 import { NewsletterForm } from "./NewsletterForm";
 
@@ -57,6 +60,7 @@ export function AdminNewsletterScreen() {
 
     try {
       const htmlDoc = buildNewsletterHtmlDoc(form, "email");
+      const text = buildNewsletterPlainText(form);
 
       const res = await fetch(`${API_BASE}/admin/newsletter/send`, {
         method: "POST",
@@ -68,6 +72,7 @@ export function AdminNewsletterScreen() {
         body: JSON.stringify({
           subject: form.subject,
           html: htmlDoc,
+          text,
         }),
       });
 

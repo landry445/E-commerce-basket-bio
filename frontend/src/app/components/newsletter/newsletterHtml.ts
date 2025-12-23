@@ -34,10 +34,6 @@ export function formatDateTitle(pickupDateISO: string): string {
   return formatted.toUpperCase();
 }
 
-/**
- * Construit le tableau d’un panier pour le mail.
- * `priceEuro` provient du formulaire (10, 15, 12, etc.).
- */
 function buildBasketTable(priceEuro: string, items: BasketItemForm[]): string {
   const normalizedPrice = priceEuro.toString().trim() || "10";
   const title = `PANIER À ${normalizedPrice} €`;
@@ -66,11 +62,6 @@ function buildBasketTable(priceEuro: string, items: BasketItemForm[]): string {
 </table>`;
 }
 
-/**
- * Corps de la newsletter.
- * mode = "preview" → images chargées depuis /public
- * mode = "email"   → images référencées par CID
- */
 export function buildNewsletterBody(
   data: Omit<NewsletterFormData, "subject">,
   mode: NewsletterRenderMode
@@ -108,6 +99,22 @@ export function buildNewsletterBody(
        </div>`
     : "";
 
+  const unsubscribeEmail =
+    process.env.NEXT_PUBLIC_NEWSLETTER_UNSUBSCRIBE_EMAIL ??
+    "newsletter@lejardindesrainettes.fr";
+  const unsubscribeHref = `mailto:${unsubscribeEmail}?subject=${encodeURIComponent(
+    "Désinscription newsletter"
+  )}`;
+
+  const footerUnsubscribe = `
+  <div style="margin-top:14px;font-size:12px;line-height:1.4;color:#444;text-align:left;">
+    <div style="margin-bottom:6px;">Tu reçois cet email car tu es inscrit à la newsletter.</div>
+    <div>
+      Gérer l’abonnement : <a href="${unsubscribeHref}" style="color:#5B8C51;">Mon compte</a>
+    </div>
+  </div>
+`;
+
   return `
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
   style="border-collapse:collapse; background-color:${BACKGROUND}; padding:20px 0;">
@@ -131,37 +138,36 @@ export function buildNewsletterBody(
         Règlement sur place.
       </p>
       <div style="margin:16px 0 8px 0; text-align:center;">
-  <a
-    href="https://www.lejardindesrainettes.fr/reserver"
-    target="_blank"
-    rel="noopener noreferrer"
-    style="
-      display:inline-block;
-      padding:10px 18px;
-      background-color:#5B8C51;
-      color:#ffffff;
-      text-decoration:none;
-      font-size:14px;
-      font-weight:600;
-      border-radius:999px;
-    "
-  >
-    Réservez ici !
-  </a>
-</div>
+        <a
+          href="https://www.lejardindesrainettes.fr/reserver"
+          target="_blank"
+          rel="noopener noreferrer"
+          style="
+            display:inline-block;
+            padding:10px 18px;
+            background-color:#5B8C51;
+            color:#ffffff;
+            text-decoration:none;
+            font-size:14px;
+            font-weight:600;
+            border-radius:999px;
+          "
+        >
+          Réservez ici !
+        </a>
+      </div>
       ${complementBlock}
+      ${footerUnsubscribe}
     </td>
   </tr>
   <tr>
     <td align="center">
-      <!-- Carte centrale -->
       <table role="presentation" width="800" cellpadding="0" cellspacing="0"
         style="border-collapse:collapse; background-color:#ffffff;
                padding:40px 40px 36px 40px;
                font-family:Nunito, Arial, Helvetica, sans-serif;
                color:${FOREGROUND};">
 
-        <!-- Titre date -->
         <tr>
           <td style="text-align:center; padding:30px 0 32px 0;
                      font-size:20px; font-weight:700; letter-spacing:1px;">
@@ -169,7 +175,6 @@ export function buildNewsletterBody(
           </td>
         </tr>
 
-        <!-- Deux colonnes paniers -->
         <tr>
           <td style="padding-bottom:48px;">
             <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
@@ -186,19 +191,16 @@ export function buildNewsletterBody(
           </td>
         </tr>
 
-        <!-- Bas de page : grenouille + texte + AB -->
         <tr>
           <td>
             <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
               style="border-collapse:collapse;">
               <tr style="height:280px;" valign="bottom">
-                <!-- Grenouille, décollée du bord gauche -->
                 <td width="50%" valign="bottom"
                   style="padding:0 24px 12px 56px; text-align:left;">
                   ${frogImg}
                 </td>
 
-                <!-- Texte + logo AB, décollés du bord droit -->
                 <td width="50%" valign="bottom"
                   style="padding:0 56px 12px 24px;
                          text-align:right; font-size:13px; line-height:1.4;">
@@ -219,6 +221,52 @@ export function buildNewsletterBody(
 </table>`;
 }
 
+export function buildNewsletterPlainText(data: NewsletterFormData): string {
+  const dateTitle = formatDateTitle(data.pickupDateISO);
+  const whenLine = dateTitle
+    ? `Composition pour le ${dateTitle.toLowerCase()}`
+    : "Composition pour la prochaine distribution";
+
+  const basket10Price =
+    (data.basket10PriceEuro ?? "10").toString().trim() || "10";
+  const basket15Price =
+    (data.basket15PriceEuro ?? "15").toString().trim() || "15";
+
+  const lines: string[] = [];
+  lines.push("Bonjour,", "");
+  lines.push("GAEC du Jardin des Rainettes", whenLine, "");
+  lines.push("Retrait dans le hall de la gare de Savenay, de 16h30 à 19h.");
+  lines.push("Règlement sur place.", "");
+
+  const pushBasket = (title: string, items: BasketItemForm[]) => {
+    const cleaned = items
+      .filter((it) => it.label.trim() && it.price.trim())
+      .map((it) => `- ${it.label.trim()} (${it.price.trim()}€)`);
+    if (cleaned.length === 0) return;
+    lines.push(title);
+    lines.push(...cleaned);
+    lines.push("");
+  };
+
+  pushBasket(`PANIER À ${basket10Price} €`, data.basket10Items);
+  pushBasket(`PANIER À ${basket15Price} €`, data.basket15Items);
+
+  const complement = (data.complement ?? "").toString().trim();
+  if (complement) {
+    lines.push("Message complémentaire :", complement, "");
+  }
+
+  lines.push("Réserver : https://www.lejardindesrainettes.fr/reserver", "");
+
+  const unsubscribeHref = "https://www.lejardindesrainettes.fr/mon-compte";
+  lines.push(
+    "GAEC du Jardin des Rainettes",
+    "https://www.lejardindesrainettes.fr"
+  );
+
+  return lines.join("\n");
+}
+
 export function buildNewsletterHtmlDoc(
   data: NewsletterFormData,
   mode: NewsletterRenderMode = "email"
@@ -235,13 +283,25 @@ export function buildNewsletterHtmlDoc(
     mode
   );
 
+  const preheader = (() => {
+    const dateTitle = formatDateTitle(data.pickupDateISO);
+    const when = dateTitle
+      ? `Composition pour le ${dateTitle.toLowerCase()}`
+      : "Composition pour la prochaine distribution";
+    return `${when} — Retrait gare de Savenay 16h30–19h. Réservation en ligne.`;
+  })();
+
   return `<!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>${data.subject}</title>
 </head>
 <body style="margin:0; padding:0; background-color:${BACKGROUND};">
+  <div style="display:none; max-height:0; overflow:hidden; opacity:0; color:transparent;">
+    ${escapeHtml(preheader)}
+  </div>
 ${body}
 </body>
 </html>`;
