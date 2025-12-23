@@ -8,4 +8,8 @@ export class AdminNewsletterSendDto {
   @IsString()
   @IsNotEmpty()
   html!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  text?: string;
 }

@@ -71,7 +71,9 @@ export class AdminNewsletterController {
     await this.mailService.sendNewsletterToMany(emails, {
       subject: dto.subject,
       html: dto.html,
+      text: dto.text,
     });
+
 
     return { sent: emails.length };
   }
