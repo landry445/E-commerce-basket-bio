@@ -19,7 +19,8 @@ type SellingPointsProps = {
 const defaults: Point[] = [
   {
     title: "Sur les marchés",
-    description: "Retrouvez nous les samedis matins au marché de blin (44130).",
+    description:
+      "Retrouvez nous les samedis matins au marché de blain (44130).",
     imageSrc: "/marché.jpg",
     imageAlt: "maeché",
   },

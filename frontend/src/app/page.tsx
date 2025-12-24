@@ -12,13 +12,13 @@ const faqItems: FAQItem[] = [
     id: "q1",
     question: "Commande",
     answer:
-      "Pour les paniers du mardi, vous avez du vendredi soir 18h jusqu'au mardi matin 8h pour vos reservations. Pour les paniers du vendredi, même principe les réservation sont ouverte du mardi 18h jusqu'au vendredi matin 8h.",
+      "Pour les paniers du mardi, vous avez du vendredi soir 18h jusqu'au mardi matin 8h pour vos reservations. Pour les paniers du vendredi, même principe les réservation sont ouvertes du mardi 18h jusqu'au vendredi matin 8h.",
   },
   {
     id: "q2",
     question: "Retrait",
     answer:
-      "Pour le retrait, venez récupéré en main propre directement devant le hall de la gare SNCF de Savenay les mardis de 16h30 à 19h les mardis et les vendredis de 16h30 à 18h30.",
+      "Pour le retrait, venez récupérer en main propre directement devant le hall de la gare SNCF de Savenay les mardis de 16h30 à 19h et les vendredis de 16h30 à 18h30.",
   },
   {
     id: "q3",

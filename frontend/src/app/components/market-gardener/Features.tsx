@@ -48,7 +48,7 @@ export default function Features() {
           imgSrc="/champs-personne.jpg"
           imgAlt="Sols fertiles"
           text="Nous cultivons nos légumes sur 2,5Ha autour de la ferme dont 2000m2 avec autonomie en eau.
-Toutes nos plants et nos graines sont certifiés bio, nous faisons nous même une partie des plants dont certains destinée à la vente aux particuliers au printemps (légumes ratatouille)"
+Tous nos plants et nos graines sont certifiés bio, nous faisons nous même une partie des plants dont certains destinés à la vente aux particuliers au printemps légumes ratatouille"
         />
       </div>
     </section>

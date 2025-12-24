@@ -1,35 +1,74 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://www.lejardindesrainettes.fr"),
+  metadataBase: new URL("https://lejardindesrainettes.fr"),
+
   title: {
-    default: "GAEC du Jardin des Rainettes – Paniers de légumes bio à Savenay",
-    template: "%s – Jardin des Rainettes",
+    default: "Paniers de légumes bio à Savenay | Du Jardin des Rainettes",
+    template: "%s | Jardin des Rainettes",
   },
+
   description:
-    "Réservation de paniers de légumes bio, locaux et de saison à Savenay. Maraîcher bio en circuit court. Vente de légumes frais au marché de Blain",
+    "Réservation de paniers de légumes bio à Savenay. Circuit court, légumes de saison. Retrait à la Gare de Savenay.",
+
+  alternates: { canonical: "/" },
+
   robots: {
     index: true,
     follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
   },
+
   openGraph: {
-    title: "GAEC du Jardin des Rainettes",
-    description:
-      "Paniers de légumes bio, locaux et de saison. Réservation en ligne.",
-    url: "https://www.lejardindesrainettes.fr",
+    type: "website",
+    url: "https://lejardindesrainettes.fr",
     siteName: "Jardin des Rainettes",
     locale: "fr_FR",
-    type: "website",
+    title: "Paniers de légumes bio à Savenay | Du Jardin des Rainettes",
+    description:
+      "Réservation de paniers bio. Retrait à la Gare de Savenay. Circuit court, légumes de saison.",
+    images: [
+      {
+        url: "/logo-jardins-des-rainettes.jpeg",
+        width: 1200,
+        height: 630,
+        alt: "Jardin des Rainettes – paniers de légumes bio à Savenay",
+      },
+    ],
   },
+
+  twitter: {
+    card: "summary_large_image",
+    title: "Paniers de légumes bio à Savenay | Jardin des Rainettes",
+    description:
+      "Réservation en ligne de paniers bio. Retrait à la Gare de Savenay.",
+    images: ["/logo-jardins-des-rainettes.jpeg"],
+  },
+
+  icons: {
+    icon: [{ url: "/logo-frog-jdr.png" }],
+    apple: [{ url: "/logo-frog-jdr.png", sizes: "180x180" }],
+  },
+
+  manifest: "/site.webmanifest",
 };
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#5B8C51",
+};
 
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+}: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="fr">
       <body

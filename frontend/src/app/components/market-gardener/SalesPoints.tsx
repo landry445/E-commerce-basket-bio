@@ -87,12 +87,12 @@ export default function SalesPoints() {
             </SalesPointCard>
 
             <SalesPointCard
-              title="À la gare de Savigny"
+              title="À la gare de Savenay"
               imgSrc="/gare.jpg"
-              imgAlt="À la gare de Savigny"
+              imgAlt="À la gare de Savenay"
             >
               <p>
-                Distribution de paniers de légumes bio à la gare de Savigny le
+                Distribution de paniers de légumes bio à la gare de Savenay le
                 mardi soir de 16h30 à 19h et le vendredi soir de 16h30 à 18h30.
                 Réservation des paniers en ligne sur notre site web.
               </p>
