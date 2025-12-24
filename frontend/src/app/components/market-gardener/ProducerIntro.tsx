@@ -12,8 +12,8 @@ export default function ProducerIntro() {
           Des producteurs de légumes bio
         </h2>
         <p className="text-center">
-          La ferme maraîchère du Jardin des Rainettes a été créé en 2002 à
-          Drensy, sur la commune de Plessé (44). Après avoir dirigé
+          La ferme maraîchère du Jardin des Rainettes a été créé en 2002 au
+          Dresny, sur la commune de Plessé (44). Après avoir dirigé
           l&apos;exploitation pendant plus de 20 ans, Mireille l&apos;a cédée à
           ses enfants Pauline et Adrien à l&apos;été 2025. Les méthodes de
           travail restent les mêmes, soucieuses de notre environnement et en

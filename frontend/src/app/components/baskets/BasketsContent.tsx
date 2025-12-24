@@ -56,7 +56,7 @@ export default function BasketsContent() {
         </ul>
 
         <p className="text-base mt-3 leading-relaxed">
-          Retrait à la Gare de Savenay toutes les semaines.
+          Retrait à la Gare de Savenay deux fois par semaine.
         </p>
       </section>
 
@@ -80,22 +80,22 @@ export default function BasketsContent() {
         <ul className="mt-3 space-y-1.5 text-base">
           <li className="flex items-center gap-2">
             <WinterIcon />
-            en hiver : pommes de terre, mache, poireaux, céleris, choux, légumes
+            en hiver : pommes de terre, mâche, poireaux, céleris, choux, légumes
             de conservation.
           </li>
           <li className="flex items-center gap-2">
             <SpringIcon />
-            au printemps : légumes primeur en botte, carottes, radis, petit
-            pois, pommes de terre nouvelle, oignons blancs.
+            au printemps : légumes primeurs en botte, carottes, radis, petits
+            pois, pommes de terre nouvelles, oignons blancs.
           </li>
           <li className="flex items-center gap-2">
             <SummerIcon />
             en été : légumes ratatouille, tomates, aubergines, courgettes,
-            melons, concombre, haricots vert.
+            melons, concombres, haricots verts.
           </li>
           <li className="flex items-center gap-2">
             <AutumnIcon />
-            en automne : courges, patate douce, légumes racine, cresson,
+            en automne : courges, patates douces, légumes racine, cresson,
             épinards.
           </li>
         </ul>
@@ -150,7 +150,7 @@ export default function BasketsContent() {
             vendredis de 16h30 à 18h30, paiement sur place.
           </p>
           <p>Règlement sur place par chèque, espèces ou carte bancaire.</p>
-          <p>Les retraits de panier se fond uniquement à la gare de Savenay.</p>
+          <p>Les retraits de panier se font uniquement à la gare de Savenay.</p>
         </div>
 
         <div className="space-y-4">

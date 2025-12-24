@@ -27,8 +27,8 @@ export default function OrderAside() {
           </h3>
 
           <p className="text-base text-white leading-relaxed ">
-            Merci de passer vos commandes en ligne à l’aide du formulaire.
-            Préparation de votre commande et distribution à la Gare de Savenay
+            Merci de passer vos commandes en ligne à l’aide du formulaire. La
+            distribution se déroule à la Gare de Savenay.
           </p>
 
           <p className="text-base text-white mt-2 leading-relaxed">

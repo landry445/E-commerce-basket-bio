@@ -5,11 +5,19 @@ import { useState, FormEvent, Suspense } from "react";
 import Image from "next/image";
 import Footer from "../components/footer";
 import Navbar from "../components/navbar/Navbar";
+import { Metadata } from "next";
 
 type MeResponse = {
   id: string;
   email: string;
   is_admin: boolean;
+};
+
+export const metadata: Metadata = {
+  title: "Connexion | Jardin des Rainettes",
+  description: "Accès au compte pour réserver un panier.",
+  alternates: { canonical: "/login" },
+  robots: { index: false, follow: true },
 };
 
 function safeInternalNext(value: string | null): string {
