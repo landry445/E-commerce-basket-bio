@@ -3,16 +3,9 @@ import { redirect } from "next/navigation";
 import Footer from "../components/footer";
 import ReservationForm from "../components/reservation/ReservationForm";
 import Navbar from "../components/navbar/Navbar";
-import { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  title: "Réserver un panier bio à Savenay | Retrait Gare de Savenay",
-  description:
-    "Réservation en ligne de paniers de légumes bio. Retrait à la Gare de Savenay. Assistance : 07 88 27 94 07.",
-  alternates: { canonical: "/reserver" },
-};
 
 
 async function baseUrl(): Promise<string> {
